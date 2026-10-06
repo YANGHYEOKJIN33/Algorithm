@@ -1,0 +1,145 @@
+/* ============================================================
+   디자인 토큰 — 색·간격·글꼴을 여기 한 곳에서만 정의한다.
+
+   의미를 가진 색 (화면 어디서나 같은 뜻)
+     파랑 = 지금 보는 것(현재 줄·현재 칸)   초록 = 새로 들어감·남김·맞음
+     빨강 = 결측치·이상치·지움·틀림          주황 = 결과·예측
+   색만으로 뜻을 전하지 않는다 — 언제나 아이콘·글자를 함께 쓴다.
+
+   펭귄 종의 색 (산점도의 점) — 검증된 3색 팔레트(색각 이상에도 구별, 모양도 다르게)
+     아델리 = 파랑 ●   턱끈 = 주황 ▲   젠투 = 청록 ■
+   ============================================================ */
+
+:root {
+  color-scheme: light dark;
+
+  --bg:            #f6f7f9;
+  --surface:       #ffffff;
+  --surface-2:     #eef0f4;
+  --border:        #d3d8e0;
+  --border-strong: #aeb6c2;
+  --text:          #14181f;
+  --text-muted:    #5a6472;
+
+  --current:       #1857c4;
+  --current-bg:    #e3ecfd;
+  --add:           #17724a;
+  --add-bg:        #e0f3e9;
+  --warn:          #b3261e;
+  --warn-bg:       #fde8e6;
+  --result:        #a75300;
+  --result-bg:     #fdeddb;
+  --done:          #5a6472;
+  --done-bg:       #e7e9ee;
+
+  /* 펭귄 종 (산점도 표식) */
+  --sp0: #2a78d6;
+  --sp1: #eb6834;
+  --sp2: #1baf7a;
+  /* k-평균 묶음 — 종 색과 헷갈리지 않게 다른 3색(보라·자홍·초록) + 모양 */
+  --cl0: #4a3aa7;
+  --cl1: #e87ba4;
+  --cl2: #008300;
+
+  /* 차트 바탕 */
+  --chart-bg:   #fcfcfb;
+  --grid:       #e1e0d9;
+  --axis:       #c3c2b7;
+  --ring:       #fcfcfb;
+
+  --font-ui:   "Pretendard", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code: "D2Coding", "JetBrains Mono", ui-monospace, "Consolas", monospace;
+
+  /* 글자 크기 배율 — 가+/가− 단추가 이 값만 바꾼다 */
+  --scale: 1;
+  --fs-xs: calc(0.75rem * var(--scale));
+  --fs-sm: calc(0.85rem * var(--scale));
+  --fs-md: calc(0.95rem * var(--scale));
+  --fs-lg: calc(1.15rem * var(--scale));
+  --fs-xl: calc(1.5rem  * var(--scale));
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --radius:    10px;
+  --radius-sm: 6px;
+
+  --shadow: 0 1px 2px rgba(16, 22, 32, .06), 0 4px 12px rgba(16, 22, 32, .06);
+  --focus:  0 0 0 3px rgba(24, 87, 196, .35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            #12151b;
+    --surface:       #1a1e26;
+    --surface-2:     #232833;
+    --border:        #333b48;
+    --border-strong: #4a5364;
+    --text:          #e8ecf2;
+    --text-muted:    #a3adbb;
+
+    --current:       #7aa9ff;
+    --current-bg:    #1c2b47;
+    --add:           #5fd3a0;
+    --add-bg:        #17342a;
+    --warn:          #ff8a80;
+    --warn-bg:       #3a1d1b;
+    --result:        #ffb066;
+    --result-bg:     #3a2716;
+    --done:          #a3adbb;
+    --done-bg:       #272c36;
+
+    --sp0: #3987e5;
+    --sp1: #d95926;
+    --sp2: #199e70;
+    --cl0: #9085e9;
+    --cl1: #d55181;
+    --cl2: #2fa82f;
+
+    --chart-bg: #1a1a19;
+    --grid:     #2c2c2a;
+    --axis:     #4a4a46;
+    --ring:     #1a1a19;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .35);
+    --focus:  0 0 0 3px rgba(122, 169, 255, .4);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:            #12151b;
+  --surface:       #1a1e26;
+  --surface-2:     #232833;
+  --border:        #333b48;
+  --border-strong: #4a5364;
+  --text:          #e8ecf2;
+  --text-muted:    #a3adbb;
+
+  --current:       #7aa9ff;
+  --current-bg:    #1c2b47;
+  --add:           #5fd3a0;
+  --add-bg:        #17342a;
+  --warn:          #ff8a80;
+  --warn-bg:       #3a1d1b;
+  --result:        #ffb066;
+  --result-bg:     #3a2716;
+  --done:          #a3adbb;
+  --done-bg:       #272c36;
+
+  --sp0: #3987e5;
+  --sp1: #d95926;
+  --sp2: #199e70;
+  --cl0: #9085e9;
+  --cl1: #d55181;
+  --cl2: #2fa82f;
+
+  --chart-bg: #1a1a19;
+  --grid:     #2c2c2a;
+  --axis:     #4a4a46;
+  --ring:     #1a1a19;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .35);
+  --focus:  0 0 0 3px rgba(122, 169, 255, .4);
+}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>펭귄 데이터로 배우는 인공지능</title>
+  <meta name="description" content="웹 크롤링으로 펭귄 데이터를 모으고, 결측치·이상치를 찾아 전처리한 뒤, k-최근접 이웃·의사결정 트리·선형 회귀·k-평균을 의사코드와 그림으로 배우는 고등학생용 인공지능 학습 사이트">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐧</text></svg>">
+  <link rel="stylesheet" href="./src/styles/tokens.css">
+  <link rel="stylesheet" href="./src/styles/base.css">
+  <link rel="stylesheet" href="./src/styles/layout.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+  <link rel="stylesheet" href="./src/styles/viz.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 수업 순서 탭 -->
+    <header class="topbar" id="topbar"></header>
+    <!-- 📘 배울 것 · ✋ 해 볼 것 · 쪽 넘기기 -->
+    <nav class="lesson" id="lessonbar" aria-label="쪽"></nav>
+    <!-- 실행 제어 (단계 실행 쪽에서만) -->
+    <div class="controlbar" id="controlbar" role="group" aria-label="실행 제어"></div>
+    <!-- 지금 무슨 일이 일어났나 -->
+    <div class="actionbar" id="actionbar" aria-live="polite"></div>
+
+    <main class="workspace" id="workspace" data-layout="view">
+      <section class="panel panel--code" id="panel-code" aria-label="의사코드"></section>
+      <section class="panel panel--stage" id="panel-stage" aria-label="그림"></section>
+      <section class="panel panel--data" id="panel-data" aria-label="자료구조"></section>
+      <section class="panel panel--view" id="panel-view" aria-label="학습 화면"></section>
+    </main>
+
+    <footer class="sitefoot">
+      펭귄 데이터로 배우는 인공지능 · 데이터: palmerpenguins (CC0, Palmer Station LTER) ·
+      <a href="./practice/">크롤링 연습 사이트</a> ·
+      <a href="https://github.com/YANGHYEOKJIN33/Algorithm/blob/main/REQUIREMENTS.md">요구사항 정의서</a>
+    </footer>
+  </div>
+  <noscript><p style="padding:16px">이 사이트는 자바스크립트로 동작합니다. 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+  <script type="module" src="./src/app/main.js"></script>
+</body>
+</html>

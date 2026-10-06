@@ -1,0 +1,218 @@
+/**
+ * 🕸 수집 — 웹 페이지의 구조(HTML) · 크롤링 한 단계씩 · 크롤링 예절
+ */
+import { el, fill } from '../ui/dom.js';
+import { createFlip } from '../ui/flip.js';
+import { infoTerm } from '../ui/infoTip.js';
+import { quizBox } from '../ui/quizBox.js';
+import { CRAWL_PAGES, CRAWL_COLUMNS } from '../core/data/sets.js';
+import * as CRAWL from '../core/crawl.js';
+import { pyList, counters } from '../viz/bits.js';
+import { PRACTICE_URL } from '../app/links.js';
+
+const tagSpan = (t) => el('span.html__tag', {}, t);
+
+/** HTML 한 줄짜리 <tr> — 칸마다 <td>를 따로 감싸 강조할 수 있게 */
+function trLine(cells, { head = false, rowIdx, onCell = null, selCell = null } = {}) {
+  const cellTag = head ? 'th' : 'td';
+  return el('div.html__line.html__line--tr', { 'data-row': rowIdx },
+    el('span.html__indent', {}, '    '), tagSpan('<tr>'),
+    cells.map((c, ci) => el(`span.html__cell${selCell === ci ? '.is-sel' : ''}`, {
+      onclick: onCell ? () => onCell(ci) : null,
+    }, tagSpan(`<${cellTag}>`), el('span.html__text', {}, c), tagSpan(`</${cellTag}>`))),
+    tagSpan('</tr>'));
+}
+
+function htmlSource(page, p, opts = {}) {
+  const { rowState = () => '', selRow = null, selCell = null } = opts;
+  return el('div.html', { role: 'figure', 'aria-label': `${p}쪽 HTML` },
+    el('div.html__line', {}, tagSpan('<html>')),
+    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan('<h1>'), el('span.html__text', {}, `펭귄 관측 기록 (${p}쪽)`), tagSpan('</h1>')),
+    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan('<table>')),
+    (() => { const n = trLine(CRAWL_COLUMNS, { head: true, rowIdx: 0 }); n.className += ` ${rowState(0)}`; return n; })(),
+    page.rows.map((r, i) => {
+      const n = trLine(CRAWL_COLUMNS.map((c) => String(r[c] ?? '')), { rowIdx: i + 1, selCell: selRow === i + 1 ? selCell : null, onCell: opts.onCell ? (ci) => opts.onCell(i + 1, ci) : null });
+      n.className += ` ${rowState(i + 1)}`;
+      return n;
+    }),
+    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan('</table>')),
+    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan(`<a href="page${p + 1}.html">`), el('span.html__text', {}, '다음 쪽'), tagSpan('</a>')),
+    el('div.html__line', {}, tagSpan('</html>')));
+}
+
+/* ═════════════ 웹 페이지와 HTML (탐험) ═════════════ */
+
+function webExplore(root) {
+  const page = CRAWL_PAGES[0];
+  let sel = { row: 1, cell: 3 };
+  const left = el('div.browser');
+  const right = el('div.webx__src');
+  const path = el('div.webx__path');
+
+  function draw() {
+    const pick = (row, cell) => { sel = { row, cell }; draw(); };
+    fill(left,
+      el('div.browser__bar', {}, el('span.browser__dots', {}, '● ● ●'), el('span.browser__url', {}, `${PRACTICE_URL}page1.html`)),
+      el('div.browser__page', {},
+        el('h4', {}, '펭귄 관측 기록 (1쪽)'),
+        el('table.webtable', {},
+          el('thead', {}, el('tr', {}, CRAWL_COLUMNS.map((c) => el('th', {}, c)))),
+          el('tbody', {}, page.rows.map((r, i) => el(`tr${sel.row === i + 1 ? '.is-row' : ''}`, {},
+            CRAWL_COLUMNS.map((c, ci) => el(`td${sel.row === i + 1 && sel.cell === ci ? '.is-sel' : ''}`, {
+              tabIndex: 0, onclick: () => pick(i + 1, ci),
+              onkeydown: (e) => { if (e.key === 'Enter') pick(i + 1, ci); },
+            }, String(r[c]))))))),
+        el('a.browser__link', {}, '다음 쪽 →')));
+    fill(right,
+      el('div.webx__cap', {}, '💻 컴퓨터가 받은 HTML (페이지 소스)'),
+      htmlSource(page, 1, { rowState: (i) => (i === sel.row ? 'is-row' : ''), selRow: sel.row, selCell: sel.cell, onCell: pick }));
+    const value = String(page.rows[sel.row - 1][CRAWL_COLUMNS[sel.cell]]);
+    fill(path,
+      el('span.webx__crumb', {}, '<html>'), ' › ', el('span.webx__crumb', {}, '<table>'), ' › ',
+      el('span.webx__crumb.is-row', {}, `<tr> ${sel.row + 1}번째 줄`), ' › ',
+      el('span.webx__crumb.is-sel', {}, `<td> ${sel.cell + 1}번째 칸`), ' → ', el('strong', {}, `"${value}"`),
+      el('span.webx__note', {}, `  (첫 번째 <tr>은 제목 줄 <th>예요)`));
+  }
+
+  fill(root, el('div.read.read--wide', {},
+    el('div.netline', {},
+      el('span.netline__box', {}, '💻 내 컴퓨터'),
+      el('span.netline__arrow', {}, '요청 →', el('small', {}, 'page1.html 주세요')),
+      el('span.netline__box', {}, '🖥 서버'),
+      el('span.netline__arrow.netline__arrow--back', {}, '← 응답', el('small', {}, 'HTML 글자')),
+      el('span.netline__box', {}, '🖼 브라우저가 그림으로')),
+    el('div.webx', {},
+      el('div.webx__col', {}, el('div.webx__cap', {}, '👀 사람이 보는 화면'), left),
+      el('div.webx__col', {}, right)),
+    path,
+    el('div.cards', {},
+      el('div.card', {}, el('div.card__title', {}, infoTerm('태그', { strong: true }), ' — 이름표'), el('p.card__text', {}, '<td>3750</td>처럼 꺾쇠 이름표가 내용을 감싸요. 여는 태그 <td>와 닫는 태그 </td> 사이가 내용이에요.')),
+      el('div.card', {}, el('div.card__title', {}, '<table> · <tr> · <td>'), el('p.card__text', {}, '표 = table, 줄(행) = tr(table row), 칸 = td(table data). 제목 칸은 th(table header)예요.')),
+      el('div.card', {}, el('div.card__title', {}, '크롤러가 하는 일'), el('p.card__text', {}, '"모든 <tr>을 찾아, 그 안의 <td> 글자를 꺼낸다." 사람이 눈으로 표를 읽는 일을 태그 위치로 대신해요.'))),
+    el('p.card__meta', {}, '직접 보기: ', el('a', { href: `${PRACTICE_URL}page1.html`, target: '_blank', rel: 'noopener' }, '연습 사이트 1쪽 열기 ↗'),
+      ' — 열린 쪽에서 마우스 오른쪽 단추 → "페이지 소스 보기"(Ctrl+U)를 누르면 HTML이 보여요.'),
+  ));
+  draw();
+  return {};
+}
+
+/* ═════════════ 크롤링 한 단계씩 ═════════════ */
+
+const PHASE_NET = {
+  idle: null, loop: null,
+  request: 'request', response: 'response',
+};
+
+const crawl = {
+  kind: 'step',
+  pseudo: CRAWL.PSEUDO,
+  python: CRAWL.PYTHON,
+  notebook: '01_web_crawling',
+  stageTitle: '요청 → 받은 HTML → 태그 찾기',
+  stageHint: '찾은 <tr>은 파랑, 지금 줄은 진한 테두리',
+  dataTitle: '행목록 (리스트 안의 리스트)',
+  rows: ['1.15fr', '1fr'],
+  frames: () => CRAWL.crawlFrames(),
+  mount({ stage, data }) {
+    const flip = createFlip();
+    return {
+      render(v) {
+        const f = v.frame;
+        const p = f.page;
+        const net = PHASE_NET[f.phase] ?? (p ? 'done' : null);
+        const haveHtml = p && !['loop', 'request'].includes(f.phase);
+        const found = ['find', 'select', 'row', 'append'].includes(f.phase);
+        const rowState = (i) => {
+          const cls = [];
+          if (found) cls.push('is-found');
+          if (f.rowIndex === i) cls.push('is-row');
+          if (i === 0 && found) cls.push('is-head');
+          return cls.join(' ');
+        };
+        fill(stage,
+          el('div.netline.netline--sm', {},
+            el('span.netline__box', {}, '💻 Colab'),
+            el(`span.netline__arrow${net === 'request' ? '.is-on' : ''}`, {}, '요청 →', el('small', {}, p ? `page${p}.html` : '')),
+            el('span.netline__box', {}, '🖥 서버'),
+            el(`span.netline__arrow.netline__arrow--back${net === 'response' ? '.is-on' : ''}`, {}, '← 응답', el('small', {}, 'HTML')),
+            el('span.netline__url', {}, f.url ?? `${CRAWL.SITE}/page1.html …`)),
+          p ? el('div.crawlstage', {},
+            el('div.crawlstage__html', {},
+              el('div.webx__cap', {}, `📄 받은 HTML — ${p}쪽`),
+              haveHtml ? htmlSource(CRAWL_PAGES[p - 1], p, { rowState }) : el('div.placeholder', {}, f.phase === 'request' ? '⏳ 서버에 요청하는 중…' : '')),
+            el('div.crawlstage__side', {},
+              f.phase === 'parse' || found ? tagTree(CRAWL_PAGES[p - 1], found, f.rowIndex) : null,
+              f.cells ? el('div.cut', {}, el('div.webx__cap', {}, '✂️ 꺼낸 칸 글자'),
+                el('div.cut__cells', {}, f.cells.map((c, i) => el('span.cut__cell', { 'data-flip': `cell-${p}-${f.rowIndex}-${i}` }, `'${c}'`)))) : null))
+            : el('div.placeholder', {}, f.table ? '✅ 2쪽까지 모두 모았어요. 오른쪽 아래를 보세요.' : '쪽 번호 p를 정하면 그 쪽의 HTML을 받아 와요.'),
+        );
+        flip(stage);
+
+        const items = f.rows.map((r, i) => ({
+          key: `row-${i}`, cls: i === f.rows.length - 1 && f.phase === 'append' ? 'is-new' : '',
+          content: el('code.rowcode', {}, `[${r.map((c) => `'${c}'`).join(', ')}]`),
+        }));
+        fill(data,
+          counters([['요청 횟수', f.counters.requests], ['찾은 <tr>', f.counters.found], ['모은 줄', f.counters.collected, 'add']]),
+          f.table
+            ? el('div.crawlout', {},
+              el('div.webx__cap', {}, '🧾 데이터프레임 df'),
+              el('table.dtable', {},
+                el('thead', {}, el('tr', {}, el('th.dtable__idx'), f.table.columns.map((c) => el('th', {}, c)))),
+                el('tbody', {}, f.table.rows.map((r, i) => el('tr', {}, el('th.dtable__idx', {}, String(i)), r.map((c) => el('td', {}, c)))))),
+              f.csv ? el('div', {}, el('div.webx__cap', {}, '💾 penguins.csv'), el('pre.csvbox', {}, f.csv)) : null)
+            : pyList('rows', items, { vertical: true, note: ' = 행목록', empty: '아직 비어 있어요' }));
+        flip(data);
+      },
+    };
+  },
+};
+
+/** 태그 나무 — html > table > tr… (찾은 tr 강조) */
+function tagTree(page, found, rowIndex) {
+  const node = (label, cls = '') => el(`span.tnode${cls ? `.${cls}` : ''}`, {}, label);
+  return el('div.ttree', {},
+    el('div.webx__cap', {}, '🌳 태그 나무 (BeautifulSoup)'),
+    el('ul', {},
+      el('li', {}, node('html'),
+        el('ul', {},
+          el('li', {}, node('h1')),
+          el('li', {}, node('table'),
+            el('ul', {}, [0, ...page.rows.map((_, i) => i + 1)].map((i) => el('li', {},
+              node(i === 0 ? 'tr (제목)' : `tr ${i}`, [found ? 'is-found' : '', i === rowIndex ? 'is-row' : '', i === 0 && found ? 'is-head' : ''].filter(Boolean).join('.')),
+              el('span.tnode__kids', {}, i === 0 ? ' th × 4' : ' td × 4'))))),
+          el('li', {}, node('a'))))));
+}
+
+/* ═════════════ 크롤링 예절 ═════════════ */
+
+const MANNERS = [
+  { icon: '🤖', title: 'robots.txt 먼저 보기', text: '사이트 주소 뒤에 /robots.txt를 붙이면 "크롤러는 여기까지만"이라는 안내가 나와요. Disallow로 막아 둔 곳은 긁지 않아요.' },
+  { icon: '📜', title: '이용약관 확인', text: '자동 수집을 금지하는 사이트도 있어요. 공식 API나 공공데이터(공공데이터포털 등)가 있으면 그걸 먼저 써요.' },
+  { icon: '🐢', title: '천천히, 조금씩', text: '한꺼번에 많이 요청하면 서버가 힘들어져요(공격처럼 보일 수도 있어요). 쪽 사이에 time.sleep(1)로 쉬어 가요.' },
+  { icon: '🔒', title: '개인정보는 모으지 않기', text: '이름·연락처·사진처럼 사람을 알아볼 수 있는 정보는 모으지도, 퍼뜨리지도 않아요.' },
+  { icon: '©️', title: '저작권과 출처', text: '모은 글·그림에도 저작권이 있어요. 수업·연구에 쓸 때도 출처를 밝히고, 다시 팔거나 퍼뜨리지 않아요.' },
+];
+
+const MANNERS_QUIZ = [
+  { q: 'robots.txt에서 Disallow로 막아 둔 쪽도, 기술적으로 열리면 긁어 와도 된다.', options: ['O', 'X'], answer: 1, why: '열린다고 허락된 것은 아니에요. 사이트가 정한 약속을 지켜요.' },
+  { q: '쪽마다 time.sleep(1)로 1초씩 쉬어 가며 요청하는 것은 좋은 습관이다.', options: ['O', 'X'], answer: 0, why: '서버에 부담을 덜 주는 예절이에요.' },
+  { q: '친구들의 SNS 프로필(이름·사진)을 모아 학습 데이터로 써도 된다.', options: ['O', 'X'], answer: 1, why: '사람을 알아볼 수 있는 개인정보예요. 모으면 안 돼요.' },
+  { q: '같은 데이터를 공식 API로 받을 수 있다면 크롤링보다 API를 먼저 쓴다.', options: ['O', 'X'], answer: 0, why: 'API는 사이트가 허락한 정식 통로라 안정적이고 안전해요.' },
+  { q: '이 사이트의 연습 쪽(practice/)은 크롤링 연습을 위해 만든 곳이라 마음껏 긁어도 된다.', options: ['O', 'X'], answer: 0, why: '연습용으로 공개한 쪽이에요. 그래도 반복문으로 수천 번 요청하지는 말아요!' },
+];
+
+function manners(root) {
+  fill(root, el('div.read', {},
+    el('div.cards', {}, MANNERS.map((m) => el('div.card', {},
+      el('div.card__icon', {}, m.icon), el('div.card__title', {}, m.title), el('p.card__text', {}, m.text)))),
+    el('div.callout', {}, '💡 이 수업의 연습 사이트(', el('a', { href: PRACTICE_URL, target: '_blank', rel: 'noopener' }, 'practice/'), ')는 크롤링 연습용으로 만든 곳이라 안심하고 연습할 수 있어요. 다른 사이트를 크롤링할 때는 위 다섯 가지를 꼭 확인하세요.'),
+    quizBox(MANNERS_QUIZ, { row: true, title: '✅ O/X로 확인해요' })));
+  return {};
+}
+
+export const COLLECT_SCENES = {
+  webExplore: { kind: 'view', mount: webExplore },
+  crawl,
+  manners: { kind: 'view', mount: manners },
+};

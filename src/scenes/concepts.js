@@ -1,0 +1,193 @@
+/**
+ * 🤖 기계학습 개념 — 학습 방법(지도·비지도·강화) · 강화학습 맛보기 · 학습 목적(분류·예측·군집)
+ */
+import { el, fill } from '../ui/dom.js';
+import { quizBox } from '../ui/quizBox.js';
+import { infoTerm } from '../ui/infoTip.js';
+import * as RL from '../core/ml/rl.js';
+import * as KM from '../core/ml/kmeans.js';
+import * as LR from '../core/ml/linreg.js';
+import { knnTrain, linregData } from '../core/data/sets.js';
+import { s, marker } from '../viz/svg.js';
+import { makeChart, speciesIndex } from '../viz/chart.js';
+import { fmt } from '../core/stats.js';
+
+/* ── 작은 그림들 ── */
+
+function miniScatter(kind) {
+  const pts = knnTrain();
+  const c = makeChart({ width: 300, height: 190, x: [34, 54], y: [12.5, 22], xLabel: '부리길이', yLabel: '부리깊이', pad: { l: 46, r: 8, t: 8, b: 36 }, xTicks: 4, yTicks: 3 });
+  if (kind === 'cluster') {
+    const run = KM.runKMeans(pts, [21, 160, 282]);
+    run.centers.forEach((ct, j) => c.plot.append(s(`ellipse.groupring.cl${j}`, { cx: c.sx(ct.x), cy: c.sy(ct.y), rx: 42, ry: 30 })));
+    pts.forEach((p, i) => c.plot.append(marker(0, c.sx(p.x), c.sy(p.y), 4.5, { class: `pt cl${run.assign[i]}` })));
+  } else if (kind === 'grey') {
+    pts.forEach((p) => c.plot.append(marker(0, c.sx(p.x), c.sy(p.y), 4.5, { class: 'pt unk' })));
+  } else {
+    pts.forEach((p) => { const si = speciesIndex(p.label); c.plot.append(marker(si, c.sx(p.x), c.sy(p.y), 4.5, { class: `pt sp${si}` })); });
+    if (kind === 'classify') {
+      c.plot.append(s('path.star', { d: 'M0,-9L2.1,-2.9L8.6,-2.8L3.4,1.1L5.3,7.3L0,3.6L-5.3,7.3L-3.4,1.1L-8.6,-2.8L-2.1,-2.9Z', transform: `translate(${c.sx(43.5)},${c.sy(18.1)})` }));
+      c.plot.append(s('text.pt-label', { x: c.sx(43.5) + 10, y: c.sy(18.1) - 8 }, '? → 턱끈'));
+    }
+  }
+  return c.svg;
+}
+
+function miniRegression() {
+  const pts = linregData();
+  const { w, b } = LR.fitLine(pts);
+  const c = makeChart({ width: 300, height: 190, x: [168, 236], y: [2800, 6200], xLabel: '날개길이', yLabel: '몸무게', pad: { l: 54, r: 8, t: 8, b: 36 }, xTicks: 4, yTicks: 3 });
+  c.plot.append(s('line.fitline', { x1: c.sx(170), y1: c.sy(w * 170 + b), x2: c.sx(234), y2: c.sy(w * 234 + b) }));
+  pts.forEach((p) => { const si = speciesIndex(p.label); c.plot.append(marker(si, c.sx(p.x), c.sy(p.y), 4.5, { class: `pt sp${si}` })); });
+  const qy = w * 210 + b;
+  c.plot.append(s('circle.predpt', { cx: c.sx(210), cy: c.sy(qy), r: 6 }));
+  c.plot.append(s('text.pt-label', { x: c.sx(210) - 70, y: c.sy(qy) - 10 }, `210mm → ${Math.round(qy)}g`));
+  return c.svg;
+}
+
+function rlLoop() {
+  return el('div.rlloop', { role: 'img', 'aria-label': '에이전트가 행동하면 환경이 보상을 돌려주는 순환' },
+    el('div.rlloop__box', {}, '🐧', el('small', {}, '에이전트(배우는 쪽)')),
+    el('div.rlloop__arrows', {},
+      el('div.rlloop__arrow', {}, '행동 → (왼쪽? 오른쪽?)'),
+      el('div.rlloop__arrow.rlloop__arrow--back', {}, '← 보상 (+10 물고기 / −10 구멍)')),
+    el('div.rlloop__box', {}, '🧊', el('small', {}, '환경(얼음길)')));
+}
+
+/* ═════════════ 학습 방법에 따른 구분 ═════════════ */
+
+const TYPE_QUIZ = [
+  { q: '사진마다 "고양이/개" 정답이 붙은 데이터로, 새 사진이 고양이인지 개인지 맞히게 한다.', options: ['지도학습', '비지도학습', '강화학습'], answer: 0, why: '정답(레이블)이 붙은 데이터로 배우니 지도학습이에요(분류).' },
+  { q: '온라인 쇼핑몰 고객들을 구매 습관이 비슷한 무리로 나눈다. 무리의 정답은 정해져 있지 않다.', options: ['지도학습', '비지도학습', '강화학습'], answer: 1, why: '정답 없이 비슷한 것끼리 묶으니 비지도학습(군집)이에요.' },
+  { q: '바둑 AI가 스스로 수많은 판을 두며 이기면 +, 지면 − 점수를 받아 실력을 키운다.', options: ['지도학습', '비지도학습', '강화학습'], answer: 2, why: '해 보고 받은 보상으로 더 나은 행동을 익히니 강화학습이에요.' },
+  { q: '지난 10년의 아파트 넓이와 가격 데이터로, 새 아파트의 가격을 예측한다.', options: ['지도학습', '비지도학습', '강화학습'], answer: 0, why: '정답(가격)이 있는 데이터로 숫자를 예측하니 지도학습(회귀)이에요.' },
+  { q: '펭귄 344마리의 부리·날개 길이만 보고(종은 모름) 비슷한 펭귄끼리 3무리로 나눈다.', options: ['지도학습', '비지도학습', '강화학습'], answer: 1, why: '종(정답)을 쓰지 않으니 비지도학습이에요. 이 사이트의 k-평균이 바로 이것!' },
+  { q: '로봇 청소기가 부딪히면 −, 먼지를 치우면 + 신호를 받으며 집 안을 도는 길을 익힌다.', options: ['지도학습', '비지도학습', '강화학습'], answer: 2, why: '행동 → 보상 → 고치기를 되풀이하니 강화학습이에요.' },
+];
+
+function learnTypes(root) {
+  const card = (cls, icon, title, label, svg, rows) => el(`div.card.typecard${cls}`, {},
+    el('div.typecard__head', {}, el('span.card__icon', {}, icon), el('div', {}, el('div.card__title', {}, title), el('div.card__meta', {}, label))),
+    el('div.typecard__fig', {}, svg),
+    el('ul.typecard__list', {}, rows.map((r) => el('li', {}, r))));
+  fill(root, el('div.read.read--wide', {},
+    el('div.cards.cards--3', {},
+      card('.card--current', '👩‍🏫', '지도학습', '정답(레이블)이 있는 데이터로 배워요', miniScatter('labeled'), [
+        el('span', {}, el('b', {}, '데이터: '), '문제(부리·날개) + 정답(종)'),
+        el('span', {}, el('b', {}, '배우는 것: '), '문제 → 정답으로 가는 규칙'),
+        el('span', {}, el('b', {}, '예: '), '펭귄 종 분류, 스팸 메일 거르기, 몸무게 예측'),
+        el('span', {}, el('b', {}, '이 수업: '), 'k-최근접 이웃 · 의사결정 트리 · 선형 회귀')]),
+      card('.card--add', '🧭', '비지도학습', '정답 없이 데이터의 구조를 찾아요', miniScatter('cluster'), [
+        el('span', {}, el('b', {}, '데이터: '), '문제(부리·날개)만, 정답 없음'),
+        el('span', {}, el('b', {}, '배우는 것: '), '비슷한 것끼리의 무리(군집)'),
+        el('span', {}, el('b', {}, '예: '), '고객 무리 나누기, 비슷한 뉴스 묶기'),
+        el('span', {}, el('b', {}, '이 수업: '), 'k-평균')]),
+      card('.card--result', '🎮', '강화학습', '해 보고 받은 보상으로 스스로 익혀요', rlLoop(), [
+        el('span', {}, el('b', {}, '데이터: '), '정답 대신 행동의 결과(보상)'),
+        el('span', {}, el('b', {}, '배우는 것: '), '보상을 가장 많이 받는 행동'),
+        el('span', {}, el('b', {}, '예: '), '게임·바둑 AI, 로봇 걷기, 자율주행'),
+        el('span', {}, el('b', {}, '이 수업: '), '다음 쪽 "강화학습 맛보기"')])),
+    el('div.callout', {}, '💡 가르는 질문 하나: "데이터에 ', infoTerm('레이블', { strong: true, label: '정답(레이블)' }), '이 있나?" 있으면 지도학습, 없으면 비지도학습, 정답 대신 ', infoTerm('보상', { strong: true }), '을 받으면 강화학습이에요.'),
+    quizBox(TYPE_QUIZ, { row: true, title: '✅ 어떤 학습일까요?' })));
+  return {};
+}
+
+/* ═════════════ 강화학습 맛보기 (단계 실행) ═════════════ */
+
+const rlStep = {
+  kind: 'step',
+  pseudo: RL.PSEUDO,
+  python: RL.PYTHON,
+  stageTitle: '얼음길 — 🕳 구멍(−10) · 🐟 물고기(+10) · 한 걸음 −1',
+  stageHint: '',
+  dataTitle: '점수표 Q (칸 × 행동)',
+  rows: ['1.05fr', '1fr'],
+  frames: () => RL.rlFrames(),
+  mount({ stage, data }) {
+    return {
+      render(v) {
+        const f = v.frame;
+        const cells = RL.CELLS.map((icon, i) => {
+          const here = f.pos === i;
+          const visited = f.trail.includes(i);
+          return el(`div.ice__cell${here ? '.is-here' : ''}${visited ? '.is-trail' : ''}${i === RL.HOLE ? '.is-hole' : ''}${i === RL.FISH ? '.is-fish' : ''}`, {},
+            el('span.ice__no', {}, `${i}칸`),
+            el('span.ice__icon', {}, icon || (i === RL.START ? '🏁' : '')),
+            here ? el('span.ice__peng', {}, '🐧') : null,
+            here && f.reward !== null ? el(`span.ice__reward${f.reward > 0 ? '.is-plus' : '.is-minus'}`, {}, f.reward > 0 ? `+${f.reward}` : String(f.reward)) : null);
+        });
+        const moves = [];
+        for (let i = 1; i < f.trail.length; i += 1) moves.push(f.trail[i] > f.trail[i - 1] ? '→' : '←');
+        fill(stage,
+          el('div.ice', {}, cells),
+          el('div.ice__info', {},
+            el('span.tag.tag--current', {}, f.episode ? `${f.episode}번째 도전` : '시작 전'),
+            moves.length ? el('span', {}, '지나온 길: 🏁 ', moves.join(' ')) : null),
+          el('table.mini', {},
+            el('thead', {}, el('tr', {}, el('th', {}, '도전'), el('th', {}, '걸음 수'), el('th', {}, '보상 합'), el('th', {}, '결과'))),
+            el('tbody', {}, f.results.map((r) => el('tr', {}, el('td', {}, `${r.episode}번째`), el('td', {}, String(r.steps)), el('td', {}, String(r.total)),
+              el('td', {}, r.end === 'fish' ? '🐟 물고기!' : '🕳 구멍'))))));
+        const qcell = (s2, a) => {
+          const val = f.Q[s2][a];
+          const hot = f.updated && f.updated[0] === s2 && f.updated[1] === a;
+          return el(`td.qcell${hot ? '.is-hot' : ''}${val > 0 ? '.is-pos' : val < 0 ? '.is-neg' : ''}`, {}, fmt(val));
+        };
+        fill(data, el('div.qwrap', {},
+          el('table.mini.qtable', {},
+            el('thead', {}, el('tr', {}, el('th', {}, '칸'), el('th', {}, '← 왼쪽'), el('th', {}, '→ 오른쪽'), el('th', {}, '더 좋은 쪽'))),
+            el('tbody', {}, [1, 2, 3].map((c) => {
+              const [l, r] = f.Q[c];
+              return el(`tr${f.pos === c ? '.is-best' : ''}`, {}, el('th', {}, `${c}칸${c === RL.START ? ' 🏁' : ''}`), qcell(c, 0), qcell(c, 1),
+                el('td', {}, l === r ? '? (같아요)' : l > r ? '←' : '→'));
+            }))),
+          el('div.varrow__note', {},
+            el('p', {}, '점수표 Q는 "이 칸에서 이쪽으로 가면 앞으로 얼마나 좋을까"를 적은 표예요.'),
+            el('p', {}, '물고기의 +10이 한 칸씩 거꾸로 전해지며(0.9배) 출발 칸까지 "→가 좋다"는 정보가 퍼져요.'),
+            el('p', {}, '정답을 알려 준 사람은 없어요. 보상만으로 배웠어요 — 이것이 강화학습이에요.'))));
+      },
+    };
+  },
+};
+
+/* ═════════════ 학습 목적에 따른 구분 ═════════════ */
+
+const PURPOSE_QUIZ = [
+  { q: '내일 기온이 몇 도일지 맞힌다.', options: ['분류', '예측(회귀)', '군집'], answer: 1, why: '답이 숫자(기온)이니 예측(회귀)이에요.' },
+  { q: '메일이 스팸인지 아닌지 정한다.', options: ['분류', '예측(회귀)', '군집'], answer: 0, why: '정해진 무리(스팸/정상) 중 하나를 고르니 분류예요.' },
+  { q: '음악 듣는 취향이 비슷한 사람끼리 무리를 만든다(무리 이름은 정해져 있지 않다).', options: ['분류', '예측(회귀)', '군집'], answer: 2, why: '정답 없이 무리를 만드니 군집이에요.' },
+  { q: '펭귄의 부리·날개를 보고 아델리·턱끈·젠투 중 하나로 정한다.', options: ['분류', '예측(회귀)', '군집'], answer: 0, why: '세 종 중 하나를 고르니 분류예요.' },
+  { q: '날개길이를 보고 펭귄의 몸무게(g)를 어림한다.', options: ['분류', '예측(회귀)', '군집'], answer: 1, why: '답이 숫자(몸무게)이니 예측(회귀) — 선형 회귀가 하는 일이에요.' },
+];
+
+const ALGO_MAP = [
+  { name: 'k-최근접 이웃', sub: 'knn', how: '지도학습', purpose: '분류', idea: '가까운 이웃 k마리의 다수결' },
+  { name: '의사결정 트리', sub: 'tree', how: '지도학습', purpose: '분류 (예측도 가능)', idea: '예/아니오 질문으로 좁혀 가기' },
+  { name: '선형 회귀', sub: 'linreg', how: '지도학습', purpose: '예측(회귀)', idea: '점들 사이로 직선 긋기' },
+  { name: 'k-평균', sub: 'kmeans', how: '비지도학습', purpose: '군집', idea: '중심 정하기 ↔ 배정 되풀이' },
+];
+
+function purposes(root, ctx) {
+  const card = (cls, title, sub, svg, out) => el(`div.card.typecard${cls}`, {},
+    el('div.typecard__head', {}, el('div', {}, el('div.card__title', {}, title), el('div.card__meta', {}, sub))),
+    el('div.typecard__fig', {}, svg),
+    el('div.typecard__out', {}, out));
+  fill(root, el('div.read.read--wide', {},
+    el('div.cards.cards--3', {},
+      card('.card--current', '🏷 분류 (classification)', '정해진 무리 중 하나를 골라요', miniScatter('classify'), ['내놓는 것: ', el('b', {}, '이름표(종)'), ' — "턱끈"']),
+      card('.card--result', '📈 예측 · 회귀 (regression)', '숫자 값을 내놓아요', miniRegression(), ['내놓는 것: ', el('b', {}, '숫자'), ' — "4653g"']),
+      card('.card--add', '🫧 군집 (clustering)', '정답 없이 무리를 만들어요', miniScatter('cluster'), ['내놓는 것: ', el('b', {}, '무리 번호'), ' — "묶음 2"'])),
+    el('h3', {}, '🗺 이 수업의 알고리즘 지도'),
+    el('table.mini.algomap', {},
+      el('thead', {}, el('tr', {}, ['알고리즘', '학습 방법', '학습 목적', '한 줄 아이디어', ''].map((h) => el('th', {}, h)))),
+      el('tbody', {}, ALGO_MAP.map((a) => el('tr', {},
+        el('td', {}, el('b', {}, a.name)), el('td', {}, a.how), el('td', {}, a.purpose), el('td', {}, a.idea),
+        el('td', {}, el('button.pill.pill--sm', { type: 'button', onclick: () => ctx.go('ml', null, a.sub) }, '배우러 가기 →')))))),
+    quizBox(PURPOSE_QUIZ, { row: true, title: '✅ 분류·예측·군집 중 무엇일까요?' })));
+  return {};
+}
+
+export const CONCEPT_SCENES = {
+  learnTypes: { kind: 'view', mount: learnTypes },
+  rl: rlStep,
+  purposes: { kind: 'view', mount: purposes },
+};
