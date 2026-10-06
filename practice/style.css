@@ -1,0 +1,20 @@
+/* 크롤링 연습 사이트 — 자바스크립트 없이 HTML만으로 읽히게 만든다 */
+:root { color-scheme: light dark; --bg: #f6f8fb; --fg: #14181f; --muted: #5a6472; --line: #d3d8e0; --head: #e9eef6; --accent: #1857c4; --card: #fff; }
+@media (prefers-color-scheme: dark) { :root { --bg: #12151b; --fg: #e8ecf2; --muted: #a3adbb; --line: #333b48; --head: #232833; --accent: #7aa9ff; --card: #1a1e26; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif; line-height: 1.6; }
+header, main, footer { max-width: 960px; margin: 0 auto; padding: 16px; }
+header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+header p { margin: 0; color: var(--muted); }
+a { color: var(--accent); }
+.note { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: .92rem; }
+.pager { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+.pager a, .pager span { padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; background: var(--card); }
+.pager .now { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+.wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; font-variant-numeric: tabular-nums; }
+th, td { border-bottom: 1px solid var(--line); padding: 4px 10px; text-align: center; white-space: nowrap; }
+th { background: var(--head); position: sticky; top: 0; }
+tbody tr:hover td { background: var(--head); }
+footer { color: var(--muted); font-size: .85rem; }
+code { background: var(--head); padding: 0 4px; border-radius: 4px; }

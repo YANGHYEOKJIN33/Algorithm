@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>펭귄 관측 기록 3쪽 — 크롤링 연습</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>🐧 남극 펭귄 관측 기록 (3쪽 / 7쪽)</h1>
+  <p>크롤링 연습용 사이트 · <a href="index.html">처음으로</a></p>
+</header>
+<main>
+  <p class="note">단위 — 부리길이·부리깊이·날개길이: mm(밀리미터), 몸무게: g(그램). 빈 칸은 측정하지 못한 값이에요.</p>
+  <nav class="pager" aria-label="쪽 이동"><a href="page2.html" rel="prev">← 이전</a><a href="page1.html">1</a><a href="page2.html">2</a><span class="now">3</span><a href="page4.html">4</a><a href="page5.html">5</a><a href="page6.html">6</a><a href="page7.html">7</a><a href="page4.html" rel="next">다음 →</a></nav>
+  <div class="wrap">
+  <table id="penguins">
+    <thead>
+      <tr><th>번호</th><th>종</th><th>섬</th><th>부리길이</th><th>부리깊이</th><th>날개길이</th><th>몸무게</th><th>성별</th><th>연도</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>100</td><td>아델리</td><td>드림</td><td>43.2</td><td>18.5</td><td>192</td><td>4100</td><td>수컷</td><td>2008</td></tr>
+      <tr><td>101</td><td>아델리</td><td>비스코</td><td>35</td><td>17.9</td><td>192</td><td>3725</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>102</td><td>아델리</td><td>비스코</td><td>41</td><td>20</td><td>203</td><td>4725</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>103</td><td>아델리</td><td>비스코</td><td>37.7</td><td>16</td><td>183</td><td>3075</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>104</td><td>아델리</td><td>비스코</td><td>37.8</td><td>20</td><td>190</td><td>4250</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>105</td><td>아델리</td><td>비스코</td><td>37.9</td><td>18.6</td><td>193</td><td>2925</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>106</td><td>아델리</td><td>비스코</td><td>39.7</td><td>18.9</td><td>184</td><td>3550</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>107</td><td>아델리</td><td>비스코</td><td>38.6</td><td>17.2</td><td>199</td><td>3750</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>108</td><td>아델리</td><td>비스코</td><td>38.2</td><td>20</td><td>190</td><td>3900</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>109</td><td>아델리</td><td>비스코</td><td>38.1</td><td>17</td><td>181</td><td>3175</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>110</td><td>아델리</td><td>비스코</td><td>43.2</td><td>19</td><td>197</td><td>4775</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>111</td><td>아델리</td><td>비스코</td><td>38.1</td><td>16.5</td><td>198</td><td>3825</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>112</td><td>아델리</td><td>비스코</td><td>45.6</td><td>20.3</td><td>191</td><td>4600</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>113</td><td>아델리</td><td>비스코</td><td>39.7</td><td>17.7</td><td>193</td><td>3200</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>114</td><td>아델리</td><td>비스코</td><td>42.2</td><td>19.5</td><td>197</td><td>4275</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>115</td><td>아델리</td><td>비스코</td><td>39.6</td><td>20.7</td><td>191</td><td>3900</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>116</td><td>아델리</td><td>비스코</td><td>42.7</td><td>18.3</td><td>196</td><td>4075</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>117</td><td>아델리</td><td>토르거센</td><td>38.6</td><td>17</td><td>188</td><td>2900</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>118</td><td>아델리</td><td>토르거센</td><td>37.3</td><td>20.5</td><td>199</td><td>3775</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>119</td><td>아델리</td><td>토르거센</td><td>35.7</td><td>17</td><td>189</td><td>3350</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>120</td><td>아델리</td><td>토르거센</td><td>41.1</td><td>18.6</td><td>189</td><td>3325</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>121</td><td>아델리</td><td>토르거센</td><td>36.2</td><td>17.2</td><td>187</td><td>3150</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>122</td><td>아델리</td><td>토르거센</td><td>37.7</td><td>19.8</td><td>198</td><td>3500</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>123</td><td>아델리</td><td>토르거센</td><td>40.2</td><td>17</td><td>176</td><td>3450</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>124</td><td>아델리</td><td>토르거센</td><td>41.4</td><td>18.5</td><td>202</td><td>3875</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>125</td><td>아델리</td><td>토르거센</td><td>35.2</td><td>15.9</td><td>186</td><td>3050</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>126</td><td>아델리</td><td>토르거센</td><td>40.6</td><td>19</td><td>199</td><td>4000</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>127</td><td>아델리</td><td>토르거센</td><td>38.8</td><td>17.6</td><td>191</td><td>3275</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>128</td><td>아델리</td><td>토르거센</td><td>41.5</td><td>18.3</td><td>195</td><td>4300</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>129</td><td>아델리</td><td>토르거센</td><td>39</td><td>17.1</td><td>191</td><td>3050</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>130</td><td>아델리</td><td>토르거센</td><td>44.1</td><td>18</td><td>210</td><td>4000</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>131</td><td>아델리</td><td>토르거센</td><td>38.5</td><td>17.9</td><td>190</td><td>3325</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>132</td><td>아델리</td><td>토르거센</td><td>43.1</td><td>19.2</td><td>197</td><td>3500</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>133</td><td>아델리</td><td>드림</td><td>36.8</td><td>18.5</td><td>193</td><td>3500</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>134</td><td>아델리</td><td>드림</td><td>37.5</td><td>18.5</td><td>199</td><td>4475</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>135</td><td>아델리</td><td>드림</td><td>38.1</td><td>17.6</td><td>187</td><td>3425</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>136</td><td>아델리</td><td>드림</td><td>41.1</td><td>17.5</td><td>190</td><td>3900</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>137</td><td>아델리</td><td>드림</td><td>35.6</td><td>17.5</td><td>191</td><td>3175</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>138</td><td>아델리</td><td>드림</td><td>40.2</td><td>20.1</td><td>200</td><td>3975</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>139</td><td>아델리</td><td>드림</td><td>37</td><td>16.5</td><td>185</td><td>3400</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>140</td><td>아델리</td><td>드림</td><td>39.7</td><td>17.9</td><td>193</td><td>4250</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>141</td><td>아델리</td><td>드림</td><td>40.2</td><td>17.1</td><td>193</td><td>3400</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>142</td><td>아델리</td><td>드림</td><td>40.6</td><td>17.2</td><td>187</td><td>3475</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>143</td><td>아델리</td><td>드림</td><td>32.1</td><td>15.5</td><td>188</td><td>3050</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>144</td><td>아델리</td><td>드림</td><td>40.7</td><td>17</td><td>190</td><td>3725</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>145</td><td>아델리</td><td>드림</td><td>37.3</td><td>16.8</td><td>192</td><td>3000</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>146</td><td>아델리</td><td>드림</td><td>39</td><td>18.7</td><td>185</td><td>3650</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>147</td><td>아델리</td><td>드림</td><td>39.2</td><td>18.6</td><td>190</td><td>4250</td><td>수컷</td><td>2009</td></tr>
+      <tr><td>148</td><td>아델리</td><td>드림</td><td>36.6</td><td>18.4</td><td>184</td><td>3475</td><td>암컷</td><td>2009</td></tr>
+      <tr><td>149</td><td>아델리</td><td>드림</td><td>36</td><td>17.8</td><td>195</td><td>3450</td><td>암컷</td><td>2009</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <nav class="pager" aria-label="쪽 이동"><a href="page2.html" rel="prev">← 이전</a><a href="page1.html">1</a><a href="page2.html">2</a><span class="now">3</span><a href="page4.html">4</a><a href="page5.html">5</a><a href="page6.html">6</a><a href="page7.html">7</a><a href="page4.html" rel="next">다음 →</a></nav>
+</main>
+<footer>
+  <p>데이터 출처: palmerpenguins (Horst, Hill &amp; Gorman, 2020) · Palmer Station LTER, Dr. Kristen Gorman · 라이선스 CC0.<br>
+  이 사이트는 <a href="../">「펭귄 데이터로 배우는 인공지능」</a> 수업의 크롤링 연습용이에요. 수업을 위해 일부 값을 바꿔 두었어요(<a href="index.html#traps">자세히</a>).</p>
+</footer>
+</body>
+</html>

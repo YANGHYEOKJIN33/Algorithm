@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>남극 펭귄 관측소 — 크롤링 연습 사이트</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>🐧 남극 펭귄 관측소</h1>
+  <p>웹 크롤링 연습을 위해 만든 사이트예요. 마음껏 긁어 가도 괜찮아요(그래도 천천히!).</p>
+</header>
+<main>
+  <p class="note">펭귄 관측 기록이 <b>7쪽</b>에 나뉘어 <b>모두 345줄</b> 실려 있어요. 쪽마다 표 하나(<code>&lt;table id="penguins"&gt;</code>)가 있어요.<br>
+  주소 규칙: <code>https://yanghyeokjin33.github.io/Algorithm/practice/page1.html</code> … <code>page7.html</code></p>
+  <h2>쪽 목록</h2>
+  <ul>
+    <li><a href="page1.html">1쪽</a> — 50줄 (번호 1 ~ 50)</li>
+    <li><a href="page2.html">2쪽</a> — 50줄 (번호 50 ~ 99)</li>
+    <li><a href="page3.html">3쪽</a> — 50줄 (번호 100 ~ 149)</li>
+    <li><a href="page4.html">4쪽</a> — 50줄 (번호 150 ~ 199)</li>
+    <li><a href="page5.html">5쪽</a> — 50줄 (번호 200 ~ 249)</li>
+    <li><a href="page6.html">6쪽</a> — 50줄 (번호 250 ~ 299)</li>
+    <li><a href="page7.html">7쪽</a> — 45줄 (번호 300 ~ 344)</li>
+  </ul>
+  <h2>열(속성)</h2>
+  <p>번호 · 종 · 섬 · 부리길이 · 부리깊이 · 날개길이 · 몸무게 · 성별 · 연도</p>
+  <h2 id="traps">숨겨 둔 함정 🕵️</h2>
+  <p>이 데이터에는 가공·전처리 수업을 위한 함정이 숨어 있어요: <b>빈칸</b>, <b>이상한 값</b>, <b>겹친 행</b>. 먼저 스스로 찾아본 뒤 아래를 펼쳐 보세요.</p>
+  <details>
+    <summary>선생님용 — 원본에서 바꾼 곳 보기</summary>
+    <ul>
+      <li>7번 펭귄의 부리길이: 원래 38.9 → 빈칸 (빈칸 — 측정값이 기록되지 않은 경우)</li>
+      <li>13번 펭귄의 몸무게: 원래 3200 → 8200 (이상치 — 숫자 3을 8로 잘못 적은 경우)</li>
+      <li>50번 펭귄: 1쪽 마지막 줄과 2쪽 첫 줄에 두 번 실림 (겹친 행)</li>
+      <li>그 밖의 빈칸(측정값 2줄·성별 11칸)은 원본 데이터에 원래 있던 결측치예요.</li>
+    </ul>
+  </details>
+</main>
+<footer>
+  <p>데이터 출처: palmerpenguins (Horst, Hill &amp; Gorman, 2020) · Palmer Station LTER, Dr. Kristen Gorman · 라이선스 CC0.<br>
+  이 사이트는 <a href="../">「펭귄 데이터로 배우는 인공지능」</a> 수업의 크롤링 연습용이에요. 수업을 위해 일부 값을 바꿔 두었어요(<a href="index.html#traps">자세히</a>).</p>
+</footer>
+</body>
+</html>
