@@ -4,6 +4,7 @@
  *   practice/        크롤링 연습 사이트 (정적 HTML 7쪽 + 안내 쪽). 자바스크립트 없이 읽혀야 크롤링할 수 있다.
  *   data/*.csv       수업용 데이터 4개 (연습 원본 · 전처리 끝난 것 · 측정표 · 판정표)
  *   notebooks/*.ipynb Colab 실습 노트북 9개 (src/app/notebooks.js가 원본)
+ *   docs/OBJECTIVES.md 교사용 학습 목표표 (src/app/course/*.js가 원본)
  *
  * 원본(src/core/data, src/app/notebooks.js)을 고치면 이 스크립트를 다시 돌려 파일을 맞춘다.
  * test/build.test.js가 디스크의 파일과 지금 원본으로 만든 결과가 같은지 확인한다.
@@ -15,7 +16,9 @@ import { COLUMNS, practiceRecords, practicePages, CHANGES, DUPLICATE_ID, NUMERIC
 import { isMissing, mean, mode, quartiles, round } from '../src/core/stats.js';
 import { shuffle } from '../src/core/random.js';
 import { NOTEBOOKS } from '../src/app/notebooks.js';
+import { cleanRecords } from '../src/core/data/clean.js';
 import { SITE_URL, REPO_URL } from '../src/app/links.js';
+import { objectivesMarkdown } from './objectives.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -26,30 +29,8 @@ export function toCsv(columns, rows) {
   return `${[columns.join(','), ...rows.map((r) => columns.map((c) => csvCell(r[c])).join(','))].join('\n')}\n`;
 }
 
-/**
- * 전처리 끝난 데이터 — 03번 노트북과 같은 순서로 다듬는다.
- *  겹친 행 지우기 → 몸무게 이상치(위 울타리 밖) 지우기 → 측정값이 모두 빈 행 지우기
- *  → 숫자 빈칸은 평균(소수 둘째 자리)으로 → 성별 빈칸은 최빈값으로
- */
-export function cleanRecords() {
-  const seen = new Set();
-  let rows = practiceRecords().filter((r) => {
-    const key = COLUMNS.map((c) => r[c]).join('|');
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-  const q = quartiles(rows.map((r) => r.몸무게));
-  rows = rows.filter((r) => isMissing(r.몸무게) || r.몸무게 <= q.upper);
-  rows = rows.filter((r) => !NUMERIC.every((c) => isMissing(r[c])));
-  for (const c of NUMERIC) {
-    const m = round(mean(rows.map((r) => r[c])), 2);
-    rows = rows.map((r) => (isMissing(r[c]) ? { ...r, [c]: m } : r));
-  }
-  const sexMode = mode(rows.map((r) => r.성별));
-  rows = rows.map((r) => (isMissing(r.성별) ? { ...r, 성별: sexMode } : r));
-  return rows;
-}
+/** 전처리 끝난 데이터 — src/core/data/clean.js (브라우저와 함께 쓴다) */
+export { cleanRecords };
 
 /** 가로로 합치기 연습 — 측정표(전부)와 판정표(순서 섞음, 판정 못한 3마리 빠짐) */
 export const UNLABELED = [100, 200, 300];
@@ -229,7 +210,7 @@ export function notebookFiles() {
 }
 
 export function allFiles() {
-  return { ...dataFiles(), ...practiceFiles(), ...notebookFiles() };
+  return { ...dataFiles(), ...practiceFiles(), ...notebookFiles(), 'docs/OBJECTIVES.md': `${objectivesMarkdown()}\n` };
 }
 
 /* ───────────── 실행 ───────────── */

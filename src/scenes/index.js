@@ -17,6 +17,7 @@ import { KMEANS_SCENES } from './kmeans.js';
 import { CONCEPT_SCENES } from './concepts.js';
 import { PROJECT_SCENES } from './project.js';
 import { PYTHON_SCENE } from './python.js';
+import { UNIT_SCENES } from './unit.js';
 
 const SCENES = {
   ...START_SCENES,
@@ -31,6 +32,7 @@ const SCENES = {
   ...CONCEPT_SCENES,
   ...PROJECT_SCENES,
   ...PYTHON_SCENE,
+  ...UNIT_SCENES,
 };
 
 const missing = (name) => ({

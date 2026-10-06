@@ -2,29 +2,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { allPages, TABS, currentLesson, goPatch } from '../src/app/lessons.js';
+import { allPages, TABS, currentLesson, goPatch, unitPages } from '../src/app/lessons.js';
 import { NOTEBOOKS } from '../src/app/notebooks.js';
 import { GLOSSARY } from '../src/app/glossary.js';
 import { QUIZ } from '../src/app/quiz.js';
 import { allFiles, cleanRecords, mergeParts, UNLABELED } from '../scripts/build.mjs';
+import { courseProblems } from '../scripts/check-course.mjs';
 
-/* 장면 정의는 화면(DOM) 코드라 Node에서 불러오지 않는다 — 장면 이름만 소스에서 읽어 견준다 */
-const sceneSrc = ['start', 'collect', 'inspect', 'prep', 'ready', 'knn', 'tree', 'linreg', 'kmeans', 'concepts', 'project']
-  .map((n) => readFileSync(new URL(`../src/scenes/${n}.js`, import.meta.url), 'utf8')).join('\n');
-const exported = new Set([...sceneSrc.matchAll(/export const \w+_SCENES = \{([\s\S]*?)\};/g)]
-  .flatMap((m) => [...m[1].matchAll(/(?:^|[{,\s])(\w+)(?=\s*[:,]|\s*$)/g)].map((k) => k[1])));
-
-test('모든 쪽은 제목·배울 것·해 볼 것·장면을 가진다', () => {
-  const pages = allPages();
-  assert.ok(pages.length >= 40, `쪽 수 ${pages.length}`);
-  for (const p of pages) {
-    assert.ok(p.title && p.goal && p.todo && p.scene, `${p.tab}/${p.id}`);
-    if (p.scene.startsWith('python:')) {
-      assert.ok(NOTEBOOKS.some((n) => n.id === p.scene.slice(7)), `노트북 없음: ${p.scene}`);
-    } else {
-      assert.ok(exported.has(p.scene), `장면 없음: ${p.scene}`);
-    }
-  }
+test('수업 내용이 약속을 지킨다 — 🎯 목표(~할 수 있다)·✋ 할 일(이룰 수 있는 확인 낱말)·학습 요소·단원 표지/정리 자료', () => {
+  assert.ok(allPages().length >= 50, `쪽 수 ${allPages().length}`);
+  const problems = courseProblems();
+  assert.deepEqual(problems, [], `node scripts/check-course.mjs 로 자세히 보기\n${problems.slice(0, 30).join('\n')}`);
 });
 
 test('탭마다 쪽 위치를 따로 기억하고, 범위를 벗어나지 않는다', () => {
@@ -35,6 +23,12 @@ test('탭마다 쪽 위치를 따로 기억하고, 범위를 벗어나지 않는
   const ml = currentLesson({ tab: 'ml', mlTab: 'tree' });
   assert.equal(ml.key, 'step:ml:tree');
   assert.deepEqual(goPatch('ml', 'step', 'knn'), { tab: 'ml', mlTab: 'knn', 'step:ml:knn': 1 });
+  // 단원 표지는 맨 앞, 정리는 맨 뒤(기계학습은 '단원 정리' 하위 탭)
+  assert.equal(currentLesson({ tab: 'inspect' }).steps[0].auto, 'cover');
+  assert.equal(currentLesson({ tab: 'inspect' }).steps.at(-1).auto, 'review');
+  assert.equal(currentLesson({ tab: 'ml', mlTab: 'concept' }).steps[0].auto, 'cover');
+  assert.equal(currentLesson({ tab: 'ml', mlTab: 'review' }).steps[0].auto, 'review');
+  assert.equal(unitPages(TABS.find((t) => t.id === 'inspect'))[1].label, '2-1');
 });
 
 test('수업 순서 탭 7개 — 수집 → 가공 → 전처리 → 학습 준비 → 기계학습 → 프로젝트', () => {

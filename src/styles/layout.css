@@ -1,6 +1,6 @@
 /* ============================================================
    화면 배치
-   · 위에서 아래로: 상단 막대(탭) → 레슨 막대(배울 것·해 볼 것) → 실행 제어 → 동작 카드 → 본문
+   · 위에서 아래로: 상단 막대(단원 탭) → 레슨 막대(🎯 목표·✋ 할 일) → 실행 제어 → 동작 카드 → 본문
    · 본문(workspace)은 두 가지
        step : 왼쪽 의사코드 | 오른쪽 위 그림(무대) · 오른쪽 아래 자료구조
        view : 한 판 (탐험·읽기·파이썬 실습·퀴즈)
@@ -34,19 +34,7 @@
 .subtabs { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
 .subtabs[hidden] { display: none; }
 
-/* --- 레슨 막대 --- */
-.lesson {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3) var(--sp-4);
-  flex-wrap: wrap;
-  padding: var(--sp-2) var(--sp-4);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-.lesson__top { flex: 0 0 auto; display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
-.lesson__text { flex: 1 1 340px; min-width: 0; }
-.lesson__navs { flex: 0 0 auto; display: flex; gap: var(--sp-2); }
+/* --- 레슨 막대: learn.css --- */
 
 /* --- 실행 제어 · 동작 카드 (단계 실행 쪽에서만) --- */
 .controlbar {
@@ -110,7 +98,6 @@ body:not(.is-step) .actionbar { display: none; }
 }
 @media (min-width: 901px) and (max-height: 740px) {
   .topbar__title { font-size: var(--fs-md); }
-  .lesson__todo { font-size: var(--fs-xs); }
   .controlbar { padding-top: 2px; padding-bottom: 2px; }
   .sitefoot { display: none; }
 }

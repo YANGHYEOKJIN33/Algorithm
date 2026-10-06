@@ -40,7 +40,7 @@ export function maskFrames(table = missingTable()) {
     const trues = full.filter((m) => m[ci]).length;
     done.push(ci);
     snap({
-      line: trues ? 4 : 5, col: ci, icon: trues ? '⚠️' : '✅',
+      line: trues ? 4 : 5, col: ci, icon: trues ? '🔎' : '✅',
       say: trues
         ? `'${c}' 열의 칸을 위에서부터 봤어요. 빈칸 ${trues}개 → True, 나머지는 False.`
         : `'${c}' 열은 모든 칸에 값이 있어요 → 모두 False.`,
@@ -79,7 +79,7 @@ export function countFrames(table = missingTable()) {
     snap({ line: 2, col: ci, phase: 'look', icon: '👀', say: `'${c}' 열의 True를 셀 차례예요.` });
     const n = mask.filter((m) => m[ci]).length;
     counts[ci] = n;
-    snap({ line: 4, col: ci, phase: 'count', icon: n ? '⚠️' : '✅',
+    snap({ line: 4, col: ci, phase: 'count', icon: n ? '🔢' : '✅',
       say: n ? `'${c}' 열: True ${n}개 → 결측치 ${n}개.` : `'${c}' 열: True가 없어요 → 0개.` });
   });
   const total = counts.reduce((a, b) => a + b, 0);
@@ -114,7 +114,7 @@ export function whereFrames(table = missingTable()) {
   table.rows.forEach((row, i) => {
     const miss = mask[i].map((m, ci) => (m ? table.columns[ci] : null)).filter(Boolean);
     if (miss.length) {
-      snap({ line: 3, row: i, icon: '⚠️', hit: true, say: `인덱스 ${i}행(펭귄 ${row.번호}번)에 빈칸이 있어요: ${miss.join(', ')}` });
+      snap({ line: 3, row: i, icon: '📍', hit: true, say: `인덱스 ${i}행(펭귄 ${row.번호}번)에 빈칸이 있어요: ${miss.join(', ')}` });
       list.push(i);
       snap({ line: 4, row: i, icon: '📥', hit: true, say: `위치목록에 ${i}를 추가했어요 → [${list.join(', ')}]` });
     } else {

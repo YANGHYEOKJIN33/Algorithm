@@ -5,11 +5,12 @@
  *   pages[쪽열쇠] = { visited: true, missions: { 0: true, 2: true } }
  *   quizzes[열쇠] = { [문제번호]: 고른 보기 }          — 쪽·단원 확인 문제
  *   hooks[탭]     = 고른 보기 번호                       — 단원 표지의 "생각 열기" 첫 생각
+ *   self[탭]      = { [할 수 있어요 번호]: 'yes' | 'no' }  — 단원 정리의 스스로 점검
  *   last          = { tab, sub, page }                   — 이어서 하기
  */
 const KEY = 'ai-data-lab:progress';
 
-const empty = () => ({ pages: {}, quizzes: {}, hooks: {}, last: null });
+const empty = () => ({ pages: {}, quizzes: {}, hooks: {}, self: {}, last: null });
 
 function load() {
   try {
@@ -65,6 +66,9 @@ export function createProgress() {
 
     setHook(tabId, choice) { data.hooks[tabId] = choice; save(); },
     hook(tabId) { return data.hooks[tabId] ?? null; },
+
+    setSelf(tabId, i, value) { (data.self[tabId] ??= {})[i] = value; save(); },
+    self(tabId) { return data.self[tabId] ?? {}; },
 
     reset() { data = empty(); save(); },
   };

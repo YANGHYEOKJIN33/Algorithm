@@ -8,8 +8,8 @@ import { SPEEDS } from '../app/state.js';
 const BUTTONS = [
   { id: 'reset', label: '⏹ 처음으로', key: 'Home' },
   { id: 'back', label: '⏮ 뒤로', key: '←' },
-  { id: 'play', label: '▶ 재생', key: 'Space', primary: true },
-  { id: 'step', label: '⏭ 한 단계', key: '→' },
+  { id: 'step', label: '⏭ 한 단계', key: '→', primary: true },
+  { id: 'play', label: '▶ 재생', key: 'Space' },
   { id: 'end', label: '⏩ 끝까지', key: 'End' },
 ];
 

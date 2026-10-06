@@ -1,92 +1,142 @@
 /**
- * 🏁 시작 — 프로젝트 흐름 · 펭귄 데이터와 표 · 의사코드 읽는 법
+ * 🏁 시작 — 0-1 완성품 미리 보기 · 0-2 수업 지도 · 0-3 화면 사용법 · 0-4 펭귄 표 · 0-5 의사코드 읽는 법
+ *
+ * 긴 장면(완성품·화면 사용법)은 start/ 폴더에 있고, 이 파일에서 미션 신호(ctx.check)를 이어 준다.
+ * ✋ 할 일의 act: 낱말이 모두 이 파일에 모여 있다:
+ *   predict · three-species (0-1) · stages (0-2) · tour-all (0-3) · cell · nan (0-4)
  */
 import { el, fill } from '../ui/dom.js';
 import { createFlip } from '../ui/flip.js';
 import { infoTerm } from '../ui/infoTip.js';
-import { practiceRecords, COLUMNS, SPECIES, originalRecords } from '../core/data/practice.js';
+import { practiceRecords, COLUMNS, SPECIES, originalRecords, DUPLICATE_ID } from '../core/data/practice.js';
 import { isMissing, fmt } from '../core/stats.js';
 import { dataTable } from '../viz/table.js';
 import { varBox } from '../viz/bits.js';
 import { SPECIES_SHAPE } from '../viz/chart.js';
 import * as BASICS from '../core/basics.js';
+import { TABS } from '../app/lessons.js';
+import { unitProgress, canDoDone } from '../app/missions.js';
+import { courseGoal } from './start/goal.js';
+import { screenTour } from './start/tour.js';
+import { ensureStartStyle } from './start/style.js';
 
-/* ═════════════ 프로젝트 흐름 ═════════════ */
+/* ═════════════ 0-2 수업 지도 ═════════════ */
 
-const STAGES = [
-  {
-    id: 'collect', icon: '🕸', name: '수집', tab: 'collect',
-    what: '웹 페이지의 표를 프로그램으로 긁어 와(크롤링) 데이터프레임으로 만들어요.',
-    change: ['HTML 글자', '→', '표(345줄)'],
-    tools: 'requests · BeautifulSoup · pandas',
-  },
-  {
-    id: 'inspect', icon: '🔍', name: '가공', tab: 'inspect',
-    what: '빈칸(결측치)이 어디에 몇 개 있는지, 동떨어진 값(이상치)이 있는지 찾아요.',
-    change: ['표 345줄', '→', 'NaN 20칸 · 8200g?! · 겹친 행'],
-    tools: 'isnull() · quantile() · boxplot()',
-  },
-  {
-    id: 'prep', icon: '🧹', name: '전처리', tab: 'prep',
-    what: '필요한 속성만 남기고, 잘못된 행은 지우고, 빈칸은 채우고, 글자는 숫자로 바꿔요.',
-    change: ['수컷·암컷', '→', '0·1'],
-    tools: 'drop() · fillna() · map()',
-  },
-  {
-    id: 'ready', icon: '🧩', name: '학습 준비', tab: 'ready',
-    what: '흩어진 표를 하나로 합치고, 입력 X와 정답 y, 훈련 80%와 테스트 20%로 나눠요.',
-    change: ['한 표', '→', '훈련 | 테스트'],
-    tools: 'concat() · merge() · train_test_split()',
-  },
-  {
-    id: 'ml', icon: '🤖', name: '기계학습', tab: 'ml',
-    what: '훈련 데이터로 모델을 학습시켜요. 분류·예측·군집에 맞는 알고리즘을 골라요.',
-    change: ['부리·날개', '→', '"젠투!"'],
-    tools: 'KNeighborsClassifier · DecisionTree · LinearRegression · KMeans',
-  },
-  {
-    id: 'project', icon: '🚀', name: '평가·프로젝트', tab: 'project',
-    what: '처음 보는 테스트 데이터로 정확도를 재고, 나만의 주제로 프로젝트를 해요.',
-    change: ['6마리 중', '5마리', '정답 83%'],
-    tools: 'accuracy_score() · Colab',
-  },
-];
+/**
+ * 단원마다 바뀌지 않는 보조 정보 — 파이썬 도구 이름.
+ * what·change는 그 단원의 unit(question·before·after)이 아직 비어 있을 때만 대신 보여 준다.
+ * 단원의 동사·질문·데이터 변화·할 수 있어요 목록은 TABS(각 단원의 course 파일)에서 그때그때 읽는다.
+ */
+const STAGE_EXTRA = {
+  collect: { what: '웹 페이지의 표를 프로그램으로 긁어 와(크롤링) 데이터프레임으로 만들어요.', change: ['HTML 글자', '표(345줄)'], tools: 'requests · BeautifulSoup · pandas' },
+  inspect: { what: '빈칸(결측치)이 어디에 몇 개 있는지, 동떨어진 값(이상치)이 있는지 찾아요.', change: ['표 345줄', 'NaN 20칸 · 8200g?! · 겹친 행'], tools: 'isnull() · quantile() · boxplot()' },
+  prep: { what: '필요한 속성만 남기고, 잘못된 행은 지우고, 빈칸은 채우고, 글자는 숫자로 바꿔요.', change: ['수컷·암컷', '0·1'], tools: 'drop() · fillna() · map()' },
+  ready: { what: '흩어진 표를 하나로 합치고, 입력 X와 정답 y, 훈련 80%와 테스트 20%로 나눠요.', change: ['한 표', '훈련 | 테스트'], tools: 'concat() · merge() · train_test_split()' },
+  ml: { what: '훈련 데이터로 모델을 학습시켜요. 분류·예측·군집에 맞는 알고리즘을 골라요.', change: ['부리·날개', '"젠투!"'], tools: 'KNeighborsClassifier · DecisionTree · LinearRegression · KMeans' },
+  project: { what: '처음 보는 테스트 데이터로 정확도를 재고, 나만의 주제로 프로젝트를 해요.', change: ['6마리 중 5마리 정답', '정확도 83%'], tools: 'accuracy_score() · Colab' },
+};
 
 function pipeline(root, ctx) {
+  ensureStartStyle();
+  const home = ctx.lesson.tab;
+  const units = TABS.filter((t) => t.unit.no > 0).sort((a, b) => a.unit.no - b.unit.no);
   let pick = 0;
-  const detail = el('div.pipe__detail');
-  const steps = STAGES.map((st, i) => el('button.pipe__step', {
-    type: 'button', onclick: () => { pick = i; draw(); },
-  }, el('span.pipe__no', {}, String(i + 1)), el('span.pipe__icon', {}, st.icon), el('span.pipe__name', {}, st.name)));
+  const opened = new Set([0]);
+  const hookBox = el('div.smap-hook');
+  const stepsBox = el('div.smap-steps', { role: 'group', 'aria-label': '인공지능 프로젝트 여섯 단계 — 눌러서 열기' });
+  const countLine = el('p.smap-count');
+  const detail = el('div.smap-card', { 'aria-live': 'polite' });
 
-  function draw() {
-    steps.forEach((b, i) => b.setAttribute('aria-pressed', String(i === pick)));
-    const st = STAGES[pick];
-    fill(detail,
-      el('div.pipe__card', {},
-        el('div.pipe__cardhead', {}, el('span.pipe__bigicon', {}, st.icon), el('h3', {}, `${pick + 1}. ${st.name}`)),
-        el('p', {}, st.what),
-        el('div.pipe__change', { 'aria-label': '표가 바뀌는 모습' }, st.change.map((c, i) => el(`span${i === 1 ? '.pipe__arrow' : '.pipe__chip'}`, {}, c))),
-        el('p.card__meta', {}, `🐍 파이썬 도구: ${st.tools}`),
-        el('div', {}, el('button.pill.ctrl--primary', { type: 'button', onclick: () => ctx.go(st.tab) }, `${st.icon} ${st.name} 탭으로 가기 →`))));
+  function drawHook() {
+    const h = home.unit.hook;
+    if (!h) { fill(hookBox); hookBox.hidden = true; return; }
+    const mine = ctx.progress.hook(home.id);
+    fill(hookBox,
+      el('span.smap-hook__q', {}, `🤔 생각 열기 — ${h.q}`),
+      h.options.map((op, i) => el('button.quiz__opt', {
+        type: 'button', 'aria-pressed': String(mine === i), 'data-state': mine === i ? 'mine' : null,
+        onclick: () => { ctx.progress.setHook(home.id, i); drawHook(); },
+      }, op)),
+      el('p.smap-hook__note', {}, mine === null
+        ? '정답을 맞히는 게 아니라 내 생각을 먼저 정해 보는 거예요. 아래 지도를 보면 힌트가 있어요.'
+        : `내 생각: "${h.options[mine]}" — 시작 단원 정리에서 정답을 확인해요. 🔒`));
   }
 
-  fill(root, el('div.read', {},
+  function drawSteps() {
+    const parts = units.map((t, i) => {
+      const pr = unitProgress(ctx.progress, t);
+      return el('button.smap-step', {
+        type: 'button', 'aria-pressed': String(i === pick), title: `${t.unit.no}단원 ${t.label}${t.verb ? ` — ${t.verb}` : ''} · 진도 ${pr.done}/${pr.total}쪽`,
+        onclick: () => openStage(i),
+      },
+      el('span.smap-step__no', {}, String(t.unit.no)),
+      el('span.smap-step__name', {}, `${t.icon} ${t.label}`),
+      el('span.smap-step__verb', {}, t.verb || ' '),
+      opened.has(i) ? el('span.smap-step__seen', { 'aria-label': '열어 봤어요' }, '✓') : null,
+      el('span.smap-step__bar', { style: `--p:${pr.total ? pr.done / pr.total : 0}`, 'aria-hidden': 'true' }));
+    });
+    fill(stepsBox, parts.flatMap((b, i) => (i < parts.length - 1 ? [b, el('span.smap-to', { 'aria-hidden': 'true' }, '→')] : [b])));
+    countLine.textContent = opened.size === units.length
+      ? `🎉 여섯 단계를 모두 열어 봤어요. 맨 위 탭의 1~6이 바로 이 순서예요.`
+      : `열어 본 단계 ${opened.size} / ${units.length} — 번호 카드를 눌러 보세요. 번호는 맨 위 탭의 번호와 같아요.`;
+  }
+
+  function drawDetail() {
+    const t = units[pick];
+    const u = t.unit;
+    const extra = STAGE_EXTRA[t.id] ?? { what: t.tip ?? '', change: [], tools: '' };
+    const pr = unitProgress(ctx.progress, t);
+    const before = u.before ?? extra.change[0];
+    const after = u.after ?? extra.change[1];
+    fill(detail,
+      el('header.smap-card__head', {},
+        el('span.smap-card__icon', { 'aria-hidden': 'true' }, t.icon),
+        el('div', {},
+          el('p.smap-card__kicker', {}, `${u.no}단원 · 맨 위 탭의 ${u.no}번`),
+          el('h3', {}, `${t.label}`, t.verb ? el('span', {}, ` — ${t.verb}`) : null)),
+        el('span.smap-meter', { style: `--p:${pr.total ? pr.done / pr.total : 0}`, 'aria-label': `진도 ${pr.done} / ${pr.total}쪽` }, '진도 ', el('span'), ` ${pr.done}/${pr.total}쪽`)),
+      el('div.smap-card__grid', {},
+        el('div.smap-card__col', {},
+          el('p.smap-q', {}, `🤔 ${u.question ?? extra.what}`),
+          before || after ? el('div.flowpair', {},
+            el('div.flowpair__box', {}, el('span.tag', {}, '들어올 때'), el('p', {}, before ?? '')),
+            el('span.flowpair__arrow', { 'aria-hidden': 'true' }, '→'),
+            el('div.flowpair__box.flowpair__box--after', {}, el('span.tag.tag--add', {}, '나갈 때'), el('p', {}, after ?? ''))) : null,
+          extra.tools ? el('p.smap-tools', {}, `🐍 파이썬 도구: ${extra.tools}`) : null),
+        u.canDo?.length ? el('div.smap-card__col', {},
+          el('h4', {}, '🎯 이 단원을 마치면 할 수 있어요'),
+          el('ul.cando', {}, u.canDo.map((c) => el('li', { 'data-done': canDoDone(ctx.progress, t, c) ? 'true' : null }, c.text)))) : null),
+      el('div.smap-card__foot', {},
+        el('button.pill', { type: 'button', onclick: () => ctx.go(t.id) }, `${t.icon} ${u.no}단원 표지 보기 →`)));
+  }
+
+  function openStage(i) {
+    pick = i;
+    const before = opened.size;
+    opened.add(i);
+    if (opened.size === units.length && before < units.length) ctx.check('stages');
+    drawSteps();
+    drawDetail();
+  }
+
+  fill(root, el('div.read.smap', {},
     el('div.hero', {},
       el('div.hero__emoji', { 'aria-hidden': 'true' }, '🐧❓'),
       el('div', {},
-        el('h3', {}, '처음 보는 펭귄의 부리와 날개를 재면, 컴퓨터가 종을 맞힐 수 있을까요?'),
+        el('h3', {}, home.unit.question ?? '처음 보는 펭귄의 종을 컴퓨터가 맞힐 수 있을까?'),
         el('p', {}, '사람은 사진을 보고 알아보지만, 컴퓨터는 숫자로 된 데이터에서 규칙을 배워야 해요. 그 규칙을 배우기까지 데이터는 여섯 단계를 거쳐요.'))),
-    el('div.pipe', { role: 'group', 'aria-label': '인공지능 프로젝트 여섯 단계' },
-      steps.flatMap((b, i) => (i < steps.length - 1 ? [b, el('span.pipe__to', { 'aria-hidden': 'true' }, '→')] : [b]))),
+    hookBox,
+    stepsBox,
+    countLine,
     detail,
     el('div.callout', {}, '💡 실제 인공지능 프로젝트에서는 시간의 대부분(흔히 70~80%)을 수집·가공·전처리에 써요. 데이터가 나쁘면 아무리 좋은 알고리즘도 엉뚱한 것을 배우기 때문이에요(Garbage in, garbage out).'),
   ));
-  draw();
-  return {};
+  drawHook();
+  const unsub = ctx.progress.subscribe(() => { drawSteps(); drawDetail(); });
+  return { destroy: unsub };
 }
 
-/* ═════════════ 펭귄 데이터와 표 ═════════════ */
+/* ═════════════ 0-4 펭귄 데이터와 표 ═════════════ */
 
 const SPECIES_INFO = [
   { name: '아델리', look: '부리가 짧고 굵어요. 눈 둘레에 흰 테가 있어요.' },
@@ -111,12 +161,22 @@ function billFigure() {
   el('figcaption', {}, '부리길이는 앞뒤로, 부리깊이는 위아래로 잰 두께예요. 날개길이·몸무게도 함께 쟀어요.'));
 }
 
-function dataIntro(root) {
-  const recs = practiceRecords().slice(0, 8);
-  const counts = SPECIES.map((sp) => originalRecords().filter((r) => r.종 === sp).length);
+function dataIntro(root, ctx) {
+  ensureStartStyle();
+  const all = practiceRecords();
+  const recs = all.slice(0, 8);
+  const original = originalRecords();
+  const counts = SPECIES.map((sp) => original.filter((r) => r.종 === sp).length);
   let sel = { row: 2, col: '몸무게' };
   const tableBox = el('div.tablebox');
   const info = el('div.cellinfo', { 'aria-live': 'polite' });
+
+  function pickCell(row, col) {
+    sel = { row, col };
+    ctx.check('cell');
+    if (isMissing(recs[row][col])) ctx.check('nan');
+    draw();
+  }
 
   function draw() {
     const table = dataTable({
@@ -129,9 +189,8 @@ function dataIntro(root) {
     table.querySelectorAll('tbody tr').forEach((tr, i) => {
       tr.querySelectorAll('td').forEach((td, ci) => {
         td.tabIndex = 0;
-        const pickCell = () => { sel = { row: i, col: COLUMNS[ci] }; draw(); };
-        td.addEventListener('click', pickCell);
-        td.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickCell(); } });
+        td.addEventListener('click', () => pickCell(i, COLUMNS[ci]));
+        td.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickCell(i, COLUMNS[ci]); } });
       });
     });
     fill(tableBox, table);
@@ -144,30 +203,38 @@ function dataIntro(root) {
       el('div.cellinfo__code', {}, el('code', {}, `df.loc[${sel.row}, '${sel.col}']`), ' → ', el('code', {}, isMissing(v) ? 'nan' : String(v))));
   }
 
+  const total = counts.reduce((a, b) => a + b, 0);
   fill(root, el('div.read', {},
     el('div.cards', {}, SPECIES_INFO.map((s, i) => el('div.card', {},
       el('div.card__title', {}, el(`span.legend__mark.sp${i}`, {}, SPECIES_SHAPE[i]), ` ${s.name}펭귄`, el('span.card__meta', {}, ` · ${counts[i]}마리`)),
       el('p.card__text', {}, s.look))),
     el('div.card.card--soft', {}, billFigure())),
+    el('p.di-count', { 'aria-label': '줄 수 맞추기' },
+      '🧮 ', el('span', {}, `원본 펭귄 ${SPECIES.map((sp, i) => `${sp} ${counts[i]}`).join(' + ')} = `), el('b', {}, `${total}마리`),
+      el('span.di-count__eq', {}, ' + '),
+      el('span.di-count__dup', {}, `수업용으로 한 번 더 넣은 ${DUPLICATE_ID}번 펭귄 줄 1줄`),
+      el('span.di-count__eq', {}, ' = '), el('b', {}, `연습 표 ${all.length}줄`),
+      el('span.card__meta', {}, ' (겹친 줄은 2단원에서 찾아내요)')),
     el('div.datawrap', {},
       el('div.datawrap__table', {},
-        el('div.datawrap__cap', {}, '연습 데이터의 처음 8줄 (전체 345줄 × 9열) — 칸을 눌러 보세요'),
+        el('div.datawrap__cap', {}, `연습 표의 처음 8줄 (전체 ${all.length}줄 × ${COLUMNS.length}열) — 칸을 눌러 보세요. 빨간 NaN은 빈칸이에요.`),
         tableBox),
       el('div.datawrap__side', {},
         info,
         el('ul.termlist', {},
           el('li', {}, infoTerm('행', { strong: true }), ' = 관측 하나(펭귄 한 마리)'),
           el('li', {}, infoTerm('열', { strong: true }), ' = ', infoTerm('속성'), ' 하나(부리길이, 몸무게 …)'),
-          el('li', {}, infoTerm('인덱스', { strong: true }), ' = 왼쪽 회색 번호, 0부터 세요'),
+          el('li', {}, infoTerm('인덱스', { strong: true }), ' = 왼쪽 회색 번호, 0부터 세요(펭귄 번호와 달라요)'),
           el('li', {}, infoTerm('결측치', { strong: true, label: 'NaN' }), ' = 비어 있는 칸'),
-          el('li', {}, infoTerm('데이터프레임', { strong: true }), ' = 이런 표를 파이썬(판다스)이 부르는 이름')))),
+          el('li', {}, infoTerm('데이터프레임', { strong: true }), ' = 이런 표를 파이썬(판다스)이 부르는 이름'),
+          el('li', {}, el('strong', {}, el('code', {}, 'df')), ' = 이 표에 붙인 이름(변수). 코드에서 df를 보면 "이 펭귄 표"라고 읽어요')))),
     el('p.card__meta', {}, '데이터 출처: palmerpenguins — 남극 파머 기지에서 2007~2009년에 관측(Gorman 박사 연구팀, CC0). 수업을 위해 빈칸 1칸·잘못 적은 값 1칸·겹친 행 1줄을 일부러 넣었어요.'),
   ));
   draw();
   return {};
 }
 
-/* ═════════════ 의사코드 읽는 법 (단계 실행) ═════════════ */
+/* ═════════════ 0-5 의사코드 읽는 법 (단계 실행) ═════════════ */
 
 const pseudoIntro = {
   kind: 'step',
@@ -202,7 +269,8 @@ const pseudoIntro = {
           varBox('최고', `${f.best}g`, { hot: f.line === 1 || f.line === 4, sub: `${f.bestId}번 펭귄` }),
           varBox('p', cur ? `${cur.w}g` : '—', { sub: cur ? `${cur.id}번 펭귄` : '' }),
           el('div.varrow__note', {},
-            el('p', {}, el('strong', {}, '← '), '오른쪽 값을 왼쪽 상자에 넣어요. 넣으면 예전 값은 사라져요.'),
+            el('p', {}, el('strong', {}, '의사(擬似)코드 '), '= 진짜 코드를 흉내 내어 사람 말로 적은 프로그램 순서예요. 왼쪽 줄을 위에서부터 한 줄씩 실행해요.'),
+            el('p', {}, el('strong', {}, '← '), '오른쪽 값을 왼쪽 상자(변수)에 넣어요. 넣으면 예전 값은 사라져요.'),
             el('p', {}, el('strong', {}, '반복 '), '같은 일을 되풀이해요. 들여 쓴 줄이 반복 안에서 할 일이에요.'),
             el('p', {}, el('strong', {}, '만약 '), '조건이 참일 때만 그 아래 줄을 실행해요.'))));
       },
@@ -211,7 +279,18 @@ const pseudoIntro = {
 };
 
 export const START_SCENES = {
+  courseGoal: {
+    kind: 'view',
+    mount: (root, ctx) => courseGoal(root, ctx, {
+      predicted: () => ctx.check('predict'),
+      allSpecies: () => ctx.check('three-species'),
+    }),
+  },
   pipeline: { kind: 'view', mount: pipeline },
+  screenTour: {
+    kind: 'view',
+    mount: (root, ctx) => screenTour(root, ctx, { allSeen: () => ctx.check('tour-all') }),
+  },
   dataIntro: { kind: 'view', mount: dataIntro },
   pseudoIntro,
 };

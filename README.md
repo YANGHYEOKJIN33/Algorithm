@@ -61,7 +61,9 @@
 
 ## 화면 사용법
 
-- 맨 위 **탭을 왼쪽부터** 차례로. 쪽마다 **📘 배울 것**과 **✋ 해 볼 것**이 있어요.
+- 맨 위 **탭을 왼쪽부터** 차례로(시작 → 1 수집 … 6 프로젝트). 단원 처음엔 **🧭 표지**(무엇을 할 수 있게 되나), 끝엔 **📝 정리**(1분 요약·확인 문제).
+- 쪽마다 **🎯 목표**(~할 수 있다)와 **✋ 할 일**이 있어요. 할 일을 직접 하면 저절로 ✅가 되고, **❓ 확인 문제**로 이해했는지 확인해요.
+- **📚 목차**에서 전체 단원의 목표와 내 진도(이 브라우저에 저장)를 봐요.
 - **⏭ 한 단계 / ⏮ 뒤로 / ▶ 재생** — 키보드 `→` `←` `Space` `Home` `End`도 됩니다.
 - 의사코드 패널의 **🐍 파이썬 같이 보기**를 켜면 줄마다 같은 일을 하는 파이썬이 붙고, **📒 Colab**으로 실습이 열려요.
 - **📖 용어**(64개) · **ⓘ 용어 풍선** · **가+/가−** 글자 크기 · **🌗** 밝게/어둡게.
@@ -70,6 +72,7 @@
 
 - [요구사항 정의서 (REQUIREMENTS.md)](./REQUIREMENTS.md) — 무엇을, 누구를 위해, 어떤 기준으로
 - [교사용 안내 (docs/TEACHER.md)](./docs/TEACHER.md) — 차시 계획 · 쪽별 수업 포인트 · Colab 지도 팁 · 프로젝트 지도
+- [학습 목표표 (docs/OBJECTIVES.md)](./docs/OBJECTIVES.md) — 단원·쪽마다 🎯 목표 · 학습 요소 · ✋ 할 일 · 성취기준 (자동 생성)
 - [구조 안내 (docs/ARCHITECTURE.md)](./docs/ARCHITECTURE.md) — 폴더 · 장면(frame) 방식 · 수업 추가하는 법
 - [배포 안내 (docs/DEPLOY.md)](./docs/DEPLOY.md) — GitHub Pages 켜는 법
 
@@ -79,8 +82,9 @@
 
 ```bash
 python3 -m http.server 8000   # http://localhost:8000 (ES 모듈이라 file://로는 열리지 않아요)
-npm test                      # 판다스·사이킷런 대조 테스트 41개 (Node 내장 도구만)
-npm run build                 # 연습 사이트·CSV·노트북을 원본에서 다시 만들기
+npm test                      # 판다스·사이킷런 대조 + 수업 내용 약속 테스트 (Node 내장 도구만)
+npm run build                 # 연습 사이트·CSV·노트북·학습 목표표를 원본에서 다시 만들기
+node scripts/check-course.mjs # 수업 내용(목표·할 일·확인 문제) 점검
 ```
 
 데이터 출처: Horst AM, Hill AP, Gorman KB (2020). palmerpenguins: Palmer Archipelago (Antarctica) penguin data. CC0.

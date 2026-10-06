@@ -60,10 +60,6 @@ a.pill:hover { background: var(--surface-2); border-color: var(--border-strong);
 .seg button[aria-pressed="true"] { background: var(--current); color: #fff; font-weight: 700; }
 
 /* --- 큰 탭 · 하위 탭 --- */
-.modetabs { display: flex; gap: var(--sp-1); flex: 0 1 auto; flex-wrap: wrap; }
-.modetab { font-weight: 700; padding: var(--sp-1) var(--sp-2); }
-.modetab__no { font-size: var(--fs-xs); opacity: .7; margin-right: 2px; }
-.modetab[aria-selected="true"] { background: var(--current); border-color: var(--current); color: #fff; }
 .subtabs__label { font-size: var(--fs-sm); color: var(--text-muted); font-weight: 700; }
 .subtab { font-size: var(--fs-sm); padding: 2px var(--sp-3); }
 
@@ -73,30 +69,6 @@ a.pill:hover { background: var(--surface-2); border-color: var(--border-strong);
 .ctrl--primary:hover:not(:disabled) { background: var(--current); filter: brightness(1.08); }
 .speed { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); margin-left: var(--sp-2); }
 .progress { font-size: var(--fs-xs); color: var(--text-muted); font-variant-numeric: tabular-nums; margin-left: var(--sp-2); }
-
-/* --- 레슨 막대 --- */
-.lesson__dots { display: flex; gap: 4px; flex-wrap: wrap; row-gap: 4px; min-width: 0; max-width: 260px; }
-.lesson__dot {
-  width: 24px; height: 24px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  padding: 0;
-  display: grid; place-items: center;
-}
-.lesson__dot--done { background: var(--add-bg); border-color: var(--add); color: var(--add); }
-.lesson__dot[aria-selected="true"] { background: var(--current); border-color: var(--current); color: #fff; }
-.lesson__count { font-size: var(--fs-xs); color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.lesson__title { font-size: var(--fs-lg); margin: 0; line-height: 1.25; }
-.lesson__goal { margin: 3px 0 0; font-size: var(--fs-md); }
-.lesson__todo { margin: 2px 0 0; font-size: var(--fs-sm); color: var(--text-muted); }
-.lesson__nav { min-width: 76px; }
-@media (max-width: 600px) {
-  .lesson__dot { width: 20px; height: 20px; font-size: 10px; }
-}
 
 /* --- 동작 카드 (지금 무슨 일이 일어났나) --- */
 .action-card {

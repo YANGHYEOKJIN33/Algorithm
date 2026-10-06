@@ -1,6 +1,7 @@
 /**
  * 🐍 파이썬 실습 쪽 — Colab 노트북(src/app/notebooks.js)을 사이트에서 미리 읽는 화면.
  * 코드마다 "이 줄이 하는 일"을 쉬운 말로 붙이고, 복사 단추와 Colab 열기 단추를 둔다.
+ * 맨 위 ✅ 실습 점검표를 모두 체크하면 미션 'act:nb-done'이 이루어진다(진도에 저장).
  */
 import { el, fill } from '../ui/dom.js';
 import { getNotebook } from '../app/notebooks.js';
@@ -94,10 +95,41 @@ function copyButton(text) {
   return btn;
 }
 
+const CHECKS = [
+  '📒 Colab에서 열고, 파일 → 드라이브에 사본 저장',
+  '▶ 셀을 위에서부터 차례로 끝까지 실행',
+  '🔍 내 결과가 셀 아래 "실행 결과 예시"와 같은지 확인',
+];
+
+/** ✅ 실습 점검표 — 무엇을 하면 실습이 끝난 것인지 */
+function checklist(nb, ctx) {
+  const key = `nb:${nb.id}`;
+  const box = el('section.nbcheck', { 'aria-label': '실습 점검표' });
+  function draw() {
+    const got = ctx?.progress?.answers(key) ?? {};
+    const n = CHECKS.filter((_, i) => got[i]).length;
+    fill(box,
+      el('div.nbcheck__head', {}, el('strong', {}, '✅ 실습 점검표'), el('span.card__meta', {}, ` ${n} / ${CHECKS.length} — 모두 체크하면 이 실습 끝!`)),
+      el('ul.nbcheck__list', {}, CHECKS.map((t, i) => el('li', {}, el('label', {},
+        el('input', {
+          type: 'checkbox', checked: got[i] ? true : null,
+          onchange: (e) => {
+            ctx?.progress?.answer(key, i, e.target.checked);
+            const now = ctx?.progress?.answers(key) ?? {};
+            if (CHECKS.every((_, k) => now[k])) ctx?.check('nb-done');
+            draw();
+          },
+        }), ' ', t)))),
+      el('p.card__meta', {}, '💡 학교에서 Colab을 쓸 수 없으면: 아래 셀마다 붙은 "실행 결과 예시"를 보며 코드가 하는 일을 따라가요. 코드 셀의 📋 복사로 다른 파이썬 환경에서 실행해도 돼요.'));
+  }
+  draw();
+  return box;
+}
+
 function pythonPage(notebookId) {
   return {
     kind: 'view',
-    mount(root) {
+    mount(root, ctx) {
       const nb = getNotebook(notebookId);
       if (!nb) { fill(root, el('div.placeholder', {}, '노트북을 찾지 못했어요.')); return {}; }
       let n = 0;
@@ -115,6 +147,7 @@ function pythonPage(notebookId) {
           el('p', {}, el('b', {}, nb.title), el('br'), nb.intro),
           el('a.pill.pill--colab', { href: colabUrl(nb.id), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
           el('a.pill', { href: notebookUrl(nb.id), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
+        checklist(nb, ctx),
         el('details.nb__howto', {},
           el('summary', {}, 'Colab이 처음이라면 — 사용법 4단계'),
           el('ol', {},

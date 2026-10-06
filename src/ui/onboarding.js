@@ -6,22 +6,22 @@ const SEEN_KEY = 'ai-data-lab:seen-guide';
 const STEPS = [
   {
     emoji: '🐧',
-    title: '펭귄 데이터 하나로 인공지능을 처음부터 끝까지',
-    body: '남극 펭귄 344마리의 관측 기록을 웹에서 모으고(수집), 빈칸과 이상한 값을 찾고(가공), 다듬고(전처리), 나눠서(학습 준비), 종을 맞히는 인공지능을 만들어요(기계학습).',
+    title: '처음 보는 펭귄의 종을 맞히는 인공지능을 직접 만들어요',
+    body: '웹에서 펭귄 기록을 모으고(1 수집) → 문제를 찾고(2 가공) → 고치고(3 전처리) → 합치고 나누고(4 학습 준비) → 학습시키고(5 기계학습) → 정확도를 재요(6 평가·프로젝트). 맨 위 탭이 이 순서예요.',
   },
   {
-    emoji: '🗂️',
-    title: '맨 위 탭을 왼쪽부터 차례로',
-    body: '1 시작 → 2 수집 → 3 가공 → 4 전처리 → 5 학습 준비 → 6 기계학습 → 7 프로젝트 순서예요. 쪽마다 📘 배울 것과 ✋ 해 볼 것이 적혀 있고, [다음 →]을 누르면 다음 쪽·다음 탭으로 이어져요.',
+    emoji: '🎯',
+    title: '쪽마다 🎯 목표와 ✋ 할 일이 있어요',
+    body: '🎯 목표는 "이 쪽을 마치면 할 수 있는 것"이에요. ✋ 할 일을 직접 해 보면 저절로 ✅가 되고, ❓ 확인 문제로 이해했는지 확인해요. 단원 처음에는 🧭 표지(무엇을 배우나), 끝에는 📝 정리(1분 요약·확인 문제)가 있어요.',
   },
   {
     emoji: '👣',
-    title: '의사코드를 한 줄씩, 그림이 함께 움직여요',
-    body: '⏭ 한 단계를 누를 때마다 의사코드 한 줄이 실행되고, 표·그래프·자료구조(리스트·사전)가 그에 맞춰 바뀌어요. ⏮ 뒤로로 다시 볼 수 있어요. 파이썬은 "🐍 파이썬 같이 보기"와 📒 Colab 실습에서 만나요.',
+    title: '파이썬을 몰라도 돼요 — 의사코드를 한 줄씩',
+    body: '⏭ 한 단계를 누를 때마다 의사코드 한 줄이 실행되고, 표·그래프·자료구조(리스트·사전)가 그에 맞춰 바뀌어요. 파이썬은 "🐍 파이썬 같이 보기"와 📒 Colab 실습에서 ▶만 누르면 돼요.',
   },
 ];
 
-export function createOnboarding() {
+export function createOnboarding({ onTour } = {}) {
   const card = el('div.guide__card', { role: 'dialog', 'aria-modal': 'true', 'aria-label': '사용 안내' });
   const backdrop = el('div.modal__backdrop', { hidden: true }, card);
   document.body.append(backdrop);
@@ -36,6 +36,7 @@ export function createOnboarding() {
       el('p.guide__body', {}, s.body),
       el('div.guide__actions', {},
         el('button.pill', { type: 'button', onclick: close }, '건너뛰기'),
+        onTour ? el('button.pill', { type: 'button', onclick: () => { close(); onTour(); } }, '🖥 화면 사용법 자세히') : null,
         el('span.topbar__spacer'),
         step > 0 ? el('button.pill', { type: 'button', onclick: () => { step -= 1; render(); } }, '이전') : null,
         el('button.pill.ctrl--primary', { type: 'button', onclick: () => { if (step === STEPS.length - 1) close(); else { step += 1; render(); } } },

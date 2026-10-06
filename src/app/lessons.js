@@ -1,338 +1,112 @@
 /**
- * 수업 구성 — 상단 큰 탭(수업 순서)마다 쪽 묶음이 있다. 기계학습 탭은 하위 탭(알고리즘)으로 한 번 더 나뉜다.
+ * 수업 구성 — 상단 큰 탭 = 단원. 단원마다 쪽 묶음이 있고, 기계학습 단원은 하위 탭(알고리즘)으로 한 번 더 나뉜다.
+ * 단원의 내용은 course/ 폴더에 단원 하나당 파일 하나로 적고, 이 파일은 그것을 모아 표지·정리 쪽을 붙인다.
  *
- * 원칙 (8-퍼즐 사이트와 같다)
- *  - 한 쪽 = 배울 것 하나. 그 쪽에 필요한 화면만 켠다.
- *  - goal(📘 배울 것)에는 "왜 배우는지"를 함께 적는다. todo(✋ 해 볼 것)는 손으로 할 일 하나.
+ * 원칙 (교과서의 "학습 목표 · 학습 요소 · 생각 열기 · 1분 요약"과 같은 틀)
+ *  - 목표와 설명을 나눈다. 🎯 objective는 "~할 수 있다"로 끝나는 한 문장, 설명은 장면 속이나 💡 more에.
+ *  - ✋ missions는 손으로 할 일 1~3개. 학생이 실제로 하면 스스로 ✅가 된다(missions.js). 막지는 않는다.
+ *  - 단원마다 맨 앞에 표지(무엇을 할 수 있게 되나·쪽 목록·생각 열기), 맨 뒤에 정리(1분 요약·확인 문제)가 붙는다.
  *  - 단계 실행 쪽은 의사코드가 중심이고, 파이썬은 "같이 보기"와 Colab 실습 쪽에서만 꺼낸다.
  *
- * scene : 그릴 장면 이름 (scenes/index.js). 'python:<노트북>'은 파이썬 실습 쪽.
+ * ── 단원(탭) ─────────────────────────────────────────────
+ *  id, label, icon, verb('문제 찾기' — 탭과 표지에 붙는 동사), tip
+ *  unit: {
+ *    no,                 단원 번호(시작 = 0, 수집 = 1 … 프로젝트 = 6). 시작 화면의 6단계 흐름 번호와 같다.
+ *    question,           생각 열기 — 단원 전체를 이끄는 질문 하나
+ *    bigIdea,            이 단원의 핵심 아이디어 한 문장
+ *    hook: { q, options, answer, reveal }   표지에서 내 생각을 먼저 골라 보는 질문(정답은 정리에서 확인)
+ *    canDo: [{ text, pages: [쪽 id] }]       이 단원을 마치면 할 수 있는 것("~할 수 있다"). 쪽을 다 하면 ✓
+ *                                          (기계학습은 'knn:idea'처럼 '하위탭:쪽id')
+ *    before, after,      들어올 때 / 나갈 때 데이터의 모습(한 줄씩)
+ *    note,               표지에 강조할 한마디(선택)
+ *    minutes,            단원 전체 예상 시간(분)
+ *    standards: [{ code, text }]           2022 개정 교육과정 성취기준
+ *    summary: [문장 3~4개]                 1분 요약
+ *    cheats: [{ idea, code }]              🐍 파이썬 한 줄 정리(프로젝트 때 다시 찾아보는 용도)
+ *    quiz: [{ q, options, answer, why, page }]   단원 확인 문제 3개 — 틀리면 page로 다시 보러 간다
+ *    cover: false / review: false          표지·정리를 붙이지 않을 때
+ *  }
+ *  pages: [쪽] 또는 sub: [{ id, name, tag('분류 · 지도학습'), question, pages }]
+ *
+ * ── 쪽 ───────────────────────────────────────────────────
+ *  id, scene(장면 이름 — scenes/index.js, 'python:<노트북>'은 파이썬 실습), title
+ *  short      단계 표시 줄에 쓰는 짧은 이름(6자 안팎)
+ *  objective  🎯 이 쪽의 목표 — "~할 수 있다." 한 문장
+ *  why        💡 왜 배우나 — 한 문장
+ *  terms      학습 요소 — glossary.js의 term 그대로(0~3개)
+ *  missions   ✋ [{ text, check }] — check 낱말은 missions.js 참고
+ *  ask        ❓ { q, options, answer, why } — 확인 문제 1개(선택). 미션 끝에 저절로 붙는다
+ *  more       자세한 설명(💡 안에 접혀 있다)
+ *  minutes    예상 시간(분)
+ *  level      'challenge'(🔥 도전) | 'optional'(➕ 더 알아보기) — 선택
  */
+import START from './course/start.js';
+import COLLECT from './course/collect.js';
+import INSPECT from './course/inspect.js';
+import PREP from './course/prep.js';
+import READY from './course/ready.js';
+import ML from './course/ml.js';
+import PROJECT from './course/project.js';
 
-const TABS_RAW = [
-  {
-    id: 'start', label: '시작', icon: '🏁', tip: '인공지능 프로젝트의 흐름 · 펭귄 데이터 · 의사코드 읽는 법',
-    pages: [
-      {
-        id: 'pipeline', scene: 'pipeline',
-        title: '인공지능 프로젝트는 어떻게 진행될까?',
-        goal: '인공지능은 데이터에서 규칙을 배워요. 그래서 좋은 데이터를 모으고(수집) 다듬는(가공·전처리) 일이 학습만큼 중요해요. 이 사이트는 남극 펭귄 데이터 하나로 모든 단계를 차례로 해 봐요.',
-        todo: '여섯 단계 그림을 하나씩 눌러, 단계마다 표(데이터)가 어떻게 바뀌는지 읽어 보세요.',
-      },
-      {
-        id: 'data', scene: 'dataIntro',
-        title: '오늘의 데이터 — 남극 펭귄과 표(데이터프레임)',
-        goal: '데이터는 대부분 표 모양이에요. 행 하나 = 펭귄 한 마리, 열 하나 = 속성 하나예요. 파이썬에서는 이런 표를 데이터프레임이라고 불러요. 앞으로 모든 수업에서 이 표가 어떻게 바뀌는지 보게 돼요.',
-        todo: '표의 칸을 눌러 보세요. 그 칸이 몇 번째 행(인덱스)·어느 열(속성)인지 함께 표시돼요.',
-      },
-      {
-        id: 'pseudo', scene: 'pseudoIntro',
-        title: '의사코드 읽는 법 — 가장 무거운 펭귄 찾기',
-        goal: '이 사이트는 파이썬 대신 의사코드로 설명해요. ←는 "오른쪽 값을 왼쪽 상자에 넣는다", 반복·만약은 되풀이·조건, 들여쓰기는 "그 안에서"라는 뜻이에요. 의사코드만 읽을 줄 알면 파이썬을 몰라도 모든 수업을 따라올 수 있어요.',
-        todo: '위의 ⏭ 한 단계를 눌러 보세요. 실행 중인 줄이 파랗게 바뀌고 그림과 "변수" 상자가 함께 변해요. 왼쪽 위 "🐍 파이썬 같이 보기"도 눌러 보세요.',
-      },
-    ],
-  },
-  {
-    id: 'collect', label: '수집', icon: '🕸', tip: '웹 크롤링으로 데이터 모으기',
-    pages: [
-      {
-        id: 'web', scene: 'webExplore',
-        title: '웹 페이지는 무엇으로 만들어졌을까?',
-        goal: '웹 크롤링은 웹 페이지에서 원하는 데이터를 자동으로 모으는 일이에요. 브라우저는 서버가 보낸 HTML(태그가 섞인 글자)을 보기 좋게 그려 줄 뿐이에요. 컴퓨터가 데이터를 꺼내려면 HTML 속 태그의 위치를 알아야 해요.',
-        todo: '왼쪽 화면의 표 칸을 눌러 보세요. 오른쪽 HTML에서 그 칸의 <td> 태그와, 그 칸이 들어 있는 <tr> 줄이 함께 켜져요.',
-      },
-      {
-        id: 'crawl', scene: 'crawl',
-        title: '크롤링을 한 단계씩 — 요청 · 분석 · 찾기 · 모으기',
-        goal: '크롤링은 ① 요청 ② 분석 ③ <tr> 찾기 ④ 칸 꺼내기 ⑤ 행목록에 모으기의 되풀이예요. 쪽이 여러 개여도 같은 절차를 반복할 뿐이에요. 다 모으면 표로 만들어 CSV 파일로 저장해요.',
-        todo: '⏭ 한 단계씩 누르며 HTML의 <tr> 줄이 오른쪽 아래 행목록(리스트)으로 옮겨지는 것을 보세요. 2쪽으로 넘어가도 같은 줄이 되풀이돼요.',
-      },
-      {
-        id: 'manners', scene: 'manners',
-        title: '크롤링 예절과 주의할 점',
-        goal: '크롤링은 남의 서버에서 데이터를 가져오는 일이에요. 기술보다 먼저 지켜야 할 약속이 있어요 — 허락된 곳만, 천천히, 개인정보 없이, 출처를 밝히며.',
-        todo: '카드를 읽고 아래 O/X 문제를 풀어 보세요.',
-      },
-      {
-        id: 'python', scene: 'python:01_web_crawling',
-        title: '🐍 파이썬으로 크롤링하기 — Colab 실습',
-        goal: '사이트에서 본 의사코드가 파이썬으로 어떻게 쓰이는지 보고, Colab에서 진짜로 연습 사이트(7쪽, 345줄)를 크롤링해요. 파이썬을 몰라도 셀을 위에서부터 차례로 실행(▶)하면 돼요.',
-        todo: '"Colab에서 열기"를 누르고 셀을 하나씩 ▶ 실행해 보세요. 345줄이 모이면 성공이에요!',
-      },
-    ],
-  },
-  {
-    id: 'inspect', label: '가공', icon: '🔍', tip: '결측치(여부·개수·위치)와 이상치(사분위수·상자그림) 찾기',
-    pages: [
-      {
-        id: 'mask', scene: 'mask',
-        title: '결측치 ① 빈칸인지 확인하기 (여부)',
-        goal: '결측치는 값이 비어 있는 칸이에요. 크롤링한 데이터에는 빈칸이 흔하고, 그대로 두면 계산이 틀어지거나 모델이 오류를 내요. 그래서 먼저 칸마다 "비었나?"를 True/False로 표시해요.',
-        todo: '한 단계씩 누르며 열마다 True(빈칸)가 켜지는 것을 보세요. 판다스는 빈칸을 NaN이라고 써요.',
-      },
-      {
-        id: 'count', scene: 'count',
-        title: '결측치 ② 몇 개인지 세기 (개수)',
-        goal: 'True를 1, False를 0으로 보면 더하기만으로 빈칸의 개수를 셀 수 있어요. 열마다 개수를 알면 어느 속성에 문제가 많은지 바로 보여요.',
-        todo: '열 아래 개수표가 하나씩 채워지는 것을 보세요. 가장 많이 빈 열은 어디인가요?',
-      },
-      {
-        id: 'where', scene: 'where',
-        title: '결측치 ③ 어디에 있는지 찾기 (인덱스)',
-        goal: '고치려면 위치를 알아야 해요. 빈칸이 하나라도 있는 행의 인덱스를 모아요. 인덱스는 0부터 세는 자리 번호로, 펭귄 번호와 달라요.',
-        todo: '행을 하나씩 검사하며 위치목록(리스트)에 인덱스가 쌓이는 것을 보세요.',
-      },
-      {
-        id: 'quartile', scene: 'quartile',
-        title: '이상치 ① 사분위수로 울타리 세우기',
-        goal: '이상치는 다른 값들과 동떨어진 값이에요. 값을 줄 세워 4등분하는 자리(사분위수 Q1·Q2·Q3)를 찾고, 가운데 절반의 폭(IQR)의 1.5배만큼 떨어진 곳에 울타리를 세워 그 밖의 값을 이상치로 봐요.',
-        todo: '정렬 → Q2 → Q1 → Q3 → IQR → 울타리 순서로 계산표가 채워지는 것을 보세요. 울타리 밖으로 나간 값은 무엇인가요?',
-      },
-      {
-        id: 'box', scene: 'box',
-        title: '이상치 ② 상자그림으로 한눈에 보기',
-        goal: '상자그림은 사분위수를 그림으로 그린 것이에요. 상자(Q1~Q3), 가운데 선(Q2), 수염, 그리고 수염 밖의 점(이상치)만 알면 읽을 수 있어요.',
-        todo: '한 단계씩 상자 → 선 → 수염 → 점이 그려지는 것을 보세요. "실제 비율로" 단추로 Colab에서 보일 모습도 확인하세요.',
-      },
-      {
-        id: 'python', scene: 'python:02_missing_outlier',
-        title: '🐍 파이썬으로 결측치·이상치 찾기 — Colab 실습',
-        goal: '크롤링한 345줄 전체에서 결측치와 이상치를 찾아요. 사이트에서 손으로 따라간 일을 판다스는 한 줄로 해 줘요.',
-        todo: 'Colab에서 셀을 차례로 실행하며 결측치 개수와 상자그림을 직접 확인하세요. 숨겨 둔 이상치를 찾을 수 있나요?',
-      },
-    ],
-  },
-  {
-    id: 'prep', label: '전처리', icon: '🧹', tip: '핵심 속성 추출 · 삭제 · 평균값/최빈값 대체 · 텍스트 값 대체',
-    pages: [
-      {
-        id: 'features', scene: 'features',
-        title: '핵심 속성 고르기',
-        goal: '모든 열이 쓸모 있지는 않아요. 목표(종 맞히기)와 관계있는 속성만 골라야 모델이 헷갈리지 않아요. 종마다 값이 다른 곳에 모이는 속성이 핵심 속성이에요.',
-        todo: '속성마다 종별로 점이 어떻게 퍼지는지 보세요. 색이 따로 모이면 넣고, 섞여 있으면 빼요.',
-      },
-      {
-        id: 'drop', scene: 'drop',
-        title: '데이터 삭제 — 필요 없는 열 · 겹친 행 · 잘못된 행',
-        goal: '쓰지 않을 열, 두 번 실린 행, 잘못 적은 행은 지워요. 그대로 두면 모델이 같은 펭귄을 두 번 배우거나 틀린 값을 배워요.',
-        todo: '열 하나와 행 둘이 차례로 사라지는 것을 보세요. 지운 뒤 인덱스에 생긴 빈 번호도 확인하세요.',
-      },
-      {
-        id: 'dropna', scene: 'dropna',
-        title: '결측치 삭제 — 빈칸이 있는 행 지우기',
-        goal: '가장 간단한 방법은 빈칸이 있는 행을 통째로 지우는 거예요. 하지만 빈칸 하나 때문에 멀쩡한 값까지 잃어요. 얼마나 잃는지 꼭 확인해요.',
-        todo: '행이 하나씩 사라지는 것을 보며, 마지막에 몇 %를 잃었는지 확인하세요.',
-      },
-      {
-        id: 'fillmean', scene: 'fillmean',
-        title: '결측치 대체 ① 평균값으로 채우기',
-        goal: '지우는 대신 채울 수도 있어요. 숫자 열의 빈칸을 그 열의 평균으로 채우면 행을 잃지 않아요. 단, 채운 값은 진짜가 아니라 어림값이에요.',
-        todo: '열마다 평균이 계산되고(합 ÷ 개수) 빈칸이 채워지는 것을 보세요. 채운 칸은 초록색이에요.',
-      },
-      {
-        id: 'fillmode', scene: 'fillmode',
-        title: '결측치 대체 ② 최빈값으로 채우기',
-        goal: '성별처럼 글자로 된 열은 평균을 낼 수 없어요. 가장 자주 나온 값(최빈값)으로 채워요. 값을 세는 데 사전(딕셔너리)을 써요.',
-        todo: '세기표(사전)가 한 칸씩 늘어나는 것을 보세요. 최빈값은 무엇인가요?',
-      },
-      {
-        id: 'replace', scene: 'replace',
-        title: '텍스트 값 대체 — 글자를 숫자로',
-        goal: '기계학습 모델은 숫자로 계산해요. 그래서 "수컷/암컷", "아델리/턱끈/젠투" 같은 글자를 정해진 숫자로 바꿔요. 바꿈표(사전)를 만들고 칸마다 찾아 바꿔요.',
-        todo: '바꿈표를 보며 칸의 글자가 숫자로 바뀌는 것을 보세요. 숫자의 크기에는 뜻이 없다는 것도 기억해요.',
-      },
-      {
-        id: 'python', scene: 'python:03_preprocessing',
-        title: '🐍 파이썬으로 전처리하기 — Colab 실습',
-        goal: '345줄 전체에 같은 전처리를 해요. 겹친 행·이상치를 지우고, 빈칸을 채우고, 글자를 숫자로 바꾸면 학습에 쓸 수 있는 깨끗한 표가 돼요.',
-        todo: 'Colab에서 셀을 차례로 실행하고, 마지막에 isnull().sum()이 모두 0인지 확인하세요.',
-      },
-    ],
-  },
-  {
-    id: 'ready', label: '학습 준비', icon: '🧩', tip: '데이터 통합(concat·merge) · 훈련/테스트 분할',
-    pages: [
-      {
-        id: 'concat', scene: 'concat',
-        title: '데이터 통합 ① 세로로 이어 붙이기',
-        goal: '여러 쪽·여러 파일에서 모은 표는 열이 같으면 위아래로 이어 붙여 하나로 만들어요(concat). 이어 붙인 뒤 인덱스를 새로 매기는 것을 잊지 마세요.',
-        todo: '2쪽 표의 행이 1쪽 표 아래로 내려가 붙는 것과, 겹친 인덱스가 새로 매겨지는 것을 보세요.',
-      },
-      {
-        id: 'merge', scene: 'merge',
-        title: '데이터 통합 ② 열쇠로 옆에 붙이기',
-        goal: '같은 펭귄의 정보가 서로 다른 표에 나뉘어 있으면, 공통 열(열쇠, 여기서는 번호)로 짝을 찾아 옆으로 붙여요(merge). 그래야 측정값과 정답(종)이 한 줄에 모여 지도학습을 할 수 있어요.',
-        todo: '측정표의 행마다 판정표에서 같은 번호를 찾아 잇는 것을 보세요. 짝이 없는 행은 어떻게 되나요?',
-      },
-      {
-        id: 'split', scene: 'split',
-        title: '훈련 데이터와 테스트 데이터로 나누기',
-        goal: '모델이 공부한 문제로 시험을 보면 실력을 알 수 없어요. 그래서 데이터를 섞은 뒤 대부분(80%)은 공부용(훈련), 나머지(20%)는 시험용(테스트)으로 나눠요. 입력(X)과 정답(y)도 따로 둬요.',
-        todo: '열이 X와 y로 나뉘고, 행이 섞인 뒤 훈련·테스트로 갈라지는 것을 보세요.',
-      },
-      {
-        id: 'python', scene: 'python:04_merge_split',
-        title: '🐍 파이썬으로 통합·분할하기 — Colab 실습',
-        goal: '쪽마다 모은 표를 concat으로, 측정표와 판정표를 merge로 합친 뒤 train_test_split으로 나눠요. 이제 기계학습을 할 준비가 끝나요.',
-        todo: 'Colab에서 셀을 차례로 실행하고 훈련·테스트 데이터의 행 수를 확인하세요.',
-      },
-    ],
-  },
-  {
-    id: 'ml', label: '기계학습', icon: '🤖', tip: '학습 방법·목적 · k-최근접 이웃 · 의사결정 트리 · 선형 회귀 · k-평균',
-    sub: [
-      {
-        id: 'concept', name: '개념',
-        pages: [
-          {
-            id: 'types', scene: 'learnTypes',
-            title: '학습 방법에 따른 구분 — 지도 · 비지도 · 강화',
-            goal: '정답을 알려 주며 가르치면 지도학습, 정답 없이 비슷한 것끼리 묶게 하면 비지도학습, 해 보고 받은 보상으로 스스로 익히게 하면 강화학습이에요. 데이터에 정답(레이블)이 있느냐가 첫째 기준이에요.',
-            todo: '세 가지 학습을 견주어 보고, 아래 사례가 어떤 학습인지 골라 보세요.',
-          },
-          {
-            id: 'rl', scene: 'rl',
-            title: '강화학습 맛보기 — 보상으로 길 찾기',
-            goal: '강화학습에는 정답이 없어요. 펭귄이 움직여 보고 받은 보상(물고기 +10, 구멍 −10)으로 점수표를 고쳐 가며 스스로 길을 익혀요. 점수표(Q)라는 자료구조가 어떻게 바뀌는지 보세요.',
-            todo: '한 단계씩 누르며 점수표의 칸이 바뀌는 것을 보세요. 몇 번째 도전부터 곧장 물고기로 가나요?',
-          },
-          {
-            id: 'purpose', scene: 'purposes',
-            title: '학습 목적에 따른 구분 — 분류 · 예측 · 군집',
-            goal: '무엇을 내놓느냐로도 나눠요. 정해진 무리 중 하나를 고르면 분류, 숫자를 내놓으면 예측(회귀), 정답 없이 무리를 만들면 군집이에요. 이 수업의 네 알고리즘이 어디에 속하는지 알아봐요.',
-            todo: '세 그림을 견주어 보고, 아래 알고리즘 지도에서 알고리즘을 눌러 그 탭으로 가 보세요.',
-          },
-        ],
-      },
-      {
-        id: 'knn', name: 'k-최근접 이웃',
-        pages: [
-          {
-            id: 'idea', scene: 'knnExplore',
-            title: 'k-최근접 이웃 ① 아이디어 — 가까운 이웃에게 물어보기',
-            goal: '새 펭귄의 종을 모를 때, 그래프에서 가장 가까운 펭귄 k마리를 찾아 다수결로 정해요. 비슷한 것끼리는 가까이 모인다는 생각이에요. (분류 · 지도학습)',
-            todo: '그래프를 눌러 새 펭귄(★)을 옮기고, k를 1·3·5·7로 바꿔 보세요. 예측이 바뀌는 곳은 어디인가요?',
-          },
-          {
-            id: 'step', scene: 'knn',
-            title: 'k-최근접 이웃 ② 의사코드로 한 단계씩',
-            goal: '거리 재기 → 거리목록에 모으기 → 정렬 → 앞에서 k개 → 세기표로 투표. k-최근접 이웃은 리스트와 사전만으로 만들 수 있어요. 341번 펭귄은 k=1이면 틀리고 k=3이면 맞혀요.',
-            todo: '한 단계씩 누르며 거리목록이 쌓이고 정렬되는 것, 세기표의 투표를 보세요. 그림 위에서 k를 바꿔 다시 실행해 보세요.',
-          },
-          {
-            id: 'python', scene: 'python:05_knn',
-            title: 'k-최근접 이웃 ③ 🐍 파이썬 실습 (Colab)',
-            goal: '의사코드를 그대로 옮긴 파이썬과, 프로젝트에서 쓸 scikit-learn 세 줄(만들기·fit·predict)을 견주어 봐요. 두 방법의 답이 같아요.',
-            todo: 'Colab에서 셀을 차례로 실행하고, k를 바꿔 정확도가 어떻게 달라지는지 확인하세요.',
-          },
-        ],
-      },
-      {
-        id: 'tree', name: '의사결정 트리',
-        pages: [
-          {
-            id: 'idea', scene: 'treeExplore',
-            title: '의사결정 트리 ① 아이디어 — 스무고개처럼 질문하기',
-            goal: '예/아니오 질문을 이어 답을 좁혀요. 컴퓨터는 데이터를 가장 깔끔하게 나누는 질문을 스스로 찾아요. 완성된 트리는 사람이 읽을 수 있는 규칙이 돼요. (분류 · 지도학습)',
-            todo: '날개길이·부리길이를 바꿔 보며 새 펭귄이 트리를 따라 내려가는 길과, 그래프에서 나뉜 칸을 견주어 보세요.',
-          },
-          {
-            id: 'step', scene: 'tree',
-            title: '의사결정 트리 ② 의사코드로 한 단계씩',
-            goal: '질문 후보마다 나눈 뒤 얼마나 섞이는지(지니 불순도)를 재고, 가장 덜 섞이는 질문을 골라요. 나눈 자식 노드는 할일 큐에 넣어 차례로 다시 나눠요.',
-            todo: '후보 표에서 가장 좋은 질문이 골라지고, 트리와 그래프가 함께 나뉘는 것을 보세요. 마지막엔 새 펭귄이 트리를 따라 내려가요.',
-          },
-          {
-            id: 'python', scene: 'python:06_decision_tree',
-            title: '의사결정 트리 ③ 🐍 파이썬 실습 (Colab)',
-            goal: 'scikit-learn으로 트리를 만들고, 만들어진 질문을 글자와 그림으로 꺼내 봐요. 사이트에서 손으로 만든 트리와 같은 질문이 나와요.',
-            todo: 'Colab에서 셀을 차례로 실행하고 plot_tree 그림을 사이트의 트리와 견주어 보세요.',
-          },
-        ],
-      },
-      {
-        id: 'linreg', name: '선형 회귀',
-        pages: [
-          {
-            id: 'idea', scene: 'linregExplore',
-            title: '선형 회귀 ① 아이디어 — 점들 사이로 직선 긋기',
-            goal: '날개가 긴 펭귄이 더 무거워요. 이 관계를 직선 하나(몸무게 = w × 날개길이 + b)로 나타내면 처음 보는 펭귄의 몸무게도 예측할 수 있어요. 가장 좋은 직선은 오차가 가장 작은 직선이에요. (예측 · 지도학습)',
-            todo: '기울기 w와 절편 b를 움직여 오차(빨간 선)를 줄여 보세요. "조금씩 고치기"를 누르면 컴퓨터가 오차를 줄여 가는 모습이 보여요.',
-          },
-          {
-            id: 'step', scene: 'linreg',
-            title: '선형 회귀 ② 의사코드로 한 단계씩 (최소제곱법)',
-            goal: '평균 점을 찾고, 펭귄마다 평균에서 벗어난 정도(dx, dy)를 곱해 더하면 기울기가 나와요. 계산표가 한 줄씩 채워지는 것을 따라가면 공식이 하는 일이 보여요.',
-            todo: '계산표에 dx×dy가 쌓이는 것을 보세요. 평균 점의 오른쪽 위·왼쪽 아래에 있는 점은 +, 나머지는 −예요.',
-          },
-          {
-            id: 'python', scene: 'python:07_linear_regression',
-            title: '선형 회귀 ③ 🐍 파이썬 실습 (Colab)',
-            goal: '직접 계산한 w, b와 scikit-learn LinearRegression의 결과가 같은지 확인하고, 오차(평균 제곱 오차)로 모델을 평가해요.',
-            todo: 'Colab에서 셀을 차례로 실행하고 날개길이 210mm 펭귄의 몸무게를 예측해 보세요.',
-          },
-        ],
-      },
-      {
-        id: 'kmeans', name: 'k-평균',
-        pages: [
-          {
-            id: 'idea', scene: 'kmeansExplore',
-            title: 'k-평균 ① 아이디어 — 정답 없이 묶기',
-            goal: '종을 모르는 펭귄들을 가까운 것끼리 k개 묶음으로 나눠요. 중심을 정하고 → 점을 가까운 중심에 배정하고 → 중심을 옮기기를 되풀이해요. (군집 · 비지도학습)',
-            todo: '처음 중심이 될 점 3개를 직접 골라 "끝까지 실행"을 눌러 보세요. 시작에 따라 결과가 달라지기도 해요.',
-          },
-          {
-            id: 'step', scene: 'kmeans',
-            title: 'k-평균 ② 의사코드로 한 단계씩',
-            goal: '배정(가장 가까운 중심 찾기)과 이동(묶음의 평균으로)을 되풀이하면 중심이 제자리를 찾아가요. 중심표와 소속목록이 바뀌는 것을 보세요.',
-            todo: '첫 되풀이에서는 점이 하나씩 배정되고, 그다음부터는 한꺼번에 다시 배정돼요. 몇 번 만에 멈추나요?',
-          },
-          {
-            id: 'python', scene: 'python:08_kmeans',
-            title: 'k-평균 ③ 🐍 파이썬 실습 (Colab)',
-            goal: 'scikit-learn KMeans로 펭귄을 묶고, 묶음을 실제 종과 견주어 봐요. 정답 없이도 종과 꽤 비슷하게 나뉘어요.',
-            todo: 'Colab에서 셀을 차례로 실행하고, n_clusters를 2·3·4로 바꿔 그림이 어떻게 달라지는지 보세요.',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'project', label: '프로젝트', icon: '🚀', tip: '모델 평가 · 전체 정리 · 이해 확인 · 프로젝트 안내',
-    pages: [
-      {
-        id: 'eval', scene: 'evaluate',
-        title: '모델 평가 — 정확도 재기',
-        goal: '모델을 만들었으면 처음 보는 데이터(테스트 데이터)로 시험을 봐요. 맞힌 개수 ÷ 전체 = 정확도예요. 틀린 문제를 살펴보면 모델의 약점도 보여요.',
-        todo: '테스트 펭귄 6마리를 하나씩 채점하며 정확도가 계산되는 것을 보세요. 틀린 펭귄은 왜 틀렸을까요?',
-      },
-      {
-        id: 'flow', scene: 'summary',
-        title: '전체 흐름 정리 — 수집부터 평가까지',
-        goal: '펭귄 데이터가 거쳐 온 길을 한 장으로 정리해요. 프로젝트에서도 이 순서를 그대로 따라가면 돼요.',
-        todo: '표의 줄을 눌러 그 단계로 다시 가 볼 수 있어요. 의사코드와 파이썬 함수를 짝지어 보세요.',
-      },
-      {
-        id: 'quiz', scene: 'quiz',
-        title: '이해 확인',
-        goal: '수집·가공·전처리·학습 준비·기계학습에서 배운 개념을 문제로 되짚어요.',
-        todo: '답을 고르면 바로 정답과 이유가 나와요. 틀려도 괜찮아요 — 이유를 읽고 다시 생각해 보세요.',
-      },
-      {
-        id: 'guide', scene: 'project',
-        title: '파이썬 인공지능 프로젝트 안내',
-        goal: '이제 여러분 차례예요. 관심 있는 문제를 골라 같은 순서로 인공지능을 만들어 봐요. 프로젝트 틀 노트북에 단계마다 채울 자리가 준비되어 있어요.',
-        todo: '단계별 체크리스트를 확인하고 "프로젝트 틀 노트북"을 Colab에서 열어 보세요.',
-      },
-    ],
-  },
-];
+const UNITS = [START, COLLECT, INSPECT, PREP, READY, ML, PROJECT];
 
-/** 상단 탭 목록 */
-export const TABS = TABS_RAW;
-export const ML_SUBTABS = TABS_RAW.find((t) => t.id === 'ml').sub;
+/* ── 저절로 붙는 쪽: 표지 · 정리 · 확인 문제 미션 ── */
+
+function coverPage(tab) {
+  return {
+    id: 'cover', scene: 'unitCover', auto: 'cover',
+    title: `${tab.unit.no}단원 들어가기 — ${tab.label}: ${tab.verb}`,
+    short: '표지',
+    objective: '이 단원에서 무엇을 배우고, 끝나면 무엇을 할 수 있게 되는지 말할 수 있다.',
+    why: '어디로 가는지 알고 출발하면, 쪽마다 무엇을 봐야 하는지 보여요.',
+    terms: [],
+    missions: [
+      { text: '🤔 생각 열기 — 질문에 내 생각을 하나 골라 보기', check: 'act:hook' },
+      { text: '📋 "이 단원을 마치면" 목록을 읽고 [시작하기 →] 누르기', check: 'act:begin' },
+    ],
+    minutes: 2,
+  };
+}
+
+function reviewPage(tab) {
+  return {
+    id: 'review', scene: 'unitReview', auto: 'review',
+    title: `${tab.unit.no}단원 정리 — ${tab.label}에서 배운 것`,
+    short: '정리',
+    objective: '이 단원의 목표를 스스로 점검하고, 확인 문제로 이해했는지 확인할 수 있다.',
+    why: '배운 것을 내 말로 정리하고 문제로 확인해야 오래 기억에 남아요.',
+    terms: [],
+    missions: [
+      { text: '✅ 할 수 있어요 점검표에 모두 표시하기', check: 'act:selfcheck' },
+      { text: '❓ 단원 확인 문제 모두 풀기', check: 'quiz' },
+    ],
+    minutes: 5,
+  };
+}
+
+function withAsk(page) {
+  if (!page.ask || page.missions?.some((m) => m.check === 'ask')) return page;
+  return { ...page, missions: [...(page.missions ?? []), { text: '❓ 확인 문제 맞히기', check: 'ask' }] };
+}
+
+function build(raw) {
+  const tab = { ...raw };
+  const cover = raw.unit.cover !== false;
+  const review = raw.unit.review !== false;
+  if (raw.sub) {
+    const subs = raw.sub.map((s) => ({ ...s, pages: s.pages.map(withAsk) }));
+    if (cover) subs[0] = { ...subs[0], pages: [coverPage(raw), ...subs[0].pages] };
+    if (review) subs.push({ id: 'review', name: '단원 정리', tag: '', pages: [reviewPage(raw)] });
+    tab.sub = subs;
+  } else {
+    tab.pages = [...(cover ? [coverPage(raw)] : []), ...raw.pages.map(withAsk), ...(review ? [reviewPage(raw)] : [])];
+  }
+  return tab;
+}
+
+/** 상단 탭(단원) 목록 */
+export const TABS = UNITS.map(build);
+export const ML_SUBTABS = TABS.find((t) => t.id === 'ml').sub;
 
 function clamp(i, len) { return Math.max(0, Math.min(len - 1, i | 0)); }
 
@@ -353,19 +127,61 @@ export function currentPage(state) {
   return steps[index];
 }
 
-/** 다른 곳으로 가는 상태 조각 — 정리 표·알고리즘 지도에서 "그 쪽으로 가기"에 쓴다 */
+/** 다른 곳으로 가는 상태 조각 — 정리 표·알고리즘 지도·목차에서 "그 쪽으로 가기"에 쓴다 */
 export function goPatch(tabId, pageId = null, subId = null) {
   const patch = { tab: tabId };
   const tab = TABS.find((t) => t.id === tabId);
   if (!tab) return patch;
   if (tab.sub) {
-    const sub = tab.sub.find((s) => s.id === subId) ?? tab.sub[0];
+    let sub = tab.sub.find((s) => s.id === subId);
+    if (!sub && pageId) sub = tab.sub.find((s) => s.pages.some((p) => p.id === pageId));
+    sub ??= tab.sub[0];
     patch.mlTab = sub.id;
-    if (pageId) patch[`step:${tab.id}:${sub.id}`] = Math.max(0, sub.pages.findIndex((p) => p.id === pageId));
-  } else if (pageId) {
-    patch[`step:${tab.id}`] = Math.max(0, tab.pages.findIndex((p) => p.id === pageId));
+    patch[`step:${tab.id}:${sub.id}`] = pageId ? Math.max(0, sub.pages.findIndex((p) => p.id === pageId)) : 0;
+  } else {
+    patch[`step:${tab.id}`] = pageId ? Math.max(0, tab.pages.findIndex((p) => p.id === pageId)) : 0;
   }
   return patch;
+}
+
+/** 단원 하나의 쪽을 차례대로 — [{ tab, sub, page, label }] */
+export function unitPages(tab) {
+  const list = tab.sub
+    ? tab.sub.flatMap((s) => s.pages.map((page) => ({ tab, sub: s, page })))
+    : tab.pages.map((page) => ({ tab, sub: null, page }));
+  let n = 0;
+  for (const it of list) {
+    if (it.page.auto === 'cover') it.label = '표지';
+    else if (it.page.auto === 'review') it.label = '정리';
+    else { n += 1; it.label = `${tab.unit.no}-${n}`; }
+  }
+  return list;
+}
+
+/**
+ * 단원 안의 쪽 찾기 — ref는 '쪽id' 또는 '하위탭:쪽id'(기계학습처럼 하위 탭마다 같은 id가 있을 때)
+ * canDo.pages · quiz.page가 이 형식을 쓴다.
+ */
+export function findPage(tab, ref) {
+  const [a, b] = ref.includes(':') ? ref.split(':') : [null, ref];
+  return unitPages(tab).find((it) => it.page.id === b && (a === null || it.sub?.id === a)) ?? null;
+}
+export function refPatch(tab, ref) {
+  const it = findPage(tab, ref);
+  return it ? goPatch(tab.id, it.page.id, it.sub?.id) : goPatch(tab.id);
+}
+
+/** 쪽 번호표 — '2-3', '표지', '정리' */
+export function pageLabel(tab, sub, page) {
+  return unitPages(tab).find((it) => it.page === page || (it.page.id === page.id && (it.sub?.id ?? null) === (sub?.id ?? null)))?.label ?? '';
+}
+
+/** 쪽의 종류 — 단계 표시 줄의 배지 */
+export function pageKind(page) {
+  if (page.auto === 'cover') return { icon: '🧭', name: '단원 표지' };
+  if (page.auto === 'review') return { icon: '📝', name: '단원 정리' };
+  if (page.scene.startsWith('python:')) return { icon: '🐍', name: 'Colab 실습' };
+  return null; // 단계 실행/탐험은 장면이 알려 준다(sceneHost)
 }
 
 /** 모든 쪽을 평평하게 (테스트·화면 점검용) */

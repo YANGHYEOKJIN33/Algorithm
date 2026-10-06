@@ -7,7 +7,7 @@ const STORAGE_KEY = 'ai-data-lab:prefs';
 
 /** 새로 고쳐도 남길 값 — "어디까지 봤나"와 보기 설정 */
 const PERSIST_PREFIX = ['step:'];
-const PERSISTED = ['tab', 'mlTab', 'codeView', 'speedId', 'theme', 'scale'];
+const PERSISTED = ['tab', 'mlTab', 'codeView', 'speedId', 'theme', 'scale', 'lessonFold'];
 
 const initial = {
   tab: 'start',          // 큰 탭: start · collect · inspect · prep · ready · ml · project
@@ -16,6 +16,7 @@ const initial = {
   speedId: 'normal',
   theme: 'auto',
   scale: 1,
+  lessonFold: false,     // 레슨 막대의 목표·할 일을 접었나(좁은 화면에서 그림을 넓게)
 };
 
 function loadPrefs() {

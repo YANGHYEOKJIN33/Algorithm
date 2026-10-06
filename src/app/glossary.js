@@ -27,6 +27,9 @@ export const GLOSSARY = [
       { term: '요청과 응답', en: 'request · response', plain: '내 컴퓨터가 서버에 "이 쪽 주세요"(요청)라고 하면 서버가 HTML을 보내 줘요(응답).', where: '🕸 수집 2쪽' },
       { term: '파싱', en: 'parsing (BeautifulSoup)', plain: '긴 HTML 글자를 태그 나무로 분석해, 원하는 태그를 찾을 수 있게 만드는 일.', where: '🕸 수집 2쪽' },
       { term: 'robots.txt', en: 'robots.txt', plain: '사이트가 "크롤러는 여기까지만 와 주세요"라고 적어 둔 안내 파일.', where: '🕸 수집 3쪽' },
+      { term: 'API', en: 'Application Programming Interface', plain: '사이트가 프로그램에게 데이터를 주려고 열어 둔 정식 통로. 있으면 크롤링보다 먼저 써요.', where: '🕸 수집 3쪽' },
+      { term: '개인정보', en: 'personal information', plain: '이름·연락처·사진처럼 누구인지 알아볼 수 있는 정보. 크롤링으로 모으거나 퍼뜨리면 안 돼요.', where: '🕸 수집 3쪽' },
+      { term: '편향', en: 'bias', plain: '데이터가 한쪽으로 치우친 것. 앞쪽만 모으면 아델리펭귄뿐인 데이터가 돼요.', where: '🕸 수집 3쪽' },
     ],
   },
   {
