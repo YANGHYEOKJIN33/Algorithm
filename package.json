@@ -1,0 +1,12 @@
+{
+  "name": "ai-data-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "펭귄 데이터로 배우는 인공지능 — 수집·가공·전처리·기계학습 학습 사이트",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "build": "node scripts/build.mjs",
+    "start": "python3 -m http.server 8000"
+  }
+}
