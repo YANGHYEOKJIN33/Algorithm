@@ -1,5 +1,9 @@
 /**
  * 🤖 k-최근접 이웃 — ① 탐험(새 펭귄을 옮기며 k 바꾸기) · ② 의사코드 한 단계씩
+ *
+ * 미션 신호(ctx.check)
+ *   ① 'move-star' 그래프를 눌러 ★ 옮기기 · 'change-k' k 바꾸기 · 'region' 영역 색칠 켜기
+ *   ② 'step-k'    그림 위의 k를 바꿔 다시 실행하기
  */
 import { el, fill } from '../ui/dom.js';
 import { createFlip } from '../ui/flip.js';
@@ -16,14 +20,44 @@ const NB = '05_knn';
 const AXES = { x: [33, 56], y: [12.5, 22], xLabel: '부리길이 (mm)', yLabel: '부리깊이 (mm)' };
 const KS = [1, 3, 5, 7];
 
-function drawPoints(sc, train, { dim = null, ring = null, labels = null } = {}) {
-  sc.clear('points');
+function drawPoints(sc, train, { dim = null, ring = null, labels = null, query = null } = {}) {
+  sc.clear('points', 'over');
   for (const p of train) {
     const si = speciesIndex(p.label);
     const cls = `pt sp${si}${dim && !dim.has(p.id) ? ' is-dim' : ''}`;
     sc.layers.points.append(marker(si, sc.sx(p.x), sc.sy(p.y), 6, { class: cls }));
     if (ring && ring.has(p.id)) sc.layers.points.append(s('circle.pt-ring.pt-ring--result', { cx: sc.sx(p.x), cy: sc.sy(p.y), r: 11 }));
-    if (labels && labels.has(p.id)) sc.layers.points.append(s('text.pt-label', { x: sc.sx(p.x) + 8, y: sc.sy(p.y) - 7 }, `${p.id}번`));
+  }
+  if (labels?.size) drawLabels(sc, train, labels, query);
+}
+
+/**
+ * 번호 글자('153번')를 점들 위 층(over)에, 다른 점·★·글자를 가리지 않는 자리에 놓는다.
+ * 오른쪽 위 → 오른쪽 아래 → 왼쪽 위 → 왼쪽 아래 → 위 → 아래 순으로 시험해 가장 덜 겹치는 곳.
+ */
+function drawLabels(sc, train, labels, query) {
+  const dots = train.map((p) => ({ id: p.id, x: sc.sx(p.x), y: sc.sy(p.y), r: 7 }));
+  if (query) dots.push({ id: 'q', x: sc.sx(query.x), y: sc.sy(query.y), r: 12 });
+  const placed = [];
+  const hits = (box, selfId) => dots.filter((d) => d.id !== selfId
+    && d.x + d.r > box.x0 && d.x - d.r < box.x1 && d.y + d.r > box.y0 && d.y - d.r < box.y1).length
+    + placed.filter((b) => b.x1 > box.x0 && b.x0 < box.x1 && b.y1 > box.y0 && b.y0 < box.y1).length;
+  for (const p of train.filter((t) => labels.has(t.id))) {
+    const x = sc.sx(p.x); const y = sc.sy(p.y);
+    const text = `${p.id}번`;
+    const w = 6.2 * String(p.id).length + 11; const h = 11;
+    const spots = [
+      { x: x + 9, y: y - 8, anchor: 'start' }, { x: x + 9, y: y + 16, anchor: 'start' },
+      { x: x - 9, y: y - 8, anchor: 'end' }, { x: x - 9, y: y + 16, anchor: 'end' },
+      { x, y: y - 13, anchor: 'middle' }, { x, y: y + 22, anchor: 'middle' },
+    ].map((sp) => {
+      const x0 = sp.anchor === 'start' ? sp.x : sp.anchor === 'end' ? sp.x - w : sp.x - w / 2;
+      const box = { x0, x1: x0 + w, y0: sp.y - h + 2, y1: sp.y + 2 };
+      return { ...sp, box, n: hits(box, p.id) };
+    });
+    const best = spots.reduce((a, b) => (b.n < a.n ? b : a));
+    placed.push(best.box);
+    sc.layers.over.append(s('text.pt-label', { x: best.x, y: best.y, 'text-anchor': best.anchor }, text));
   }
 }
 
@@ -44,16 +78,16 @@ function voteBars(counts, pred, k) {
 
 /* ═════════════ ① 탐험 ═════════════ */
 
-function knnExplore(root) {
+function knnExplore(root, ctx) {
   const train = knnTrain();
   let q = { x: KNN_QUERY.x, y: KNN_QUERY.y };
   let k = 3;
   let region = false;
-  const sc = createScatter({ ...AXES, width: 620, height: 380, onClick: (x, y) => { q = { x: round(x, 1), y: round(y, 1) }; draw(); } });
+  const sc = createScatter({ ...AXES, width: 620, height: 380, onClick: (x, y) => { q = { x: round(x, 1), y: round(y, 1) }; draw(); ctx?.check('move-star'); } });
   sc.mover('q', () => starPath(11));
-  const ks = kSelector(() => k, (v) => { k = v; ks.sync(); draw(); });
+  const ks = kSelector(() => k, (v) => { if (v === k) return; k = v; ks.sync(); draw(); ctx?.check('change-k'); });
   const side = el('div.knnx__side');
-  const regionBtn = el('button.pill', { type: 'button', onclick: () => { region = !region; draw(); } });
+  const regionBtn = el('button.pill', { type: 'button', onclick: () => { region = !region; draw(); if (region) ctx?.check('region'); } });
 
   function drawRegion() {
     sc.clear('region');
@@ -124,13 +158,13 @@ const knnStep = {
   stageTitle: '훈련 데이터 18마리와 새 펭귄 ★ (341번)',
   stageHint: '',
   dataTitle: '거리목록 → 이웃 → 세기표',
-  rows: ['1.25fr', '0.85fr'],
+  rows: ['1.15fr', '0.95fr'],   // 자료구조 칸에 거리목록 3줄 + 세기표 + 예측이 한눈에 들어오게
   frames: () => KNN.knnFrames({ k: stepK }),
   mount({ stage, data, stageTools }, ctx) {
     stage.classList.add('fit');
     const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 34 }) });
     sc.mover('q', () => starPath(11));
-    const ks = kSelector(() => stepK, (v) => { stepK = v; ks.sync(); ctx.reload(); });
+    const ks = kSelector(() => stepK, (v) => { if (v === stepK) return; stepK = v; ks.sync(); ctx.reload(); ctx.check('step-k'); });
     fill(stageTools, ks.seg);
     const flip = createFlip();
     fill(stage, speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄(종을 모름)')]), el('div.fit__grow', {}, sc.svg));
@@ -155,7 +189,7 @@ const knnStep = {
         }
         const dim = f.neighbors.length ? new Set(f.neighbors) : null;
         const labels = new Set([...(f.neighbors ?? []), ...(f.focus !== null ? [f.focus] : [])]);
-        drawPoints(sc, f.train, { dim, ring: f.focus !== null ? new Set([f.focus]) : null, labels });
+        drawPoints(sc, f.train, { dim, ring: f.focus !== null ? new Set([f.focus]) : null, labels, query: q });
 
         const items = f.list.map((e, i) => {
           const si = speciesIndex(e.label);

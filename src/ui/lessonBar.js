@@ -45,16 +45,16 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
   const why = el('div.lesson__why.callout', { hidden: true });
   const missionHead = el('div.missions__head');
   const missionList = el('ul.missions__list');
-  const missionBox = el('section.missions', { 'aria-label': '할 일' }, missionHead, missionList);
-  const askPop = el('div.askpop', { hidden: true, role: 'dialog', 'aria-label': '확인 문제' });
   const toast = el('div.lesson__toast', { 'aria-live': 'polite' });
+  const missionBox = el('section.missions', { 'aria-label': '할 일' }, missionHead, missionList, toast);
+  const askPop = el('div.askpop', { hidden: true, role: 'dialog', 'aria-label': '확인 문제' });
 
   const body = el('div.lesson__body', {},
     el('div.lesson__main', {}, title, goal, terms, why),
     missionBox);
   fill(root,
     el('div.lesson__head', {}, unitChip, stepper, mini, el('span.topbar__spacer'), foldBtn, el('div.lesson__navs', {}, prev, next)),
-    body, askPop, toast);
+    body, askPop);
 
   function nextPlace() {
     const state = store.get();

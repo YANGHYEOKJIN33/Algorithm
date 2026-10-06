@@ -91,6 +91,13 @@ function unitProblems(tab) {
   if (!(u.standards?.length >= 1) || !u.standards.every((s) => /^\[12\S+\]$/.test(s.code) && s.text)) bad('unit.standards [{ code: "[12인기02-01]", text }]');
   if (!u.before || !u.after) bad('unit.before / unit.after 없음');
   if (!(u.minutes > 0)) bad('unit.minutes 없음');
+  // 정답 자리가 한쪽(예: 늘 가운데)에 몰리면 내용을 몰라도 맞힐 수 있다
+  const answers = [...unitPages(tab).map((it) => it.page.ask?.answer), ...(u.quiz ?? []).map((q) => q.answer)].filter((a) => a !== undefined);
+  if (answers.length >= 4) {
+    const most = Math.max(...[0, 1, 2, 3].map((k) => answers.filter((a) => a === k).length));
+    if (most / answers.length > 0.6) bad(`정답 자리가 한쪽에 몰렸다(ask·quiz 정답 번호 ${answers.join('')}) — 보기 순서를 섞어 고르게`);
+  }
+  if ((u.quiz ?? []).length >= 3 && new Set(u.quiz.map((q) => q.answer)).size === 1) bad('단원 확인 문제의 정답 자리가 모두 같다');
   if (tab.sub) for (const s of tab.sub) if (s.id !== 'review' && !s.tag) out.push(`${tab.id}:${s.id} 하위 탭 — tag(예: 분류 · 지도학습) 없음`);
   return out;
 }

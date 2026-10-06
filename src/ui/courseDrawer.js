@@ -3,7 +3,7 @@
  * (Khan Academy의 단원 목록·Learn Git Branching의 레벨 고르기처럼 "어디까지 했나"가 보이게)
  */
 import { el, fill } from './dom.js';
-import { TABS, unitPages, goPatch } from '../app/lessons.js';
+import { TABS, unitPages, goPatch, subPrefix } from '../app/lessons.js';
 import { pageDone, pageCount, unitProgress, canDoDone } from '../app/missions.js';
 
 export function createCourseDrawer(store, progress) {
@@ -40,7 +40,7 @@ export function createCourseDrawer(store, progress) {
             onclick: () => go(goPatch(tab.id, it.page.id, it.sub?.id)),
           },
           el('span.course__label', {}, ok ? '✓' : it.label),
-          el('span.course__title', {}, it.sub && it.sub.id !== 'review' && it.page.auto !== 'cover' ? `[${it.sub.name}] ` : '', it.page.title),
+          el('span.course__title', {}, subPrefix(it, '[]'), it.page.title),
           el('span.course__obj', {}, it.page.objective ?? ''),
           el('span.course__cnt', {}, cnt.total ? `✋ ${cnt.done}/${cnt.total}` : '')));
         })));

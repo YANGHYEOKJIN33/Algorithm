@@ -246,7 +246,7 @@ export function fillModeFrames(source = afterMeanFill()) {
   for (const r of table.rows) {
     const v = r[col];
     if (isMissing(v)) {
-      snap({ line: 2, icon: '⏭️', focus: r._k, say: `인덱스 ${r._i}행은 빈칸이라 세지 않고 건너뛰어요.` });
+      snap({ line: 2, icon: '↪️', focus: r._k, say: `인덱스 ${r._i}행은 빈칸이라 세지 않고 건너뛰어요.` });
       continue;
     }
     const hit = counts.find((c) => c[0] === v);

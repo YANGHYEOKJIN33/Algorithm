@@ -145,14 +145,15 @@
 .askpop__q { font-weight: 700; font-size: var(--fs-md); margin: 0; }
 .askpop__opts { display: flex; flex-direction: column; gap: 4px; }
 
-/* 미션 완료 알림 */
+/* 미션 완료 알림 — ✋ 할 일 상자 위에 잠깐 뜬다(그림을 가리지 않게) */
+.missions { position: relative; }
 .lesson__toast {
-  position: absolute; z-index: 70; left: 50%; top: calc(100% + 6px); transform: translate(-50%, -6px);
+  position: absolute; z-index: 70; right: 8px; top: -14px; transform: translateY(-4px);
   background: var(--add); color: #fff; font-weight: 700; font-size: var(--fs-sm);
   padding: 4px var(--sp-4); border-radius: 999px; box-shadow: var(--shadow);
   opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; white-space: nowrap;
 }
-.lesson__toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+.lesson__toast.is-on { opacity: 1; transform: translateY(0); }
 
 /* 낮은 화면(노트북·프로젝터) — 레슨 막대를 더 얇게 */
 @media (min-width: 901px) and (max-height: 860px) {

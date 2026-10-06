@@ -9,7 +9,7 @@
  * 내용은 모두 course/<단원>.js의 unit에서 가져온다(장면에는 글을 적지 않는다).
  */
 import { el, fill } from '../ui/dom.js';
-import { TABS, unitPages, pageKind, goPatch, refPatch } from '../app/lessons.js';
+import { TABS, unitPages, pageKind, goPatch, refPatch, subPrefix } from '../app/lessons.js';
 import { pageDone, pageCount, unitProgress, canDoDone } from '../app/missions.js';
 import { getScene } from './index.js';
 import { quizBox } from '../ui/quizBox.js';
@@ -72,7 +72,7 @@ function unitCover(root, ctx) {
       },
       el('span.upage__label', {}, ok ? '✓' : it.label),
       el('span.upage__main', {},
-        el('span.upage__title', {}, it.sub && it.sub.id !== 'review' && it.sub.id !== 'concept' ? `${it.sub.name} · ` : '', it.page.short && it.page.auto ? it.page.short : it.page.title),
+        el('span.upage__title', {}, subPrefix(it, ' · '), it.page.short && it.page.auto ? it.page.short : it.page.title),
         it.page.objective ? el('span.upage__obj', {}, `🎯 ${it.page.objective}`) : null),
       el('span.upage__meta', {}, `${k.icon} ${k.name}`, it.page.minutes ? ` · ${it.page.minutes}분` : '', cnt.total ? ` · ✋ ${cnt.done}/${cnt.total}` : '')));
     }));

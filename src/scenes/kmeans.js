@@ -48,12 +48,18 @@ function drawTrails(sc, trail) {
 
 /* ═════════════ ① 탐험 ═════════════ */
 
-function kmeansExplore(root) {
+/**
+ * 미션 신호: ctx.check('km-pick') — 그래프를 눌러 처음 중심 3개를 골랐을 때,
+ *            ctx.check('km-end') — 중심이 멈출 때까지 돌렸을 때,
+ *            ctx.check('km-compare') — 서로 다른 처음 중심 두 가지를 끝까지 돌려 봤을 때
+ */
+function kmeansExplore(root, ctx) {
   const points = KM.kmeansPoints();
   let picked = [...KMEANS_INIT_IDS];
   let run = null;          // { history, assign, iterations }
   let step = 0;            // 몇 번째 되풀이까지 보여 줄지
   let showSpecies = false;
+  const finished = new Set();   // 끝까지 돌려 본 처음 중심들('1,6,14' 꼴)
   const sc = createScatter({
     ...AXES, width: 620, height: 380,
     onClick: (x, y) => {
@@ -64,6 +70,7 @@ function kmeansExplore(root) {
       if (picked.includes(best.id)) picked = picked.filter((id) => id !== best.id);
       else if (picked.length < 3) picked = [...picked, best.id];
       else picked = [...picked.slice(1), best.id];
+      if (picked.length === 3) ctx?.check('km-pick');
       run = null; step = 0; draw();
     },
   });
@@ -100,8 +107,15 @@ function kmeansExplore(root) {
     else sc.clear('under');
     drawPoints(sc, points, assign, { showSpecies, picked: run ? [] : picked });
     const done = run && step >= run.history.length - 1;
+    if (done) {
+      finished.add([...picked].sort((a, b) => a - b).join(','));
+      ctx?.check('km-end');
+      if (finished.size >= 2) ctx?.check('km-compare');
+    }
     fill(status,
-      run ? el('div', {}, `되풀이 ${Math.min(step, run.iterations)}번 ${done ? '— 중심이 멈췄어요 ✅' : ''}`) : el('div', {}, ready ? '처음 중심 3개를 골랐어요. ▶를 눌러 보세요.' : `처음 중심이 될 점을 그래프에서 눌러 고르세요 (${picked.length}/3)`));
+      run ? el('div', {}, `되풀이 ${Math.min(step, run.iterations)}번 ${done ? '— 중심이 멈췄어요 ✅' : ''}`)
+        : el('div', {}, ready ? `처음 중심: ${picked.map((id) => `${id}번`).join(' · ')}. ⏭ 한 번 되풀이나 ⏩ 끝까지 실행을 눌러 보세요.` : `처음 중심이 될 점을 그래프에서 눌러 고르세요 (${picked.length}/3)`),
+        finished.size ? el('div.panel__hint', {}, `끝까지 돌려 본 처음 중심 ${finished.size}가지`) : null);
     const counts = [0, 1, 2].map((j) => assign.filter((a) => a === j).length);
     const mix = [0, 1, 2].map((j) => SPECIES.map((sp) => points.filter((p, i) => assign[i] === j && p.label === sp).length));
     fill(side,
@@ -140,7 +154,7 @@ const kmeansStep = {
   stageTitle: '정답(종)을 지운 펭귄 18마리',
   stageHint: '⊗ = 중심, 점선 = 중심이 지나온 길',
   dataTitle: '중심표 · 소속목록',
-  rows: ['1.3fr', '0.75fr'],
+  rows: ['1.2fr', '0.85fr'],
   frames: () => KM.kmeansFrames(),
   mount({ stage, data }) {
     stage.classList.add('fit');

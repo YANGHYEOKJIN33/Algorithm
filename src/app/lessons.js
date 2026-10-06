@@ -176,6 +176,13 @@ export function pageLabel(tab, sub, page) {
   return unitPages(tab).find((it) => it.page === page || (it.page.id === page.id && (it.sub?.id ?? null) === (sub?.id ?? null)))?.label ?? '';
 }
 
+/** 목록에서 쪽 제목 앞에 붙이는 하위 탭 이름 — 제목이 이미 그 이름으로 시작하면('k-최근접 이웃 ① …') 붙이지 않는다 */
+export function subPrefix(it, sep) {
+  const sub = it.sub;
+  if (!sub || sub.id === 'review' || it.page.auto || it.page.title.startsWith(sub.name)) return '';
+  return sep === ' · ' ? `${sub.name}${sep}` : `[${sub.name}] `;
+}
+
 /** 쪽의 종류 — 단계 표시 줄의 배지 */
 export function pageKind(page) {
   if (page.auto === 'cover') return { icon: '🧭', name: '단원 표지' };

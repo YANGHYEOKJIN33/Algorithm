@@ -1,7 +1,11 @@
 /**
  * 🤖 의사결정 트리 — ① 탐험(새 펭귄이 트리를 따라 내려가기) · ② 의사코드 한 단계씩(트리 키우기)
+ *
+ * 미션 신호(ctx.check) — ① 막대·그래프로 ★을 옮겨 예측이 바뀌었을 때
+ *   'tree-gentoo' 젠투 잎에 닿음 · 'tree-adelie' 아델리 잎에 닿음 (처음 283번 펭귄은 턱끈)
  */
 import { el, fill } from '../ui/dom.js';
+import { infoTerm } from '../ui/infoTip.js';
 import { createFlip } from '../ui/flip.js';
 import * as TREE from '../core/ml/tree.js';
 import { treeData, TREE_QUERY } from '../core/data/sets.js';
@@ -61,7 +65,13 @@ function treeSvg(nodes, layout, { current = null, path = [], W = 560, H = 300 } 
       const a = P(n.parent); const b = P(n.id);
       const onPath = path.includes(n.id) && path.includes(n.parent);
       edges.push(s(`path.tedge${onPath ? '.is-path' : ''}`, { d: `M${a.x},${a.y + 74} C${a.x},${a.y + 90} ${b.x},${b.y - 16} ${b.x},${b.y}` }));
-      edges.push(s('text.tedge__lbl', { x: (a.x + b.x) / 2 + (n.side === 'yes' ? -10 : 10), y: (a.y + 74 + b.y) / 2 + 4, 'text-anchor': n.side === 'yes' ? 'end' : 'start' }, n.side === 'yes' ? '예' : '아니오'));
+      // 가지 글자는 자식 상자 바로 위, 가지가 들어오지 않는 바깥쪽에 둔다(가지와 겹치지 않게).
+      // 예(왼쪽 자식)는 가지가 오른쪽 위에서 오므로 왼쪽에, 아니오(오른쪽 자식)는 오른쪽에. 테두리(halo)로 선 위에서도 읽히게.
+      const yes = n.side === 'yes';
+      edges.push(s('text.tedge__lbl', {
+        x: b.x + (yes ? -8 : 8), y: b.y - 6, 'text-anchor': yes ? 'end' : 'start',
+        style: 'paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round;',
+      }, yes ? '예' : '아니오'));
     }
     const p = P(n.id);
     boxes.push(nodeBox(n, p.x, p.y, { current: n.id === current, onPath: path.includes(n.id), w: Math.min(176, colW - 10) }));
@@ -110,24 +120,26 @@ function drawItems(sc, items, { dim = null } = {}) {
 
 /* ═════════════ ① 탐험 ═════════════ */
 
-function treeExplore(root) {
+function treeExplore(root, ctx) {
   const items = treeData();
   const tree = TREE.buildTree(items);
   const flat = TREE.flatten(tree);
   const layout = layoutOf(tree);
   let q = { 날개길이: TREE_QUERY.날개길이, 부리길이: TREE_QUERY.부리길이 };
-  const sc = createScatter({ ...AXES, width: 520, height: 340, onClick: (x, y) => { q = { 날개길이: Math.round(x), 부리길이: Math.round(y * 10) / 10 }; draw(); } });
+  const sc = createScatter({ ...AXES, width: 520, height: 340, onClick: (x, y) => { q = { 날개길이: Math.round(x), 부리길이: Math.round(y * 10) / 10 }; draw(true); } });
   sc.mover('q', () => starPath(11));
   const treeBox = el('div.treex__tree');
   const result = el('div.treex__result');
-  const inW = el('input', { type: 'range', min: 170, max: 234, step: 1, 'aria-label': '날개길이', oninput: (e) => { q.날개길이 = Number(e.target.value); draw(); } });
-  const inB = el('input', { type: 'range', min: 34, max: 54, step: 0.1, 'aria-label': '부리길이', oninput: (e) => { q.부리길이 = Number(e.target.value); draw(); } });
+  const inW = el('input', { type: 'range', min: 170, max: 234, step: 1, 'aria-label': '날개길이', oninput: (e) => { q.날개길이 = Number(e.target.value); draw(true); } });
+  const inB = el('input', { type: 'range', min: 34, max: 54, step: 0.1, 'aria-label': '부리길이', oninput: (e) => { q.부리길이 = Number(e.target.value); draw(true); } });
   const lw = el('b'); const lb = el('b');
 
-  function draw() {
+  function draw(byHand = false) {
     inW.value = q.날개길이; inB.value = q.부리길이;
     lw.textContent = `${q.날개길이}mm`; lb.textContent = `${q.부리길이}mm`;
     const { path, pred } = TREE.walk(tree, q);
+    if (byHand && pred === '젠투') ctx?.check('tree-gentoo');
+    if (byHand && pred === '아델리') ctx?.check('tree-adelie');
     const ids = path.map((n) => n.id);
     fill(treeBox, treeSvg(flat, layout, { path: ids, W: 600, H: 320 }));
     drawPartition(sc, flat);
@@ -147,6 +159,9 @@ function treeExplore(root) {
         el('label', {}, '날개길이 ', lw, inW),
         el('label', {}, '부리길이 ', lb, inB),
         el('button.pill', { type: 'button', onclick: () => { q = { 날개길이: TREE_QUERY.날개길이, 부리길이: TREE_QUERY.부리길이 }; draw(); } }, '↺ 283번 펭귄으로')),
+      // 지니 불순도가 노드마다 보이므로, 그림 바로 위에 한 줄로 뜻을 먼저 알려 준다
+      el('p.panel__hint', {}, '📏 ', infoTerm('지니 불순도', { strong: true }), ' = 한 노드에 여러 종이 섞인 정도. ',
+        el('b', {}, '0이면 한 종만'), ' 있어요(잎). 뿌리 0.664 = 세 종이 섞여 있음'),
       treeBox, result),
     el('div.treex__right', {},
       speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄')]),
@@ -166,7 +181,7 @@ const treeStep = {
   stageTitle: '자라는 트리  |  같은 일을 그래프에서',
   stageHint: '파란 테두리 = 지금 나누는 노드',
   dataTitle: '질문 후보(불순도) · 할일 큐',
-  rows: ['1.45fr', '0.75fr'],
+  rows: ['1.38fr', '0.82fr'],   // 질문 후보 표(3줄)가 잘리지 않게
   frames: () => TREE.treeFrames(),
   mount({ stage, data }) {
     stage.classList.add('fit');
@@ -188,10 +203,10 @@ const treeStep = {
         drawItems(sc, items, { dim: cur ? new Set(cur.ids) : null });
         sc.move('q', f.query.날개길이, f.query.부리길이, { hidden: !f.path });
         const cands = f.cands ? [...f.cands].sort((a, b) => a.score - b.score) : [];
-        const top = cands.slice(0, 5);
+        const top = cands.slice(0, 3);   // 1등과 그다음 둘 — 자료구조 칸에 잘리지 않고 들어가게
         fill(data, el('div.treeds', {},
           el('div.treeds__cands', {},
-            el('div.webx__cap', {}, f.cands ? `질문 후보 ${f.cands.length}개 중 불순도가 낮은 5개 (낮을수록 좋음)` : '질문 후보'),
+            el('div.webx__cap', {}, f.cands ? `질문 후보 ${f.cands.length}개 중 불순도가 가장 낮은 3개 (낮을수록 좋음)` : '질문 후보'),
             f.cands ? el('table.mini', {},
               el('thead', {}, el('tr', {}, el('th', {}, '질문'), el('th', {}, '예 쪽 ●▲■'), el('th', {}, '아니오 쪽 ●▲■'), el('th', {}, '불순도'))),
               el('tbody', {}, top.map((c) => el(`tr${f.best && c.feature === f.best.feature && c.threshold === f.best.threshold ? '.is-best' : ''}`, {},

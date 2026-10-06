@@ -23,6 +23,16 @@ export const PYTHON = [
   'accuracy_score(y_test, pred)   # 맞힌수 ÷ 개수',
 ];
 
+/** 틀린 까닭 — 가장 가까운 이웃과 다수결을 그대로 말한다(예: 163번) */
+function whyWrong(train, t, k, pred) {
+  const nb = rankNeighbors(train, t).slice(0, k);
+  const first = train.find((p) => p.id === nb[0].id);
+  const votes = nb.filter((n) => train.find((p) => p.id === n.id).label === pred).length;
+  return first.label === t.label
+    ? `가장 가까운 ${first.id}번은 '${first.label}'이지만, 이웃 ${k}마리 중 ${votes}마리가 '${pred}'라 다수결에서 졌어요.`
+    : `가장 가까운 ${first.id}번부터 '${pred}'이고, 이웃 ${k}마리 중 ${votes}마리가 '${pred}'였어요.`;
+}
+
 export function evalFrames({ train = knnTrain(), test = knnTest(), k = K } = {}) {
   const frames = [];
   const rows = [];        // {id, truth, pred, ok}
@@ -39,7 +49,7 @@ export function evalFrames({ train = knnTrain(), test = knnTest(), k = K } = {})
     rows.push({ id: t.id, truth: t.label, pred, ok });
     snap({ line: 4, icon: ok ? '⭕' : '❌', focus: t.id, neighbors: nb,
       say: ok ? `정답도 '${t.label}' → 맞혔어요! (맞힌수 ${correct})`
-        : `정답은 '${t.label}' → 틀렸어요. ${t.label === '젠투' && pred === '아델리' ? '부리가 짧은 젠투라 아델리 이웃에 더 가까웠어요.' : `'${pred}' 이웃에 더 가까이 있었어요.`}` });
+        : `정답은 '${t.label}' → 틀렸어요. ${whyWrong(train, t, k, pred)}` });
   }
   const accuracy = correct / test.length;
   snap({ line: 5, icon: '📊', accuracy, done: true,
