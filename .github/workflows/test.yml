@@ -1,0 +1,26 @@
+# 코어 로직 테스트 — 판다스·사이킷런과 같은 값을 내는지, 만들어 둔 파일이 원본과 같은지
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 내려받기
+        uses: actions/checkout@v4
+
+      - name: Node 준비
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 테스트 실행
+        run: npm test
