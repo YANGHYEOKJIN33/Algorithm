@@ -72,14 +72,14 @@ export function featureFrames() {
       say: `${v.keep ? '넣어요' : '빼요'} — ${v.why}` });
   }
   snap({ line: 6, icon: '🧾', done: true,
-    say: `핵심 속성 ${kept.length}개(${kept.join(', ')})는 입력 X(독립변수), 정답 '종'은 y(종속변수)예요. 뺀 속성: ${dropped.join(', ')}.` });
+    say: `핵심 속성 ${kept.length}개(${kept.join(', ')})는 입력 X(독립변수), 정답 '종'은 y(종속변수)예요. 뺀 속성(${dropped.join(', ')})은 X에 안 넣을 뿐, 표에서 지울지는 다음 쪽에서 정해요.` });
   return frames;
 }
 
 /* ═════════════════ ② 데이터 삭제 (열·겹친 행·잘못된 행) ═════════════════ */
 
 export const DROP_PSEUDO = [
-  { code: "지울 열 ← '연도'", note: '관측한 해는 종을 맞히는 데 쓰지 않아요(앞 쪽에서 뺀 속성).' },
+  { code: "지울 열 ← '연도'", note: '연도는 X에서 뺐고 뒤에서도 안 써서 열째로 지워요. X에서 뺀 번호·섬·성별은 뒤에서 쓸 수 있어 남겨요.' },
   { code: '표에서 지울 열을 지운다', note: '열을 지우면 모든 행에서 그 칸이 함께 사라져요.' },
   { code: '겹친 행을 찾는다 (모든 값이 같은 행)', note: '크롤링할 때 쪽이 넘어가며 같은 줄이 두 번 실리는 일이 흔해요.' },
   { code: '표에서 겹친 행을 지운다 (처음 것은 남긴다)', note: '같은 펭귄을 두 번 세면 그 펭귄만 더 중요하게 배워 버려요.' },
@@ -102,10 +102,10 @@ export function dropFrames() {
   const frames = [];
   const snap = (extra) => frames.push({ table: cloneTable(table), markCol: null, markRows: [], ...extra });
 
-  snap({ line: 1, icon: '📋', markCol: '연도', say: "표에 7행이 있어요(겹친 행·이상치 포함). 먼저 앞 쪽에서 뺀 '연도' 열을 지울 거예요." });
+  snap({ line: 1, icon: '📋', markCol: '연도', say: "표에 7행이 있어요(겹친 행·이상치 포함). 앞 쪽에서 X에서 뺀 열 가운데 '연도'는 어디에도 안 써서 열째로 지울 거예요." });
   table.columns = table.columns.filter((c) => c !== '연도');
   table.rows.forEach((r) => { delete r.연도; });
-  snap({ line: 2, icon: '✂️', say: "'연도' 열을 지웠어요. 모든 행에서 그 칸이 사라졌어요." });
+  snap({ line: 2, icon: '✂️', say: "'연도' 열을 지웠어요. 모든 행에서 그 칸이 사라졌어요. 번호·섬은 뒤에서 쓸 수 있어 남겨 둬요." });
 
   const sig = (r) => table.columns.map((c) => r[c]).join('|');
   const seen = new Set();
@@ -150,20 +150,27 @@ export function dropnaFrames(source = missingTable()) {
     removed: [...removed], focus: null, total, ...extra,
   });
 
+  const sexOnly = [];          // 입력 X에 쓰지 않는 성별 한 칸 때문에만 지워진 펭귄 번호
   snap({ line: 1, icon: '📋', say: `방법 A · 지우기 — 2단원에서 본 ${total}행 표예요. 빈칸이 있는 행을 통째로 지워 볼게요.` });
   for (const r of t.rows) {
     const miss = t.columns.filter((c) => isMissing(r[c]));
     if (miss.length) {
-      snap({ line: 2, icon: '🔎', focus: r._k, say: `인덱스 ${r._i}행(펭귄 ${r.번호}번)에 빈칸이 있어요: ${miss.join(', ')}` });
+      const onlySex = miss.length === 1 && miss[0] === '성별';
+      if (onlySex) sexOnly.push(r.번호);
+      snap({ line: 2, icon: '🔎', focus: r._k, say: onlySex
+        ? `인덱스 ${r._i}행(펭귄 ${r.번호}번)은 성별 한 칸만 비었어요. 성별은 입력 X에 쓰지도 않는 열이지만…`
+        : `인덱스 ${r._i}행(펭귄 ${r.번호}번)에 빈칸이 있어요: ${miss.join(', ')}` });
       removed.push(r._k);
-      snap({ line: 3, icon: '🗑️', say: `인덱스 ${r._i}행을 통째로 지웠어요. 멀쩡하던 다른 칸도 함께 사라졌어요.` });
+      snap({ line: 3, icon: '🗑️', say: onlySex
+        ? `인덱스 ${r._i}행을 통째로 지웠어요. 성별 한 칸 때문에 멀쩡한 ${FILL_COLUMNS.filter((c) => !isMissing(r[c])).join('·')}까지 사라졌어요.`
+        : `인덱스 ${r._i}행을 통째로 지웠어요. 멀쩡하던 다른 칸도 함께 사라졌어요.` });
     } else {
       snap({ line: 1, icon: '✅', focus: r._k, say: `인덱스 ${r._i}행은 빈칸이 없어요. 그대로 둬요.` });
     }
   }
   const left = total - removed.length;
-  snap({ line: 4, icon: '🧾', done: true,
-    say: `${total}행 중 ${removed.length}행을 지워 ${left}행이 남았어요(${Math.round((removed.length / total) * 100)}%를 잃음). 다음 쪽 방법 B에서는 같은 ${total}행을 지우지 않고 채워 봐요.` });
+  snap({ line: 4, icon: '🧾', done: true, sexOnly: [...sexOnly],
+    say: `${total}행 중 ${removed.length}행을 지워 ${left}행이 남았어요(${Math.round((removed.length / total) * 100)}%를 잃음). 그중 ${sexOnly.map((n) => `${n}번`).join('·')}은 입력에 쓰지도 않는 성별 한 칸 때문에 사라졌어요.` });
   return frames;
 }
 
@@ -202,7 +209,10 @@ export function fillMeanFrames(source = missingTable()) {
     for (const r of holes) { r[col] = m; filled[`${r._k}|${col}`] = true; }
     snap({ line: 3, icon: '🖊️', col, calc, say: `'${col}' 빈칸 ${holes.length}개를 ${fmt(m, 3)}(으)로 채웠어요.` });
   }
-  snap({ line: 3, icon: '🧾', done: true, say: `숫자 빈칸 ${Object.keys(filled).length}칸을 채우고 ${table.rows.length}행이 모두 남았어요. 성별은 글자라 평균을 낼 수 없어 아직 비어 있어요 → 다음 쪽(최빈값).` });
+  // 측정값이 모두 빈칸이었던 행 — 채운 값이 전부 어림값이다
+  const allGuess = table.rows.filter((r) => FILL_COLUMNS.every((c) => filled[`${r._k}|${c}`]));
+  snap({ line: 3, icon: '🧾', done: true, allGuess: allGuess.map((r) => r._k),
+    say: `숫자 빈칸 ${Object.keys(filled).length}칸을 채우고 ${table.rows.length}행이 모두 남았어요. ${allGuess.map((r) => `⚠️ 인덱스 ${r._i}행(펭귄 ${r.번호}번)은 측정값 ${FILL_COLUMNS.length}칸이 모두 어림값이에요. `).join('')}성별은 글자라 아직 비어 있어요 → 다음 쪽(최빈값).` });
   return frames;
 }
 
@@ -233,7 +243,8 @@ export function afterMeanFill(source = missingTable()) {
   return t;
 }
 
-export function fillModeFrames(source = afterMeanFill()) {
+/** raw: 채우기 전 표(같은 행 순서) — 마지막 장면에서 "지울 행 / 채울 행"을 고를 때 처음 빈칸을 본다 */
+export function fillModeFrames(source = afterMeanFill(), raw = missingTable()) {
   const table = withKeys(source);
   table.rows.forEach((r, i) => { r._i = i; });
   const col = '성별';
@@ -254,10 +265,24 @@ export function fillModeFrames(source = afterMeanFill()) {
     snap({ line: 3, icon: '➕', focus: r._k, key: v, say: `'${v}' 하나 더 → 세기표 { ${counts.map(([k, n]) => `'${k}': ${n}`).join(', ')} }` });
   }
   const m = mode(table.rows.map((r) => r[col]));
-  snap({ line: 4, icon: '🏆', mode: m, say: `가장 많이 나온 값은 '${m}'(${counts.find((c) => c[0] === m)[1]}번)이에요 → 최빈값.` });
+  snap({ line: 4, icon: '🏆', mode: m, say: `'${m}'이 ${counts.find((c) => c[0] === m)[1]}번으로 가장 많이 나왔어요 → 최빈값.` });
   const holes = table.rows.filter((r) => isMissing(r[col]));
   for (const r of holes) { r[col] = m; filled[`${r._k}|${col}`] = true; }
   snap({ line: 5, icon: '🖊️', mode: m, done: true, say: `빈칸 ${holes.length}개를 '${m}'(으)로 채웠어요. 방법 A와 달리 ${table.rows.length}행이 모두 남은 채 빈칸이 0개예요.` });
+
+  // 🤔 그럼 어떻게 고를까? — 측정값이 모두 빈 행은 지우고, 한두 칸만 빈 행은 채운다
+  const choose = { drop: [], fill: [] };
+  raw.rows.forEach((r, i) => {
+    const holesAt = raw.columns.filter((c) => isMissing(r[c]));
+    if (!holesAt.length) return;
+    const row = table.rows[i];
+    const allMeasure = FILL_COLUMNS.every((c) => isMissing(r[c]));
+    (allMeasure ? choose.drop : choose.fill).push({ k: row._k, i: row._i, id: r.번호, holes: holesAt,
+      guess: holesAt.map((c) => [c, row[c]]) });
+  });
+  const ids = (list) => list.map((x) => `${x.id}번`).join('·');
+  snap({ line: 0, icon: '🤔', mode: m, done: true, choose,
+    say: `그럼 어떻게 고를까요? ${ids(choose.drop)}처럼 측정값이 모두 빈 행은 채워도 전부 어림값이라 지우고, ${ids(choose.fill)}처럼 한 칸만 빈 행은 채워서 살려요.` });
   return frames;
 }
 

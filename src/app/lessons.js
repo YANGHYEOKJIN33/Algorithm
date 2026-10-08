@@ -62,7 +62,7 @@ function coverPage(tab) {
     terms: [],
     missions: [
       { text: '🤔 생각 열기 — 질문에 내 생각을 하나 골라 보기', check: 'act:hook' },
-      { text: '📋 "이 단원을 마치면" 목록을 읽고 [시작하기 →] 누르기', check: 'act:begin' },
+      { text: '📋 할 수 있어요 목록을 읽고 [시작하기 →]나 [다음 →]', check: 'act:begin' },
     ],
     minutes: 2,
   };

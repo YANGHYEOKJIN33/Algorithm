@@ -255,4 +255,4 @@ Learn Git Branching(목표를 언제든 다시 열기·완료 저장), Google ML
 | `data/source/palmerpenguins.csv` | 344 | 원본(영문) |
 | `data/penguins.csv` | 345 | 연습 데이터(우리말 + 함정 3가지) = 연습 사이트의 내용 |
 | `data/penguins_clean.csv` | 341 | 03번 노트북과 같은 순서로 다듬은 데이터(ML 노트북이 씀) |
-| `data/penguins_measure.csv` · `penguins_label.csv` | 341 · 338 | merge 연습용 측정표·판정표(판정표는 순서 섞음, 3마리 빠짐) |
+| `data/penguins_measure.csv` · `penguins_label.csv` | 341 · 341 | merge 연습용 측정표·판정표(판정표는 순서 섞음 — 합치면 341줄. 짝이 없는 경우는 사이트 4-2의 작은 예시에서 연습) |

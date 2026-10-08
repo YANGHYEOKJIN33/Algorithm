@@ -32,8 +32,10 @@ export function toCsv(columns, rows) {
 /** 전처리 끝난 데이터 — src/core/data/clean.js (브라우저와 함께 쓴다) */
 export { cleanRecords };
 
-/** 가로로 합치기 연습 — 측정표(전부)와 판정표(순서 섞음, 판정 못한 3마리 빠짐) */
-export const UNLABELED = [100, 200, 300];
+/** 가로로 합치기 연습 — 깨끗한 341줄을 측정표(종 없음)와 판정표(번호·종, 순서 섞음)로 나눠 둔다.
+ *  판정표도 341마리를 모두 담아서, 번호로 합치면 341줄 그대로 돌아온다(4-3·5단원이 쓰는 표와 같다).
+ *  "짝 없는 행"은 사이트 4-2의 작은 표에서만 보여 준다. */
+export const UNLABELED = [];
 export function mergeParts() {
   const clean = cleanRecords();
   const measure = clean.map((r) => ({ 번호: r.번호, 부리길이: r.부리길이, 부리깊이: r.부리깊이, 날개길이: r.날개길이, 몸무게: r.몸무게 }));

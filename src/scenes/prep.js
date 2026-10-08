@@ -57,7 +57,7 @@ const features = {
   python: PP.FEATURE_PYTHON,
   notebook: NB,
   stageTitle: '속성 하나를 종(색)별로 펼쳐 보기',
-  stageHint: '전체 344마리 원본 데이터',
+  stageHint: '345줄에서 겹친 행을 뺀 344마리 · 8200g 같은 함정은 원래 값으로 그렸어요',
   dataTitle: '고른 결과',
   rows: ['1.45fr', '0.75fr'],
   frames: () => PP.featureFrames(),
@@ -132,7 +132,7 @@ const drop = {
   stageTitle: '표 df',
   stageHint: '빨강 = 지울 것',
   dataTitle: '지금까지 지운 것',
-  rows: ['1.3fr', '0.7fr'],
+  rows: ['1.1fr', '0.9fr'],
   frames: () => PP.dropFrames(),
   mount({ stage, data }) {
     const flip = createFlip();
@@ -154,7 +154,9 @@ const drop = {
         for (const r of all) if (!ids.has(r._k)) removed.push({ key: `d-${r._k}`, content: `행 ${r._i} (펭귄 ${r.번호}번${r.몸무게 > 6000 ? ', 8200g' : ', 겹침'})` });
         fill(data,
           counters([['행', t.rows.length], ['열', t.columns.length]]),
-          pyList('지운 것', removed.map((x) => ({ ...x, cls: 'is-dim' })), { showIndex: false, empty: '아직 없어요' }));
+          pyList('지운 것', removed.map((x) => ({ ...x, cls: 'is-dim' })), { showIndex: false, empty: '아직 없어요' }),
+          el('p.callout', { style: 'margin:var(--sp-2) 0 0' }, el('strong', {}, '🗂️ 3-1쪽에서 X에서 뺀 열은? '),
+            '연도는 어디에도 안 써서 지워요. 번호는 4단원에서 짝을 찾는 열쇠로 쓰고, 섬·성별은 다른 목표(예: 성별 맞히기 프로젝트)에 쓸 수 있어 표에 남겨 둬요.'));
       },
     };
   },
@@ -216,7 +218,9 @@ const dropna = {
             counters([['원래', `${f.total}행`], ['지운 행', lost, lost ? 'warn' : null], ['남은 행', left, 'add']]),
             el('div.lossbar', { role: 'img', 'aria-label': `남은 비율 ${Math.round((left / f.total) * 100)}%`, style: 'flex:1 1 260px; margin-bottom:var(--sp-2)' },
               el('span.lossbar__keep', { style: `width:${(left / f.total) * 100}%` }, `남음 ${Math.round((left / f.total) * 100)}%`),
-              lost ? el('span.lossbar__lost', { style: `width:${(lost / f.total) * 100}%` }, `잃음 ${Math.round((lost / f.total) * 100)}%`) : null)));
+              lost ? el('span.lossbar__lost', { style: `width:${(lost / f.total) * 100}%` }, `잃음 ${Math.round((lost / f.total) * 100)}%`) : null)),
+          f.sexOnly?.length ? el('p.callout.callout--warn', { style: 'margin:0' },
+            `⚠️ ${f.sexOnly.map((n) => `${n}번`).join('·')} 펭귄은 입력 X에 쓰지도 않는 성별 한 칸만 비었는데, 측정값까지 통째로 잃었어요.`) : null);
       },
     };
   },
@@ -239,8 +243,9 @@ const fillmean = {
       render(v) {
         const f = v.frame;
         const t = f.table;
+        const guessAll = (r) => f.allGuess?.includes(r._k);
         fill(stage, dataTable({
-          columns: t.columns, rows: t.rows, index: idx,
+          columns: t.columns, rows: t.rows, index: (r) => (guessAll(r) ? `${r._i} ⚠️` : idx(r)),
           cellClass: (r, c) => (f.filled[`${r._k}|${c}`] ? 'is-filled' : ''),
           colClass: (c) => (c === f.col ? 'is-col' : ''),
         }));
@@ -252,7 +257,10 @@ const fillmean = {
         } else if (f.done) {
           fill(data,
             counters([['원래', `${SAMPLE_ROWS}행`], ['지운 행', 0], ['남은 행', t.rows.length, 'add'], ['채운 칸', filledN, 'add']]),
-            el('p.panel__hint', {}, `방법 A(지우기)는 같은 표에서 ${SAMPLE_ROWS - LOST_A}행만 남았어요. 방법 B는 행을 모두 지키지만, 채운 ${filledN}칸은 진짜가 아닌 어림값이에요.`));
+            el('p.panel__hint', {}, `방법 A(지우기)는 같은 표에서 ${SAMPLE_ROWS - LOST_A}행만 남았어요. 방법 B는 행을 모두 지키지만, 채운 ${filledN}칸은 진짜가 아닌 어림값이에요.`),
+            f.allGuess?.length ? el('p.callout.callout--warn', { style: 'margin:var(--sp-2) 0 0' },
+              el('strong', {}, '⚠️ 모두 어림값 — '),
+              `인덱스 ${t.rows.filter(guessAll).map((r) => `${r._i}행(펭귄 ${r.번호}번)`).join(', ')}은 측정값 ${PP.FILL_COLUMNS.length}칸이 전부 평균으로 채운 값이라, 진짜로 잰 값이 하나도 없어요. 이런 행은 어떻게 할지 3-5쪽 끝에서 골라 봐요.`) : null);
         } else {
           fill(data, el('div.varrow', {},
             calc ? el('div.meancalc', { style: 'flex:1 1 420px; margin:0' },
@@ -271,6 +279,27 @@ const fillmean = {
 
 /* ═════════════ 결측치 방법 B ② — 최빈값으로 채우기 ═════════════ */
 
+const VALUE_COLUMNS = [...PP.FILL_COLUMNS, '성별'];
+
+/** 🤔 마지막 장면 — 지울 행과 채울 행을 견주고, Colab이 쓰는 규칙을 보여 준다 */
+function choosePanel(choose) {
+  const [d] = choose.drop;
+  const [f, ...more] = choose.fill;
+  const vals = (x) => x.guess.map(([, v]) => (typeof v === 'number' ? fmt(v, 3) : v)).join(' · ');
+  return el('div', {},
+    el('div.varrow', { style: 'gap:var(--sp-2)' },
+      d ? el('p.callout.callout--warn', { style: 'flex:1 1 280px; margin:0' },
+        el('strong', {}, `🗑️ 지운다 — 펭귄 ${d.id}번 (인덱스 ${d.i})`), el('br'),
+        `측정값 ${PP.FILL_COLUMNS.length}칸이 모두 빈칸 → 채우면 ${vals(d)}, 전부 어림값이에요.`) : null,
+      f ? el('p.callout.callout--add', { style: 'flex:1 1 280px; margin:0' },
+        el('strong', {}, `🖊️ 채운다 — 펭귄 ${f.id}번 (인덱스 ${f.i})`), el('br'),
+        `${f.holes.join('·')} 한 칸만 빈칸 → ${VALUE_COLUMNS.filter((c) => !f.holes.includes(c)).join('·')}는 진짜 값이라 채워서 살려요.`,
+        more.length ? ` (${more.map((x) => `${x.id}번`).join('·')}도 ${[...new Set(more.flatMap((x) => x.holes))].join('·')} 한 칸만 비어 채워요)` : '') : null),
+    el('p.panel__hint', { style: 'margin-top:var(--sp-2)' },
+      el('strong', {}, '고르는 규칙: 측정값이 모두 빈 행은 지우고, 한두 칸만 빈 행은 채워요. '),
+      'Colab에서도 측정값이 모두 빈 2줄(4번·272번)만 지우고 나머지를 채워 341줄을 남겨요(dropna()만 하면 331줄).'));
+}
+
 const fillmode = {
   kind: 'step',
   pseudo: PP.FILLMODE_PSEUDO,
@@ -278,7 +307,7 @@ const fillmode = {
   notebook: NB,
   stageTitle: '방법 B ② · 채우기 — 숫자 빈칸을 채운 표 df',
   stageHint: '초록 = 최빈값으로 채운 칸',
-  dataTitle: '세기표 (사전)',
+  dataTitle: '세기표 (사전) · 끝: 지울까, 채울까?',
   rows: ['1.38fr', '0.62fr'],
   frames: () => PP.fillModeFrames(),
   mount({ stage, data }) {
@@ -287,11 +316,17 @@ const fillmode = {
       render(v) {
         const f = v.frame;
         const t = f.table;
+        const ch = f.choose;
+        const isDrop = (r) => ch?.drop.some((x) => x.k === r._k);
+        const isFill = (r) => ch?.fill.some((x) => x.k === r._k);
         fill(stage, dataTable({
-          columns: t.columns, rows: t.rows, index: idx,
+          columns: t.columns, rows: t.rows,
+          index: (r) => (isDrop(r) ? `${r._i} 🗑️` : isFill(r) ? `${r._i} 🖊️` : idx(r)),
+          rowClass: (r) => (isDrop(r) ? 'is-warn' : ''),
           cellClass: (r, c) => [f.filled[`${r._k}|${c}`] ? 'is-filled' : '', r._k === f.focus && c === '성별' ? 'is-focus' : ''].join(' '),
-          colClass: (c) => (c === '성별' ? 'is-col' : ''),
+          colClass: (c) => (c === '성별' && !ch ? 'is-col' : ''),
         }));
+        if (ch) { fill(data, choosePanel(ch)); return; }
         fill(data, el('div.varrow', {},
           pyDict('counts', f.counts, { hot: f.key, note: ' = 세기표', empty: '{ } 비어 있어요' }),
           varBox('최빈값', f.mode ?? '?', { hot: f.mode !== null }),

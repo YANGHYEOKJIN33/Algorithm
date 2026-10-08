@@ -33,17 +33,34 @@ export function maskFrames(table = missingTable()) {
   const full = maskOf(table);
   const frames = [];
   const done = [];          // 이미 검사를 마친 열 index
-  const snap = (extra) => frames.push({ table, mask: full, done: [...done], col: null, ...extra });
+  const snap = (extra) => frames.push({ table, mask: full, done: [...done], col: null, upto: null, cell: null, ...extra });
+  // 빈칸이 처음 나오는 열은 칸 하나하나(안쪽 반복)를 한 단계씩 보여 준다 — 나머지 열은 한 단계에 한 열씩
+  const slow = table.columns.findIndex((_, ci) => full.some((m) => m[ci]));
 
   snap({ line: 1, icon: '📋', say: `${table.rows.length}행 × ${table.columns.length}열짜리 결과표를 준비했어요. 아직 아무것도 적지 않았어요.` });
   table.columns.forEach((c, ci) => {
     const trues = full.filter((m) => m[ci]).length;
+    if (ci === slow) {
+      snap({ line: 2, col: ci, upto: -1, icon: '👀', say: `'${c}' 열 차례예요. 이번에는 칸을 위에서부터 하나씩(안쪽 반복) 천천히 볼게요.` });
+      table.rows.forEach((row, ri) => {
+        const blank = full[ri][ci];
+        snap({
+          line: blank ? 4 : 5, col: ci, upto: ri, cell: ri, icon: blank ? '🔎' : '✅',
+          say: blank
+            ? `인덱스 ${ri}행(펭귄 ${row.번호}번)의 '${c}' 칸이 비어 있어요(NaN) → 결과표에 True.`
+            : `인덱스 ${ri}행(펭귄 ${row.번호}번)의 '${c}' 칸은 ${fmt(row[c])} → 값이 있으니 False.`,
+        });
+      });
+      done.push(ci);
+      return;
+    }
     done.push(ci);
+    // 묶음으로 넘어가는 첫 열에서만 "한 단계 = 한 열"이라고 알려 준다
+    const lead = ci === 0 ? '⏩ 한 단계에 한 열씩(안쪽 반복을 한 묶음으로) 볼게요. '
+      : ci === slow + 1 ? '⏩ 이제 나머지 열은 한 단계에 한 열씩 해요. ' : '';
     snap({
-      line: trues ? 4 : 5, col: ci, icon: trues ? '🔎' : '✅',
-      say: trues
-        ? `'${c}' 열의 칸을 위에서부터 봤어요. 빈칸 ${trues}개 → True, 나머지는 False.`
-        : `'${c}' 열은 모든 칸에 값이 있어요 → 모두 False.`,
+      line: 3, col: ci, icon: trues ? '🔎' : '✅',
+      say: `${lead}'${c}' 열: ${trues ? `빈칸 ${trues}개 → True, 나머지는 False.` : '모든 칸에 값이 있어요 → 모두 False.'}`,
     });
   });
   snap({ line: 6, icon: '🧾', say: 'True/False 결과표 완성! True가 있는 칸이 결측치예요. 눈으로 찾기 쉬워졌죠?' });
@@ -77,10 +94,13 @@ export function countFrames(table = missingTable()) {
   snap({ line: 1, icon: '🧮', say: '열마다 개수를 0으로 시작했어요.' });
   table.columns.forEach((c, ci) => {
     snap({ line: 2, col: ci, phase: 'look', icon: '👀', say: `'${c}' 열의 True를 셀 차례예요.` });
-    const n = mask.filter((m) => m[ci]).length;
+    const bits = mask.map((m) => (m[ci] ? 1 : 0));
+    const n = bits.reduce((a, b) => a + b, 0);
+    snap({ line: 3, col: ci, phase: 'count', icon: '➕',
+      say: `True는 1, False는 0으로 더해요: ${bits.join('+')} = ${n}` });
     counts[ci] = n;
     snap({ line: 4, col: ci, phase: 'count', icon: n ? '🔢' : '✅',
-      say: n ? `'${c}' 열: True ${n}개 → 결측치 ${n}개.` : `'${c}' 열: True가 없어요 → 0개.` });
+      say: n ? `개수표['${c}'] ← ${n} — 결측치 ${n}개.` : `개수표['${c}'] ← 0 — 빈칸이 없어요.` });
   });
   const total = counts.reduce((a, b) => a + b, 0);
   snap({ line: 5, icon: '🧾', total, say: `개수표 완성! 결측치는 모두 ${total}개예요. '성별' 열이 가장 많이 비었어요.` });
@@ -111,6 +131,7 @@ export function whereFrames(table = missingTable()) {
   const snap = (extra) => frames.push({ table, mask, list: [...list], row: null, ...extra });
 
   snap({ line: 1, icon: '📋', say: '위치목록이라는 빈 리스트를 만들었어요.' });
+  snap({ line: 2, icon: '🔁', say: `반복을 시작해요. 인덱스 0행부터 ${table.rows.length - 1}행까지 한 행씩 봐요(인덱스는 펭귄 번호와 달라요).` });
   table.rows.forEach((row, i) => {
     const miss = mask[i].map((m, ci) => (m ? table.columns[ci] : null)).filter(Boolean);
     if (miss.length) {

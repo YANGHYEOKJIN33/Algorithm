@@ -29,8 +29,14 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
   const unitChip = el('button.unitchip', { type: 'button', title: '이 단원의 표지로' });
   const stepper = el('ol.stepper', { 'aria-label': '이 단원의 쪽' });
   const foldBtn = el('button.pill.pill--sm.lesson__fold', { type: 'button', onclick: () => store.set({ lessonFold: !store.get().lessonFold }) });
-  const prev = el('button.pill.lesson__nav', { type: 'button', onclick: () => { const p = prevPlace(); if (p) store.set(p); } }, '← 이전');
-  const next = el('button.pill.ctrl--primary.lesson__nav', { type: 'button', onclick: () => { const p = nextPlace(); if (p) store.set(p); } }, '다음 →');
+  /** 단원 표지를 떠날 때(다음 →·단계 표시 줄 어느 길로든) 표지의 "출발" 미션을 이룬다 */
+  const leave = (patch) => {
+    const { steps, index } = currentLesson(store.get());
+    if (steps[index]?.auto === 'cover') missions.act('begin');
+    store.set(patch);
+  };
+  const prev = el('button.pill.lesson__nav', { type: 'button', onclick: () => { const p = prevPlace(); if (p) leave(p); } }, '← 이전');
+  const next = el('button.pill.ctrl--primary.lesson__nav', { type: 'button', onclick: () => { const p = nextPlace(); if (p) leave(p); } }, '다음 →');
   const mini = el('span.lesson__mini');
 
   /* ── 아래: 제목 · 🎯 목표 · 학습 요소 | ✋ 할 일 ── */
@@ -113,7 +119,8 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
       })),
       picked !== undefined
         ? el(`p.callout${picked === ask.answer ? '.callout--add' : '.callout--warn'}`, {},
-          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why] : '❌ 아직이에요. 그림과 의사코드를 다시 보고 다른 답을 골라 보세요.')
+          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why]
+            : `❌ 아직이에요. ${getScene(page.scene).kind === 'step' ? '의사코드와 그림을 다시 따라가 보고' : '화면을 다시 살펴보고'} 다른 답을 골라 보세요.`)
         : null);
   }
 
@@ -128,7 +135,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
     const list = unitPages(tab);
     const here = list.find((it) => it.page === page);
     const sig = pkey;
-    if (sig !== lastSig) { lastSig = sig; toggleWhy(false); askOpen = false; nudgeAsk = false; }
+    if (sig !== lastSig) { lastSig = sig; toggleWhy(false); askOpen = false; nudgeAsk = false; toast.classList.remove('is-on'); }
 
     // 단원 칩
     fill(unitChip,
@@ -147,7 +154,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
         'aria-current': i === index ? 'step' : null,
         'data-done': done ? 'true' : null,
         title: `${it?.label ?? ''} ${p.title}${done ? ' ✓ 완료' : ''}`,
-        onclick: () => store.set({ [key]: i }),
+        onclick: () => { if (i !== index) leave({ [key]: i }); },
       }, el('span.step__no', {}, done && i !== index ? '✓' : (it?.label ?? String(i + 1))),
       p.auto ? null : el('span.step__name', {}, p.short || p.title)));
     }));
@@ -193,7 +200,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
     if (askOpen && page.ask) drawAsk(page, pkey);
     askPop.hidden = !askOpen;
 
-    mini.textContent = `🎯 ${page.objective || page.title}`;
+    mini.textContent = `${ms.length ? `✋ ${nDone}/${ms.length} · ` : ''}🎯 ${page.objective || page.title}`;
     mini.title = mini.textContent;
 
     // 앞뒤

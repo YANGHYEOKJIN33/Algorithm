@@ -40,7 +40,7 @@ export function pageHtml(p) {
   const page = CRAWL_PAGES[p - 1];
   const lines = [
     { text: '<html>', tag: 'html' },
-    { text: `  <h1>펭귄 관측 기록 (${p}쪽)</h1>`, tag: 'h1' },
+    { text: `  <h1>미니 관측소 (${p}쪽)</h1>`, tag: 'h1' },
     { text: '  <table>', tag: 'table' },
     { text: `    <tr>${CRAWL_COLUMNS.map((c) => `<th>${c}</th>`).join('')}</tr>`, tag: 'tr', row: 0 },
   ];
@@ -51,7 +51,7 @@ export function pageHtml(p) {
     });
   });
   lines.push({ text: '  </table>', tag: 'table' });
-  lines.push({ text: `  <a href="page${p + 1}.html">다음 쪽</a>`, tag: 'a' });
+  lines.push({ text: `  <a href="mini${p + 1}.html">다음 쪽</a>`, tag: 'a' });
   lines.push({ text: '</html>', tag: 'html' });
   return lines;
 }
@@ -74,9 +74,9 @@ export function crawlFrames() {
 
   for (let p = 1; p <= CRAWL_PAGES.length; p += 1) {
     const page = CRAWL_PAGES[p - 1];
-    const url = `${SITE}/page${p}.html`;
+    const url = `미니 관측소/mini${p}.html (연습판 — 진짜 사이트는 ${SITE}/page${p}.html)`;
     snap({ line: 2, icon: '🔁', page: p, phase: 'loop', url, say: p === 1
-      ? `${p}쪽 차례예요. 쪽마다 ①~⑤를 되풀이하고, ${CRAWL_PAGES.length}쪽까지 모이면 끝나요.`
+      ? `미니 관측소(연습 사이트를 쪽마다 3줄로 줄인 연습판) ${p}쪽 차례예요. 쪽마다 ①~⑤를 되풀이하고, ${CRAWL_PAGES.length}쪽까지 모이면 끝나요.`
       : `${p}쪽 차례예요. 1쪽과 똑같이 ①~⑤를 되풀이해요.${p === CRAWL_PAGES.length ? ' 이번이 마지막 쪽이에요.' : ''}` });
 
     counters.requests += 1;

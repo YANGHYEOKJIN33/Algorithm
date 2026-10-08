@@ -28,19 +28,23 @@ const mask = {
         const f = v.frame;
         const { table, mask: m } = f;
         const curCol = f.col === null ? null : table.columns[f.col];
+        // 칸 하나씩 보는 열(f.upto)은 지금 칸까지만 채운다
         const left = dataTable({
           columns: table.columns, rows: table.rows,
           colClass: (c) => (c === curCol ? 'is-col' : ''),
+          cellClass: (r, c, ri) => (f.cell !== null && c === curCol && ri === f.cell ? 'is-focus' : ''),
         });
         const done = new Set(f.done);
+        const filled = (ri, ci) => done.has(ci) || (f.upto !== null && ci === f.col && ri <= f.upto);
         const maskRows = table.rows.map((_, ri) => Object.fromEntries(table.columns.map((c, ci) => [c, m[ri][ci]])));
         const t = dataTable({
           columns: table.columns, rows: maskRows,
-          cell: (r, c) => (done.has(table.columns.indexOf(c)) ? (r[c] ? 'True' : 'False') : '·'),
-          cellClass: (r, c) => {
+          cell: (r, c, ri) => (filled(ri, table.columns.indexOf(c)) ? (r[c] ? 'True' : 'False') : '·'),
+          cellClass: (r, c, ri) => {
             const ci = table.columns.indexOf(c);
-            if (!done.has(ci)) return 'is-pending';
-            return [r[c] ? 'is-true' : 'is-false', c === curCol ? 'is-hit' : ''].join(' ');
+            if (!filled(ri, ci)) return 'is-pending';
+            const hit = c === curCol && (f.cell === null || ri === f.cell);
+            return [r[c] ? 'is-true' : 'is-false', hit ? 'is-hit' : '', f.cell !== null && c === curCol && ri === f.cell ? 'is-focus' : ''].join(' ');
           },
           colClass: (c) => (c === curCol ? 'is-col' : ''),
         });
@@ -48,7 +52,8 @@ const mask = {
         t.querySelectorAll('tbody tr').forEach((tr, ri) => {
           tr.querySelectorAll('td.is-hit').forEach((td) => { td.style.animationDelay = `${ri * 70}ms`; });
         });
-        const trues = f.done.reduce((n, ci) => n + m.filter((row) => row[ci]).length, 0);
+        const trues = f.done.reduce((n, ci) => n + m.filter((row) => row[ci]).length, 0)
+          + (f.upto !== null && f.upto >= 0 ? m.slice(0, f.upto + 1).filter((row) => row[f.col]).length : 0);
         fill(stage,
           counters([['검사한 열', `${f.done.length} / ${table.columns.length}`], ['찾은 True', trues, trues ? 'warn' : null]]),
           el('div.duo', {},

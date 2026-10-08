@@ -27,10 +27,10 @@ function trLine(cells, { head = false, rowIdx, onCell = null, selCell = null } =
 }
 
 function htmlSource(page, p, opts = {}) {
-  const { rowState = () => '', selRow = null, selCell = null } = opts;
+  const { rowState = () => '', selRow = null, selCell = null, title = `펭귄 관측 기록 (${p}쪽)`, href = 'page' } = opts;
   return el('div.html', { role: 'figure', 'aria-label': `${p}쪽 HTML` },
     el('div.html__line', {}, tagSpan('<html>')),
-    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan('<h1>'), el('span.html__text', {}, `펭귄 관측 기록 (${p}쪽)`), tagSpan('</h1>')),
+    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan('<h1>'), el('span.html__text', {}, title), tagSpan('</h1>')),
     el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan('<table>')),
     (() => { const n = trLine(CRAWL_COLUMNS, { head: true, rowIdx: 0 }); n.className += ` ${rowState(0)}`; return n; })(),
     page.rows.map((r, i) => {
@@ -39,7 +39,7 @@ function htmlSource(page, p, opts = {}) {
       return n;
     }),
     el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan('</table>')),
-    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan(`<a href="page${p + 1}.html">`), el('span.html__text', {}, '다음 쪽'), tagSpan('</a>')),
+    el('div.html__line', {}, el('span.html__indent', {}, '  '), tagSpan(`<a href="${href}${p + 1}.html">`), el('span.html__text', {}, '다음 쪽'), tagSpan('</a>')),
     el('div.html__line', {}, tagSpan('</html>')));
 }
 
@@ -69,7 +69,8 @@ function webExplore(root, ctx) {
 
   function draw() {
     fill(left,
-      el('div.browser__bar', {}, el('span.browser__dots', {}, '● ● ●'), el('span.browser__url', {}, `${PRACTICE_URL}page1.html`)),
+      el('div.browser__bar', {}, el('span.browser__dots', {}, '● ● ●'), el('span.browser__url', {}, `${PRACTICE_URL}page1.html`),
+        el('span.tag.tag--result', { title: '진짜 1쪽은 펭귄 50줄 × 9열이에요' }, '✂️ 줄인 화면: 앞 3줄·4열')),
       el('div.browser__page', {},
         el('h4', {}, '펭귄 관측 기록 (1쪽)'),
         el('table.webtable', {},
@@ -177,14 +178,14 @@ const crawl = {
         fill(stage,
           el('div.netline.netline--sm', {},
             el('span.netline__box', {}, '💻 내 프로그램'),
-            el(`span.netline__arrow${net === 'request' ? '.is-on' : ''}`, { title: f.url ?? `${CRAWL.SITE}/page1.html` }, '요청 →', el('small', {}, p ? `page${p}.html` : '')),
+            el(`span.netline__arrow${net === 'request' ? '.is-on' : ''}`, { title: f.url ?? '미니 관측소/mini1.html' }, '요청 →', el('small', {}, p ? `mini${p}.html` : '')),
             el('span.netline__box', {}, '🖥 서버'),
             el(`span.netline__arrow.netline__arrow--back${net === 'response' ? '.is-on' : ''}`, {}, '← 응답', el('small', {}, 'HTML')),
             stepStrip(f.phase)),
           p ? el('div.crawlstage', {},
             el('div.crawlstage__html', {},
-              el('div.webx__cap', {}, `📄 받은 HTML — ${p}쪽`),
-              haveHtml ? htmlSource(CRAWL_PAGES[p - 1], p, { rowState }) : el('div.placeholder', {}, f.phase === 'request' ? '⏳ 서버에 요청하는 중…' : `🔁 p = ${p} — 이제 ${p}쪽 차례예요.`)),
+              el('div.webx__cap', {}, `📄 받은 HTML — 미니 관측소 ${p}쪽 `, el('span.tag.tag--result', { title: '진짜 연습 사이트는 7쪽 × 50줄이에요. 1-4 Colab에서 진짜로 긁어요.' }, '🧪 연습판: 쪽마다 3줄')),
+              haveHtml ? htmlSource(CRAWL_PAGES[p - 1], p, { rowState, title: `미니 관측소 (${p}쪽)`, href: 'mini' }) : el('div.placeholder', {}, f.phase === 'request' ? '⏳ 서버에 요청하는 중…' : `🔁 p = ${p} — 이제 ${p}쪽 차례예요.`)),
             el('div.crawlstage__side', {},
               f.cells ? el('div.cut', {}, el('div.webx__cap', {}, '✂️ 꺼낸 칸 글자 — 따옴표 = 아직 글자'),
                 el('div.cut__cells', {}, f.cells.map((c, i) => el('span.cut__cell', { 'data-flip': `cell-${p}-${f.rowIndex}-${i}` }, `'${c}'`)))) : null,

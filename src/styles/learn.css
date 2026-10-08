@@ -148,7 +148,7 @@
 /* 미션 완료 알림 — ✋ 할 일 상자 위에 잠깐 뜬다(그림을 가리지 않게) */
 .missions { position: relative; }
 .lesson__toast {
-  position: absolute; z-index: 70; right: 8px; top: -14px; transform: translateY(-4px);
+  position: absolute; z-index: 70; right: 8px; bottom: -13px; transform: translateY(4px);
   background: var(--add); color: #fff; font-weight: 700; font-size: var(--fs-sm);
   padding: 4px var(--sp-4); border-radius: 999px; box-shadow: var(--shadow);
   opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; white-space: nowrap;
@@ -318,3 +318,7 @@
 .nbcheck__list label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
 .nbcheck__list input { width: 1.05rem; height: 1.05rem; }
 .nbcheck p { margin: 0; }
+
+/* 표지 머리 칸의 출발 단추 — 첫 화면에서 바로 보이게 */
+.unit__heroGo { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-1); }
+.unit__heroGo .unit__start { padding: var(--sp-1) var(--sp-4); }

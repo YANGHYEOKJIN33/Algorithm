@@ -9,7 +9,7 @@ import { isMissing, fmt } from '../core/stats.js';
  * @param {object} o
  *   columns, rows
  *   index(row, i)      왼쪽 인덱스 글자 (기본: 줄 순서 i). null이면 인덱스 칸 없음
- *   cell(row, col)     칸 글자 (기본: 값, 빈칸은 NaN)
+ *   cell(row, col, i)  칸 글자 (기본: 값, 빈칸은 NaN)
  *   cellClass(row, col, i)  칸에 붙일 클래스
  *   rowClass(row, i)   행에 붙일 클래스
  *   colClass(col)      열 머리·칸에 붙일 클래스
@@ -30,7 +30,7 @@ export function dataTable(o) {
       index ? el('th.dtable__idx', { scope: 'row' }, index(row, i)) : null,
       columns.map((c) => {
         const cls = [isMissing(row[c]) ? 'is-nan' : '', o.cellClass?.(row, c, i) ?? '', o.colClass?.(c) ?? ''].join(' ').trim();
-        return el(`td${cls ? `.${cls.split(/\s+/).join('.')}` : ''}`, {}, cellText(row, c));
+        return el(`td${cls ? `.${cls.split(/\s+/).join('.')}` : ''}`, {}, cellText(row, c, i));
       }));
   });
   return el('table.dtable', {},

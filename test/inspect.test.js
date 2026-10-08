@@ -23,10 +23,20 @@ test('결측치 위치 — 인덱스 [2, 3, 4, 7]', () => {
   assert.deepEqual(last(whereFrames()).list, [2, 3, 4, 7]);
 });
 
-test('여부 표는 열마다 한 장면씩 채워진다', () => {
+test('여부 표 — 빈칸이 처음 나오는 열은 칸마다, 나머지 열은 한 장면에 한 열씩', () => {
   const fs = maskFrames();
-  assert.equal(fs.length, 1 + 6 + 1);
+  // 준비 1 + 묶음 5열 + 부리길이(열 시작 1 + 칸 10) + 완성 1
+  assert.equal(fs.length, 1 + 5 + 1 + 10 + 1);
   assert.deepEqual(last(fs).done, [0, 1, 2, 3, 4, 5]);
+  const cells = fs.filter((f) => f.cell !== null);
+  assert.deepEqual(cells.map((f) => f.line), [5, 5, 4, 4, 5, 5, 5, 5, 5, 5]);   // 부리길이: 인덱스 2·3이 빈칸
+  // 의사코드의 모든 줄(1~6)이 한 번은 켜진다
+  assert.deepEqual([...new Set(fs.map((f) => f.line))].sort(), [1, 2, 3, 4, 5, 6]);
+});
+
+test('개수·위치 — 의사코드의 모든 줄이 한 번은 켜진다', () => {
+  assert.deepEqual([...new Set(countFrames().map((f) => f.line))].sort(), [1, 2, 3, 4, 5]);
+  assert.deepEqual([...new Set(whereFrames().map((f) => f.line))].sort(), [1, 2, 3, 4, 5]);
 });
 
 test('분위수는 판다스 선형 보간과 같다', () => {

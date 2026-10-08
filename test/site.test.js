@@ -65,9 +65,13 @@ test('전처리 끝난 데이터 — 341마리, 빈칸 없음, 이상치·겹친
   for (const r of rows) for (const v of Object.values(r)) assert.ok(v !== null && v !== undefined);
   assert.ok(rows.every((r) => r.몸무게 < 8000));
   assert.equal(new Set(rows.map((r) => r.번호)).size, 341);
+  // 판정표도 341마리를 모두 담는다 — 번호로 합치면 341줄 그대로(4단원 표지·4-3·Colab 04와 같은 흐름)
   const { measure, label } = mergeParts();
+  assert.deepEqual(UNLABELED, []);
   assert.equal(measure.length, 341);
-  assert.equal(label.length, 341 - UNLABELED.length);
+  assert.equal(label.length, 341);
+  assert.deepEqual([...label.map((r) => r.번호)].sort((a, b) => a - b), measure.map((r) => r.번호).sort((a, b) => a - b));
+  assert.notDeepEqual(label.map((r) => r.번호), measure.map((r) => r.번호), '판정표는 순서가 섞여 있다');
 });
 
 test('용어 사전·퀴즈 자료가 비어 있지 않다', () => {

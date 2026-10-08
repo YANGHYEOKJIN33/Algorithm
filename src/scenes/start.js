@@ -214,7 +214,7 @@ function dataIntro(root, ctx) {
       el('span.di-count__eq', {}, ' + '),
       el('span.di-count__dup', {}, `수업용으로 한 번 더 넣은 ${DUPLICATE_ID}번 펭귄 줄 1줄`),
       el('span.di-count__eq', {}, ' = '), el('b', {}, `연습 표 ${all.length}줄`),
-      el('span.card__meta', {}, ' (겹친 줄은 2단원에서 찾아내요)')),
+      el('span.card__meta', {}, ' (겹친 줄은 3단원 🧹 전처리에서 찾아 지워요)')),
     el('div.datawrap', {},
       el('div.datawrap__table', {},
         el('div.datawrap__cap', {}, `연습 표의 처음 8줄 (전체 ${all.length}줄 × ${COLUMNS.length}열) — 칸을 눌러 보세요. 빨간 NaN은 빈칸이에요.`),
@@ -227,7 +227,8 @@ function dataIntro(root, ctx) {
           el('li', {}, infoTerm('인덱스', { strong: true }), ' = 왼쪽 회색 번호, 0부터 세요(펭귄 번호와 달라요)'),
           el('li', {}, infoTerm('결측치', { strong: true, label: 'NaN' }), ' = 비어 있는 칸'),
           el('li', {}, infoTerm('데이터프레임', { strong: true }), ' = 이런 표를 파이썬(판다스)이 부르는 이름'),
-          el('li', {}, el('strong', {}, el('code', {}, 'df')), ' = 이 표에 붙인 이름(변수). 코드에서 df를 보면 "이 펭귄 표"라고 읽어요')))),
+          el('li', {}, el('strong', {}, el('code', {}, 'df')), ' = 이 표에 붙인 이름(변수). 코드에서 df를 보면 "이 펭귄 표"라고 읽어요'),
+          el('li', {}, el('strong', {}, el('code', {}, "df.loc[인덱스, '열']")), ' = 그 행과 그 열이 만나는 칸 하나(지금 누른 칸). 예: ', el('code', {}, "df.loc[2, '몸무게']"))))),
     el('p.card__meta', {}, '데이터 출처: palmerpenguins — 남극 파머 기지에서 2007~2009년에 관측(Gorman 박사 연구팀, CC0). 수업을 위해 빈칸 1칸·잘못 적은 값 1칸·겹친 행 1줄을 일부러 넣었어요.'),
   ));
   draw();
@@ -264,7 +265,8 @@ const pseudoIntro = {
         f.cmp !== null ? el(`div.compare${f.cmp ? '.compare--yes' : '.compare--no'}`, {},
           `p의 몸무게 ${f.items.find((x) => x.id === f.focus).w}g  >  최고 ${f.best}g ?`, el('strong', {}, f.cmp ? '  참 ✅' : '  거짓 ✖️')) : null);
         flip(stage);
-        const cur = f.items.find((x) => x.id === f.focus);
+        // 1줄(최고 ← 첫 펭귄)만 실행한 장면에서는 반복이 아직 시작되지 않아 p가 비어 있다
+        const cur = f.line === 1 ? null : f.items.find((x) => x.id === f.focus);
         fill(data, el('div.varrow', {},
           varBox('최고', `${f.best}g`, { hot: f.line === 1 || f.line === 4, sub: `${f.bestId}번 펭귄` }),
           varBox('p', cur ? `${cur.w}g` : '—', { sub: cur ? `${cur.id}번 펭귄` : '' }),

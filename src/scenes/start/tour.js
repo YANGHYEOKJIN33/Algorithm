@@ -26,9 +26,9 @@ const SPOTS = [
   { name: '❓ 확인 문제', real: ['#lessonbar .askbtn'],
     text: '할 일 맨 아래의 주황 단추예요. 눌러서 문제를 풀고, 맞히면 ✅가 돼요. 틀려도 다시 고를 수 있어요.' },
   { name: '실행 제어', real: ['#controlbar'],
-    text: '⏭ 한 단계가 주인공 단추예요. 누를 때마다 의사코드가 한 줄 실행되고, 아래 초록 띠가 방금 한 일을 말해 줘요. ⏮ 뒤로는 되돌아보기, ▶ 재생은 저절로 넘기기예요.' },
+    text: '⏭ 한 단계가 주인공 단추예요. 누를 때마다 의사코드가 한 줄씩(같은 일이 많이 되풀이되는 곳은 한 묶음씩) 실행되고, 아래 초록 띠가 방금 한 일을 말해 줘요. ⏮ 뒤로는 되돌아보기, ▶ 재생은 저절로 넘기기예요.' },
   { name: '의사코드', real: ['#panel-code'],
-    text: '지금 실행 중인 줄이 파랗게 바뀌고 그 줄의 설명이 펼쳐져요. 🐍 파이썬 같이 보기는 같은 일을 하는 파이썬을, 📒 Colab은 실습 노트북을 열어요.' },
+    text: '지금 실행 중인 줄이 파랗게 바뀌고 그 줄의 설명이 펼쳐져요. 🐍 파이썬 같이 보기는 같은 일을 하는 파이썬을, 📒 Colab은 실습 노트북을 열어요. (좁은 화면에서는 그림·자료구조 아래에 있어요)' },
   { name: '그림', real: ['#panel-stage'],
     text: '의사코드가 한 줄 실행될 때마다 표·그래프가 바뀌는 모습이에요. 파란 테두리가 지금 보고 있는 곳이에요.' },
   { name: '자료구조', real: ['#panel-data'],
@@ -135,6 +135,8 @@ export function screenTour(root, ctx, hooks = {}) {
     seen.add(i);
     const shown = flash(i);
     draw();
+    // 좁은 화면(세로 1열)에서는 설명 칸이 아래에 있어 눌러도 안 보인다 → 설명 칸까지 내려 준다
+    if (window.matchMedia('(max-width: 900px)').matches) explain.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     if (seen.size === SPOTS.length && before < SPOTS.length) hooks.allSeen?.();
     return shown;
   }

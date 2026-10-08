@@ -7,7 +7,8 @@ const STORAGE_KEY = 'ai-data-lab:prefs';
 
 /** 새로 고쳐도 남길 값 — "어디까지 봤나"와 보기 설정 */
 const PERSIST_PREFIX = ['step:'];
-const PERSISTED = ['tab', 'mlTab', 'codeView', 'speedId', 'theme', 'scale', 'lessonFold'];
+/* codeView는 일부러 저장하지 않는다 — 새로 열면 늘 의사코드만(파이썬을 모르는 학생이 기본) */
+const PERSISTED = ['tab', 'mlTab', 'speedId', 'theme', 'scale', 'lessonFold'];
 
 const initial = {
   tab: 'start',          // 큰 탭: start · collect · inspect · prep · ready · ml · project

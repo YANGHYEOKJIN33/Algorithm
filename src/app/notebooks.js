@@ -141,7 +141,7 @@ df.to_csv('penguins.csv', index=False, encoding='utf-8-sig')
 df = pd.read_csv('penguins.csv')     # 다시 읽으면 숫자·빈칸이 제대로!
 print(df.shape)                       # (행 수, 열 수)
 df.head()
-`, ['DataFrame = 행목록을 행과 열이 있는 표로 바꿔요.', "to_csv로 저장해요. index=False는 왼쪽 인덱스 번호는 저장하지 않는다는 뜻이에요.", 'df.shape가 (345, 9)면 성공! 펭귄은 344마리인데 왜 345줄일까요? (다음 시간의 숙제)'], '(345, 9)'),
+`, ['DataFrame = 행목록을 행과 열이 있는 표로 바꿔요.', "to_csv로 저장해요. index=False는 왼쪽 인덱스 번호는 저장하지 않는다는 뜻이에요.", 'df.shape가 (345, 9)면 성공! 펭귄은 344마리인데 345줄인 까닭은 사이트 0-4에서 본 겹친 50번 줄이에요(3단원에서 지워요).'], '(345, 9)'),
       code(String.raw`
 # 내 컴퓨터로 내려받기 (Colab에서만 동작)
 try:
@@ -296,14 +296,14 @@ df.describe()
   {
     id: '03_preprocessing',
     title: '🧹 핵심 속성 추출과 전처리',
-    intro: '종별로 속성을 견줘 핵심 속성을 고르고, 겹친 행·이상치를 지우고, 빈칸을 평균값·최빈값으로 채우고, 글자를 숫자로 바꿔요.',
+    intro: '종별로 속성을 견줘 핵심 속성을 고르고, 연도 열·겹친 행·이상치를 지우고, 빈칸을 지우거나 평균값·최빈값으로 채우고, 글자를 숫자로 바꿔요.',
     cells: [
       md(String.raw`
 # 🧹 핵심 속성 추출과 전처리
 
 **목표**: 학습에 쓸 수 있는 깨끗한 표를 만든다.
 
-1. 핵심 속성 고르기 2. 데이터 삭제(겹친 행·이상치) 3. 결측치 삭제와 대체(평균값·최빈값) 4. 텍스트 값 대체
+1. 핵심 속성 고르기 2. 데이터 삭제(연도 열·겹친 행·이상치) 3. 결측치 삭제와 대체(평균값·최빈값) 4. 텍스트 값 대체
 `),
       HOWTO,
       code(String.raw`
@@ -327,15 +327,21 @@ pd.crosstab(df['종'], df['성별'])
 features = ['부리길이', '부리깊이', '날개길이', '몸무게']   # 핵심 속성
 target = '종'                                               # 정답
 print('입력 속성:', features, '/ 정답:', target)
-`, ['사이트에서 고른 것과 같은 네 속성이에요. 번호·섬·성별·연도는 빼요.']),
+`, ['사이트에서 고른 것과 같은 네 속성이에요. 번호·섬·성별·연도는 입력 X에서 빼요.', '입력에서 빼는 것과 표에서 지우는 것은 달라요. 표에서는 다음 칸에서 연도만 지워요.']),
       md(String.raw`
-## 2. 데이터 삭제 — 겹친 행, 잘못된 행, 필요 없는 열
+## 2. 데이터 삭제 — 필요 없는 열, 겹친 행, 잘못된 행
+
+사이트 3-2쪽과 같은 순서예요. **연도**는 어디에도 안 써서 지워요. **번호**는 4단원에서 짝을 찾는 열쇠로 쓰고, **섬·성별**은 다른 목표(예: 성별 맞히기 프로젝트)에 쓸 수 있어 표에 남겨 둬요.
 `),
+      code(String.raw`
+df = df.drop(columns=['연도'])            # 열 지우기
+print(df.shape)
+`, ["drop(columns=[...])는 열을 지워요.", '앞에 df = 를 붙여야 지운 표가 df에 다시 담겨요. 9열이 8열이 돼요.'], '(345, 8)'),
       code(String.raw`
 print('겹친 행:', df.duplicated().sum())
 df = df.drop_duplicates()                 # 처음 것만 남기고 지우기
 print('지운 뒤:', df.shape)
-`, ['duplicated()는 앞에 똑같은 행이 있으면 True예요. drop_duplicates()가 그런 행을 지워요.'], '겹친 행: 1\n지운 뒤: (344, 9)'),
+`, ['duplicated()는 앞에 똑같은 행이 있으면 True예요. drop_duplicates()가 그런 행을 지워요.'], '겹친 행: 1\n지운 뒤: (344, 8)'),
       code(String.raw`
 s = df['몸무게']
 q1, q3 = s.quantile(0.25), s.quantile(0.75)
@@ -344,24 +350,24 @@ bad = df[s > high].index                  # 위 울타리보다 큰 행
 print('이상치 행:', list(bad))
 df = df.drop(index=bad)
 print('지운 뒤:', df.shape)
-`, ['가공 시간에 찾은 이상치(8200g)를 인덱스로 지워요.'], '이상치 행: [12]\n지운 뒤: (343, 9)'),
-      code(String.raw`
-# 열 지우기 — 원본은 두고, 지운 모습만 미리 보기
-df.drop(columns=['연도']).head(3)
-`, ["drop(columns=[...])는 열을 지워요. 여기서는 df = 를 하지 않아서 원본은 그대로예요."]),
+`, ['가공 시간에 찾은 이상치(8200g)를 인덱스로 지워요.'], '이상치 행: [12]\n지운 뒤: (343, 8)'),
       md(String.raw`
 ## 3. 결측치 처리 — 지울까, 채울까?
+
+사이트 3-5쪽 끝에서 본 규칙이에요. **측정값이 모두 빈 행은 지우고**(채워도 전부 어림값이라서), **한두 칸만 빈 행은 채워요**(나머지는 진짜 값이라서).
 `),
       code(String.raw`
 print('빈칸이 있는 행:', df.isnull().any(axis=1).sum())
 print('dropna() 하면:', len(df.dropna()), '행만 남아요')
-`, ['dropna()는 빈칸이 하나라도 있는 행을 통째로 지워요. 몇 행을 잃는지 먼저 확인해요.'], '빈칸이 있는 행: 12\ndropna() 하면: 331 행만 남아요'),
+only_sex = df['성별'].isnull() & df[features].notnull().all(axis=1)
+print('그중 성별 한 칸만 빈 행:', only_sex.sum())
+`, ['dropna()는 빈칸이 하나라도 있는 행을 통째로 지워요. 몇 행을 잃는지 먼저 확인해요.', 'only_sex는 "성별은 비었고 측정값 네 개는 모두 있는 행"이에요. 입력에 쓰지도 않는 성별 때문에 그 행들까지 잃게 돼요.'], '빈칸이 있는 행: 12\ndropna() 하면: 331 행만 남아요\n그중 성별 한 칸만 빈 행: 9'),
       code(String.raw`
-# ① 측정값 4개가 모두 빈 행은 채워도 뜻이 없어서 지운다
+# ① 측정값 4개가 모두 빈 행은 채워도 전부 어림값이라 지운다
 df = df.dropna(subset=features, how='all')
 print(df.shape)
 print(df.isnull().sum())
-`, ["subset=features, how='all'은 \"네 측정값이 모두 비었을 때만\" 지우라는 뜻이에요.", '2마리(4번, 272번)가 지워져 341행이 돼요.'], '(341, 9)'),
+`, ["subset=features, how='all'은 \"네 측정값이 모두 비었을 때만\" 지우라는 뜻이에요.", '2마리(4번, 272번)가 지워져 341행이 돼요.'], '(341, 8)'),
       code(String.raw`
 # ② 숫자 열의 빈칸 → 평균값으로 채우기
 for col in features:
@@ -395,7 +401,7 @@ df[['종', '종_숫자', '성별', '성별_숫자']].head()
 print(df.isnull().sum().sum(), '개의 빈칸')
 print(df.shape)
 df.to_csv('penguins_clean.csv', index=False, encoding='utf-8-sig')
-`, ['0이 나오면 성공! 깨끗한 표를 penguins_clean.csv로 저장해요. (다음 수업들은 같은 파일을 인터넷에서 불러와요)'], '0 개의 빈칸\n(341, 11)'),
+`, ['0이 나오면 성공! 깨끗한 표(341줄 × 10열)를 penguins_clean.csv로 저장해요.', '다음 수업들은 미리 인터넷에 올려 둔 같은 341마리 표를 불러와요. 그 표는 숫자로 바꾼 두 열이 없고 연도 열은 남아 있어서 (341, 9)로 보여요. 입력에는 어차피 네 측정값만 써요.'], '0 개의 빈칸\n(341, 10)'),
     ],
   },
 
@@ -403,12 +409,14 @@ df.to_csv('penguins_clean.csv', index=False, encoding='utf-8-sig')
   {
     id: '04_merge_split',
     title: '🧩 데이터 통합과 훈련/테스트 분할',
-    intro: '쪽마다 읽은 표를 concat으로, 측정표와 판정표를 merge로 합친 뒤 train_test_split으로 나눠요.',
+    intro: '쪽마다 읽은 표를 concat으로 잇고, 측정표와 판정표를 번호로 merge한 341줄을 train_test_split으로 나눠요.',
     cells: [
       md(String.raw`
 # 🧩 데이터 통합과 훈련/테스트 분할
 
-**목표**: 여러 표를 하나로 합치고(concat·merge), 입력 X와 정답 y, 훈련 데이터와 테스트 데이터로 나눈다.
+**목표**: 여러 표를 하나로 합치고(concat·merge), 합친 표를 입력 X와 정답 y, 훈련 데이터와 테스트 데이터로 나눈다.
+
+> 🔁 **만약에 — 데이터가 여러 파일로 온다면?** 1단원에서는 7쪽을 한 표로 모았지만, 실제로는 표가 여러 파일로 오는 일이 많아요. 1·2는 그 연습이고, 2에서 합친 깨끗한 341줄을 3에서 나눠요.
 `),
       HOWTO,
       code(String.raw`
@@ -418,7 +426,7 @@ SITE = '${PRACTICE}'
       md(String.raw`
 ## 1. 세로로 이어 붙이기 — \`pd.concat\`
 
-\`pd.read_html(주소)\`는 웹 페이지의 <table>을 바로 데이터프레임으로 읽어 주는 지름길이에요(크롤링 한 줄 요약!). 7쪽을 각각 읽어 위아래로 이어 붙여요.
+\`pd.read_html(주소)\`는 웹 페이지의 <table>을 바로 데이터프레임으로 읽어 주는 지름길이에요(크롤링 한 줄 요약!). 쪽마다 따로 받은 표 7개를 위아래로 이어 붙여요.
 `),
       code(String.raw`
 pages = []
@@ -427,45 +435,45 @@ for p in range(1, 8):
     pages.append(t)
 print([len(t) for t in pages])
 
-df = pd.concat(pages)
-print(df.index[:3], df.index[50:53])     # 인덱스가 0, 1, 2 … 다시 0, 1, 2 … 겹쳐요
-df = pd.concat(pages, ignore_index=True)  # 인덱스를 0부터 새로
-print(df.shape)
-`, ['read_html은 표 목록을 돌려줘서 [0]으로 첫 번째 표를 꺼내요.', 'ignore_index=True를 주면 이어 붙인 뒤 인덱스를 0, 1, 2, …로 새로 매겨요.'], '[50, 50, 50, 50, 50, 50, 45]\n…\n(345, 9)'),
+crawl = pd.concat(pages)
+print(crawl.index[:3], crawl.index[50:53])     # 인덱스가 0, 1, 2 … 다시 0, 1, 2 … 겹쳐요
+crawl = pd.concat(pages, ignore_index=True)    # 인덱스를 0부터 새로
+print(crawl.shape)
+`, ['read_html은 표 목록을 돌려줘서 [0]으로 첫 번째 표를 꺼내요.', 'ignore_index=True를 주면 이어 붙인 뒤 인덱스를 0, 1, 2, …로 새로 매겨요.', '이 345줄은 1단원에서 모은 표와 같아요. 3단원에서 다듬어 깨끗한 341줄이 됐어요.'], '[50, 50, 50, 50, 50, 50, 45]\n…\n(345, 9)'),
       md(String.raw`
 ## 2. 열쇠로 옆에 붙이기 — \`pd.merge\`
 
-측정표(부리·날개·몸무게)와 판정표(종)가 따로 있어요. **번호**가 같은 행끼리 짝지어 옆으로 붙여요.
+🔁 **만약에** 측정값과 종이 다른 파일로 왔다면? 3단원의 깨끗한 341줄을 연습용으로 두 파일에 나눠 두었어요. 측정표(번호·부리·날개·몸무게 — 종 칸이 없어요)와 판정표(번호·종)를 **번호**가 같은 행끼리 짝지어 옆으로 붙여요.
 `),
       code(String.raw`
 measure = pd.read_csv('${RAW_URL}data/penguins_measure.csv')
 label = pd.read_csv('${RAW_URL}data/penguins_label.csv')
 print('측정표', measure.shape, '/ 판정표', label.shape)
 label.head()
-`, ['판정표는 순서가 뒤섞여 있고, 종을 판정하지 못한 펭귄 3마리는 빠져 있어요.'], '측정표 (341, 5) / 판정표 (338, 2)'),
+`, ['측정표에는 종 칸이 없고, 판정표에는 번호와 종만 있어요.', '판정표는 순서가 뒤섞여 있어요. 그래도 번호(열쇠)만 같으면 같은 펭귄이에요.'], '측정표 (341, 5) / 판정표 (341, 2)'),
       code(String.raw`
-both = pd.merge(measure, label, on='번호')            # 기본: 두 표에 다 있는 번호만(inner)
-print('inner:', both.shape)
+df = pd.merge(measure, label, on='번호')               # 기본: 두 표에 다 있는 번호만(inner)
+print('합친 표:', df.shape)
+print('짝을 못 찾아 빠진 펭귄:', len(measure) - len(df))
 left = pd.merge(measure, label, on='번호', how='left') # 측정표는 모두 남기기
-print('left :', left.shape, '→ 종이 빈 행', left['종'].isnull().sum())
-both.head()
-`, ["on='번호'가 열쇠예요. 순서가 달라도 번호로 짝을 찾아요.", "how='left'는 왼쪽 표의 행을 모두 남기고, 짝이 없으면 NaN으로 채워요."], 'inner: (338, 6)\nleft : (341, 6) → 종이 빈 행 3'),
+print('how=left:', left.shape, '→ 종이 빈 행', left['종'].isnull().sum())
+df.head()
+`, ["on='번호'가 열쇠예요. 순서가 달라도 번호로 짝을 찾아요.", "how='left'는 왼쪽 표의 행을 모두 남기고, 짝이 없으면 NaN으로 채워요.", '341마리가 모두 짝을 찾아서 두 방법 모두 341줄이에요. (짝이 없는 경우는 사이트 4-2의 100번 펭귄에서 봤어요.)'], '합친 표: (341, 6)\n짝을 못 찾아 빠진 펭귄: 0\nhow=left: (341, 6) → 종이 빈 행 0'),
       md(String.raw`
 ## 3. 훈련 데이터와 테스트 데이터로 나누기
 
-전처리가 끝난 깨끗한 표를 써요. 입력 **X**(대문자, 여러 열)와 정답 **y**(소문자, 한 열)로 나눈 뒤, 섞어서 80% : 20%로 나눠요.
+2에서 번호로 합친 표 \`df\`(341줄)를 그대로 나눠요. 입력 **X**(대문자, 여러 열 — 3-1에서 고른 속성 4개)와 정답 **y**(소문자, 한 열)로 나눈 뒤, 섞어서 80% : 20%로 나눠요.
 `),
       code(String.raw`
 from sklearn.model_selection import train_test_split
 
-df = pd.read_csv('${CLEAN}')
 X = df[['부리길이', '부리깊이', '날개길이', '몸무게']]
 y = df['종']
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42)
 print('훈련:', X_train.shape, ' 테스트:', X_test.shape)
 print(y_train.value_counts())
-`, ['test_size=0.2는 20%를 테스트로 떼어 두라는 뜻이에요.', 'random_state=42는 섞는 방법을 고정해 언제 실행해도 같은 결과가 나오게 해요(사이트의 "씨앗 고정").', 'X와 y는 같은 순서로 섞여서 짝이 깨지지 않아요.'], '훈련: (272, 4)  테스트: (69, 4)'),
+`, ['test_size=0.2는 20%를 테스트로 떼어 두라는 뜻이에요.', 'random_state=42는 섞는 방법을 고정해 언제 실행해도 같은 결과가 나오게 해요(사이트의 "씨앗 고정").', 'X와 y는 같은 순서로 섞여서 짝이 깨지지 않아요.', '합친 표는 깨끗한 표(penguins_clean.csv)와 줄 순서까지 같아서, 5단원 노트북이 깨끗한 표를 불러와 똑같이 나눠도 같은 훈련 272줄 · 테스트 69줄이 나와요.'], '훈련: (272, 4)  테스트: (69, 4)\n종\n아델리    115\n젠투      99\n턱끈      58\nName: count, dtype: int64'),
       md(String.raw`
 ## 🧩 확인해 봐요
 

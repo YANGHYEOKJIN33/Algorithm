@@ -24,7 +24,7 @@ export default {
       { text: 'Colab에서 판다스로 345줄 전체의 결측치와 이상치를 찾을 수 있다.', pages: ['python'] },
     ],
     before: '크롤링한 펭귄 표 345줄 × 9열 — 어디가 문제인지 아직 몰라요',
-    after: '문제 목록 — 빈칸 20칸(12줄) · 이상치 8200g(13번 펭귄) · 겹친 행 1줄',
+    after: '문제 목록 — 빈칸이 어느 열·어느 행에 몇 칸인지, 울타리 밖 이상치는 무엇인지 (고치기는 3단원)',
     minutes: 45,
     standards: [
       { code: '[12인기02-02]', text: '수집한 데이터를 가공하여 핵심 속성을 추출한다.', subject: '인공지능 기초' },
@@ -78,7 +78,7 @@ export default {
       why: '빈칸을 그대로 두면 평균 같은 계산이 틀어지거나 모델이 오류를 내요. 고치려면 먼저 찾아야 해요.',
       terms: ['결측치', 'True / False'],
       missions: [
-        { text: "⏭ 한 단계를 눌러 '부리길이' 열을 검사하는 장면까지 가 보기", check: 'step:3' },
+        { text: "⏭ 한 칸씩 눌러 '부리길이' 열의 첫 True까지 가 보기", check: 'step:6' },
         { text: '⏩ 끝까지 가서 True/False 결과표 완성하기', check: 'end' },
       ],
       ask: {
@@ -99,7 +99,7 @@ export default {
       why: '열마다 빈칸이 몇 개인지 알면 어느 속성에 문제가 많은지 한눈에 보여요.',
       terms: ['결측치', 'True / False'],
       missions: [
-        { text: "⏭ 한 단계씩 눌러 '부리길이' 열의 개수가 채워지는 것 보기", check: 'step:6' },
+        { text: "⏭ 한 단계씩 '부리길이' 열의 True를 더해 적는 것 보기", check: 'step:9' },
         { text: '⏮ 뒤로를 눌러 방금 장면을 다시 보기', check: 'back' },
       ],
       ask: {
@@ -120,7 +120,7 @@ export default {
       why: '어느 행에 빈칸이 있는지 알아야 다음 단원에서 그 행을 지우거나 채울 수 있어요.',
       terms: ['인덱스', '리스트'],
       missions: [
-        { text: '⏭ 한 단계씩 눌러 위치목록에 첫 인덱스(2)가 들어가는 것 보기', check: 'step:4' },
+        { text: '⏭ 한 단계씩 위치목록에 첫 인덱스(2)가 들어가는 것 보기', check: 'step:5' },
         { text: '⏩ 끝까지 가서 완성된 위치목록 확인하기', check: 'end' },
       ],
       ask: {

@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import * as PP from '../src/core/preprocess.js';
 import * as PR from '../src/core/prepare.js';
 import { isMissing } from '../src/core/stats.js';
+import * as SETS from '../src/core/data/sets.js';
+import { cleanRecords } from '../src/core/data/clean.js';
 
 const last = (fs) => fs[fs.length - 1];
 
@@ -62,10 +64,45 @@ test('concat — 6행, 인덱스 0~5', () => {
   assert.deepEqual(end.result.map((r) => r._i), [0, 1, 2, 3, 4, 5]);
 });
 
-test('merge — 두 표 모두에 있는 5마리만', () => {
+test('merge — 기본(짝 있는 행만): 두 표 모두에 있는 5마리만 (판다스 inner와 같다)', () => {
   const end = last(PR.mergeFrames());
   assert.deepEqual(end.result.map((r) => r.번호), [1, 153, 2, 277, 278]);
   assert.deepEqual(end.columns, ['번호', '부리길이', '날개길이', '종']);
+  assert.match(end.say, /5줄/);
+});
+
+test("merge — 짝 없는 행도 남기기: 측정표 6마리, 100번은 종이 빈칸 (판다스 how='left'와 같다)", () => {
+  const end = last(PR.mergeFrames({ how: 'left' }));
+  assert.deepEqual(end.result.map((r) => r.번호), [1, 153, 2, 277, 100, 278]);
+  assert.ok(isMissing(end.result.find((r) => r.번호 === 100).종));
+  assert.ok(!end.result.some((r) => r.번호 === 4));
+  assert.match(end.say, /6줄/);
+});
+
+test('merge — 두 방법의 장면 수가 같고(미션 step:14), 14번 장면이 짝 없는 100번이며 말이 방법을 따른다', () => {
+  const inner = PR.mergeFrames();
+  const left = PR.mergeFrames({ how: 'left' });
+  assert.equal(inner.length, left.length);
+  for (const fs of [inner, left]) {
+    assert.equal(fs[14].matched, false);
+    assert.equal(fs[14].focusL, 'L100');
+  }
+  assert.match(inner[14].say, /건너뛰어요/);
+  assert.match(left[14].say, /빈칸\(NaN\)/);
+  assert.equal(left[14].result.length, 5);   // 100번이 종 빈칸으로 들어간 뒤
+  assert.equal(inner[14].result.length, 4);
+});
+
+test('merge 예시의 짝 없는 펭귄 — 100번(판정 없음)·4번(3단원에서 지움)은 5단원 학습 데이터에 쓰이지 않는다', () => {
+  const ml = new Set([...SETS.KNN_TRAIN_IDS, ...SETS.KNN_TEST_IDS, ...SETS.TREE_IDS, ...SETS.LINREG_IDS, ...SETS.KMEANS_INIT_IDS]);
+  assert.ok(!ml.has(100) && !ml.has(4));
+  const clean = new Set(cleanRecords().map((r) => r.번호));
+  assert.ok(clean.has(100), '100번의 측정값은 깨끗한 데이터의 실제 값');
+  assert.ok(!clean.has(4), '4번은 측정값이 모두 비어 3단원에서 지웠다');
+  const m100 = SETS.MERGE_LEFT.rows.find((r) => r.번호 === 100);
+  const c100 = cleanRecords().find((r) => r.번호 === 100);
+  assert.equal(m100.부리길이, c100.부리길이);
+  assert.equal(m100.날개길이, c100.날개길이);
 });
 
 test('분할 — 8 : 2, 섞어도 빠지거나 겹치는 행이 없다', () => {
