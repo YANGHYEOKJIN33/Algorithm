@@ -6,6 +6,7 @@
  * 자료구조: 할일 큐(아직 나누지 않은 노드) + 자라나는 트리
  */
 import { treeData, TREE_FEATURES, TREE_QUERY } from '../data/sets.js';
+import { josa, withJosa } from '../josa.js';
 import { SPECIES } from '../data/practice.js';
 import { round, fmt } from '../stats.js';
 
@@ -17,7 +18,7 @@ export const PSEUDO = [
   { code: '    노드 ← 할일의 맨 앞에서 꺼낸다', note: '먼저 들어온 노드부터 꺼내요(큐). 그래서 트리가 위층부터 자라요.' },
   { code: '    만약 노드의 펭귄이 모두 같은 종이면 → 잎(그 종)', note: '더 물어볼 필요가 없어요. 이 노드에 오면 그 종이라고 답해요.' },
   { code: '    아니면: 모든 질문 후보의 불순도를 잰다', note: '"날개길이 ≤ ?", "부리길이 ≤ ?" 처럼 값 사이마다 질문을 만들어 나눠 보고 얼마나 섞이는지 재요.' },
-  { code: '        불순도가 가장 낮은 질문을 고른다', note: '나눈 뒤 양쪽이 가장 깔끔하게(한 종으로) 모이는 질문이 좋은 질문이에요.' },
+  { code: '        불순도가 가장 낮은 질문을 고른다', note: '나눈 뒤 불순도 = 예 쪽 지니와 아니오 쪽 지니를 마리 수만큼 섞은 평균이에요. 양쪽이 가장 깔끔하게(한 종으로) 모이는 질문이 좋은 질문이에요.' },
   { code: '        질문으로 펭귄을 예(왼쪽)/아니오(오른쪽)로 나눈다', note: '조건에 맞으면 왼쪽 자식, 아니면 오른쪽 자식으로 보내요.' },
   { code: '        두 자식 노드를 할일에 넣는다', note: '자식도 아직 섞여 있을 수 있으니 나중에 다시 나눠요.' },
   { code: '예측: 새 펭귄을 뿌리부터 질문에 답하며 잎까지 내린다', note: '학습이 끝나면 트리는 질문 목록이 돼요. 답을 따라 내려가 잎의 종이 예측이에요.' },
@@ -144,20 +145,23 @@ export function treeFrames({ items = treeData(), query = TREE_QUERY, maxDepth = 
   while (queue.length) {
     const { nodeId, items: its } = queue.shift();
     const node = nodes.find((n) => n.id === nodeId);
-    snap({ line: 3, icon: '📤', current: nodeId, say: `할일 큐 맨 앞에서 노드 ${nodeId}를 꺼냈어요 — 펭귄 ${its.length}마리, 불순도 ${fmt(node.gini, 3)}.` });
+    snap({ line: 3, icon: '📤', current: nodeId, say: `할일 큐 맨 앞에서 노드 ${withJosa(nodeId, '을/를')} 꺼냈어요 — 펭귄 ${its.length}마리, 불순도 ${fmt(node.gini, 3)}.` });
 
     const kinds = node.counts.filter((c) => c > 0).length;
     if (kinds <= 1 || node.depth >= maxDepth) {
       node.leaf = majority(node.counts);
       snap({ line: 4, icon: '🍃', current: nodeId,
-        say: kinds <= 1 ? `모두 '${node.leaf}'예요(불순도 0) → 잎 노드로 정했어요.` : `깊이 제한(${maxDepth})에 닿아 가장 많은 '${node.leaf}'(으)로 정했어요.` });
+        say: kinds <= 1 ? `모두 '${node.leaf}'${josa(node.leaf, '이에요/예요')}(불순도 0) → 잎 노드로 정했어요.` : `깊이 제한(${maxDepth})에 닿아 가장 많은 '${node.leaf}'${josa(node.leaf, '으로/로')} 정했어요.` });
       continue;
     }
     const cands = candidates(its);
     const best = bestSplit(its);
     snap({ line: 5, icon: '🧪', current: nodeId, cands, say: `질문 후보 ${cands.length}개를 모두 나눠 보고 섞인 정도(불순도)를 쟀어요.` });
+    // 나눈 뒤 불순도 = 양쪽 지니를 마리 수만큼 섞은 평균 — 노드 상자의 지니와 다른 수라 식을 그대로 보여 준다
+    const nL = best.left.reduce((a, b) => a + b, 0);
+    const nR = best.right.reduce((a, b) => a + b, 0);
     snap({ line: 6, icon: '🏆', current: nodeId, cands, best,
-      say: `가장 깔끔한 질문: "${best.feature} ≤ ${best.threshold}?" — 불순도 ${fmt(best.score, 3)} (낮을수록 좋아요)` });
+      say: `가장 깔끔한 질문: "${best.feature} ≤ ${best.threshold}?" — 나눈 뒤 불순도 = 예 쪽 지니 ${fmt(gini(best.left), 3)} × ${nL}/${nL + nR} + 아니오 쪽 지니 ${fmt(gini(best.right), 3)} × ${nR}/${nL + nR} = ${fmt(best.score, 3)} (마리 수만큼 섞은 평균, 낮을수록 좋아요)` });
     node.split = { feature: best.feature, threshold: best.threshold, score: best.score };
     regions.push({ feature: best.feature, threshold: best.threshold, nodeId });
     const yesItems = its.filter((it) => it[best.feature] <= best.threshold);
@@ -167,7 +171,7 @@ export function treeFrames({ items = treeData(), query = TREE_QUERY, maxDepth = 
     snap({ line: 7, icon: '✂️', current: nodeId, best,
       say: `예(${best.feature} ≤ ${best.threshold}) → ${yesItems.length}마리, 아니오 → ${noItems.length}마리로 나눴어요.` });
     queue.push({ nodeId: yes.id, items: yesItems }, { nodeId: no.id, items: noItems });
-    snap({ line: 8, icon: '📥', current: nodeId, say: `두 자식 노드 ${yes.id}·${no.id}를 할일 큐 뒤에 넣었어요. 큐: [${queue.map((q) => q.nodeId).join(', ')}]` });
+    snap({ line: 8, icon: '📥', current: nodeId, say: `두 자식 노드 ${yes.id}·${withJosa(no.id, '을/를')} 할일 큐 뒤에 넣었어요. 큐: [${queue.map((q) => q.nodeId).join(', ')}]` });
   }
   snap({ line: 2, icon: '✅', say: '할일 큐가 비었어요 → 트리 완성! 이제 질문 목록으로 새 펭귄을 분류할 수 있어요.' });
 
@@ -179,7 +183,7 @@ export function treeFrames({ items = treeData(), query = TREE_QUERY, maxDepth = 
     path.push(cur.id);
     if (cur.leaf) {
       snap({ line: 9, icon: '🎯', path: [...path], pred: cur.leaf, done: true,
-        say: `잎에 닿았어요 → '${cur.leaf}'(으)로 예측! (실제 정답: ${query.label} — ${cur.leaf === query.label ? '맞혔어요' : '틀렸어요'})` });
+        say: `잎에 닿았어요 → '${cur.leaf}'${josa(cur.leaf, '으로/로')} 예측! (실제 정답: ${query.label} — ${cur.leaf === query.label ? '맞혔어요' : '틀렸어요'})` });
       break;
     }
     const { feature, threshold } = cur.split;

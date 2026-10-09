@@ -3,6 +3,7 @@
  * 훈련 데이터(18마리)로 배운 k-최근접 이웃(k=3)이 처음 보는 6마리를 얼마나 맞히나.
  */
 import { knnTrain, knnTest } from '../data/sets.js';
+import { josa } from '../josa.js';
 import { predict, rankNeighbors } from './knn.js';
 
 export const K = 3;
@@ -43,7 +44,7 @@ export function evalFrames({ train = knnTrain(), test = knnTest(), k = K } = {})
   for (const t of test) {
     const { pred } = predict(train, t, k);
     const nb = rankNeighbors(train, t).slice(0, k).map((n) => n.id);
-    snap({ line: 3, icon: '🤔', focus: t.id, neighbors: nb, say: `${t.id}번 펭귄 — 가까운 이웃 ${k}마리의 다수결로 '${pred}'(이)라고 예측했어요.` });
+    snap({ line: 3, icon: '🤔', focus: t.id, neighbors: nb, say: `${t.id}번 펭귄 — 가까운 이웃 ${k}마리의 다수결로 '${pred}'${josa(pred, '이라고/라고')} 예측했어요.` });
     const ok = pred === t.label;
     if (ok) correct += 1;
     rows.push({ id: t.id, truth: t.label, pred, ok });

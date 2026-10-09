@@ -33,11 +33,13 @@ function layoutOf(tree) {
 }
 
 /** 노드 상자 하나 */
-function nodeBox(n, x, y, { current = false, onPath = false, w = 168, h = 74 } = {}) {
+const BOX_H = 58;   // 노드 상자 높이 — 낮은 화면(1280×720)에서도 트리가 줄어들지 않게 작게
+
+function nodeBox(n, x, y, { current = false, onPath = false, w = 168, h = BOX_H } = {}) {
   const g = s(`g.tnode2${current ? '.is-current' : ''}${onPath ? '.is-path' : ''}${n.leaf ? '.is-leaf' : ''}`, { transform: `translate(${x - w / 2},${y})` });
   g.append(s('rect.tnode2__box', { width: w, height: h, rx: 8 }));
   const title = n.leaf ? `🍃 ${n.leaf}` : n.split ? `${n.split.feature} ≤ ${n.split.threshold} ?` : '나눌 차례…';
-  g.append(s('text.tnode2__title', { x: w / 2, y: 20, 'text-anchor': 'middle' }, title));
+  g.append(s('text.tnode2__title', { x: w / 2, y: 17, 'text-anchor': 'middle' }, title));
   // 종별 개수 막대
   const total = n.counts.reduce((a, b) => a + b, 0);
   let bx = 10;
@@ -45,10 +47,10 @@ function nodeBox(n, x, y, { current = false, onPath = false, w = 168, h = 74 } =
   n.counts.forEach((c, i) => {
     if (!c) return;
     const ww = (c / total) * bw;
-    g.append(s(`rect.tnode2__bar.sp${i}`, { x: bx, y: 30, width: Math.max(1, ww - 1), height: 12, rx: 2 }));
+    g.append(s(`rect.tnode2__bar.sp${i}`, { x: bx, y: 24, width: Math.max(1, ww - 1), height: 10, rx: 2 }));
     bx += ww;
   });
-  g.append(s('text.tnode2__counts', { x: w / 2, y: 60, 'text-anchor': 'middle' },
+  g.append(s('text.tnode2__counts', { x: w / 2, y: 49, 'text-anchor': 'middle' },
     `${SPECIES_SHAPE[0]}${n.counts[0]} ${SPECIES_SHAPE[1]}${n.counts[1]} ${SPECIES_SHAPE[2]}${n.counts[2]} · 지니 ${fmt(n.gini, 3)}`));
   return g;
 }
@@ -56,7 +58,7 @@ function nodeBox(n, x, y, { current = false, onPath = false, w = 168, h = 74 } =
 /** 트리 그림 — nodes: 지금까지 만든 노드(평평한 목록) */
 function treeSvg(nodes, layout, { current = null, path = [], W = 560, H = 300 } = {}) {
   const colW = W / layout.leaves;
-  const rowH = Math.max(96, (H - 20) / layout.depth);
+  const rowH = Math.max(BOX_H + 18, (H - BOX_H - 12) / Math.max(1, layout.depth - 1));
   const P = (id) => { const p = layout.pos.get(id); return { x: colW * (p.x + 0.5), y: 8 + p.y * rowH }; };
   const edges = [];
   const boxes = [];
@@ -64,7 +66,7 @@ function treeSvg(nodes, layout, { current = null, path = [], W = 560, H = 300 } 
     if (n.parent !== null && n.parent !== undefined) {
       const a = P(n.parent); const b = P(n.id);
       const onPath = path.includes(n.id) && path.includes(n.parent);
-      edges.push(s(`path.tedge${onPath ? '.is-path' : ''}`, { d: `M${a.x},${a.y + 74} C${a.x},${a.y + 90} ${b.x},${b.y - 16} ${b.x},${b.y}` }));
+      edges.push(s(`path.tedge${onPath ? '.is-path' : ''}`, { d: `M${a.x},${a.y + BOX_H} C${a.x},${a.y + BOX_H + 14} ${b.x},${b.y - 14} ${b.x},${b.y}` }));
       // 가지 글자는 자식 상자 바로 위, 가지가 들어오지 않는 바깥쪽에 둔다(가지와 겹치지 않게).
       // 예(왼쪽 자식)는 가지가 오른쪽 위에서 오므로 왼쪽에, 아니오(오른쪽 자식)는 오른쪽에. 테두리(halo)로 선 위에서도 읽히게.
       const yes = n.side === 'yes';
@@ -76,7 +78,8 @@ function treeSvg(nodes, layout, { current = null, path = [], W = 560, H = 300 } 
     const p = P(n.id);
     boxes.push(nodeBox(n, p.x, p.y, { current: n.id === current, onPath: path.includes(n.id), w: Math.min(176, colW - 10) }));
   }
-  const h = 8 + layout.depth * rowH;
+  // 마지막 줄에는 상자 높이만 — 빈 줄 높이를 더하지 않는다
+  const h = 8 + (layout.depth - 1) * rowH + BOX_H + 4;
   return s('svg.tsvg', { viewBox: `0 0 ${W} ${h}`, role: 'img', 'aria-label': '의사결정 트리' }, edges, boxes);
 }
 
@@ -187,7 +190,7 @@ const treeStep = {
     stage.classList.add('fit');
     const items = treeData();
     const layout = layoutOf(TREE.buildTree(items));
-    const size = sizeOf(stage, { reserve: 30 });
+    const size = sizeOf(stage, { reserve: 48 });
     const half = { width: Math.max(380, Math.floor(size.width * 0.46)), height: size.height };
     const sc = createScatter({ ...AXES, ...half });
     sc.mover('q', () => starPath(11));
@@ -208,11 +211,11 @@ const treeStep = {
           el('div.treeds__cands', {},
             el('div.webx__cap', {}, f.cands ? `질문 후보 ${f.cands.length}개 중 불순도가 가장 낮은 3개 (낮을수록 좋음)` : '질문 후보'),
             f.cands ? el('table.mini', {},
-              el('thead', {}, el('tr', {}, el('th', {}, '질문'), el('th', {}, '예 쪽 ●▲■'), el('th', {}, '아니오 쪽 ●▲■'), el('th', {}, '불순도'))),
+              el('thead', {}, el('tr', {}, el('th', {}, '질문'), el('th', {}, '예 쪽 ●▲■'), el('th', {}, '아니오 쪽 ●▲■'), el('th', {}, '나눈 뒤 불순도(평균)'))),
               el('tbody', {}, top.map((c) => el(`tr${f.best && c.feature === f.best.feature && c.threshold === f.best.threshold ? '.is-best' : ''}`, {},
                 el('td', {}, `${c.feature} ≤ ${c.threshold}`), el('td', {}, c.left.join(' · ')), el('td', {}, c.right.join(' · ')), el('td', {}, fmt(c.score, 3))))))
               : el('p.panel__hint', {}, '노드를 나눌 차례가 되면 모든 질문 후보를 시험해 봐요.')),
-          el('div.treeds__queue', {}, pyList('할일', f.queue.map((id) => ({ key: `q${id}`, content: `노드 ${id}`, cls: '' })), { note: ' = 큐 (앞에서 꺼냄)', empty: '비었어요 → 끝' }))));
+          el('div.treeds__queue', {}, pyList('할일', f.queue.map((id) => ({ key: `q${id}`, content: `노드 ${id}`, cls: '' })), { note: ' = 큐 (앞에서 꺼냄)', empty: f.line === 2 || f.line === 9 ? '비었어요 → 끝' : '비었어요 (꺼낸 노드를 처리하는 중)' }))));
         flip(data);
       },
     };

@@ -1,7 +1,7 @@
 /**
  * 🤖 기계학습 개념 — 학습 방법(지도·비지도·강화) · 강화학습 맛보기 · 학습 목적(분류·예측·군집)
  *
- * 미션 신호: ctx.check('algo-map') — 알고리즘 지도에서 [배우러 가기 →]를 눌렀을 때
+ * 미션 신호: ctx.check('algo-map') — 알고리즘 지도에서 "몸무게 예측"에 맞는 알고리즘(선형 회귀)을 골랐을 때
  * (학습 방법·목적 쪽의 문제 상자는 'quiz:answer' 사건을 스스로 올려 보낸다 → 미션 'quiz'·'right:N')
  */
 import { el, fill } from '../ui/dom.js';
@@ -185,6 +185,16 @@ const ALGO_MAP = [
 ];
 
 function purposes(root, ctx) {
+  // 지도를 "읽기"만 하지 않고 직접 골라 보게 — 다른 쪽으로 떠나지 않고 이 쪽에서 미션을 이룬다
+  const pickNote = el('p.callout', { 'aria-live': 'polite' }, '🎯 문제: 날개길이로 펭귄의 ', el('b', {}, '몸무게(숫자)'), '를 맞히고 싶어요. 아래 지도에서 알맞은 알고리즘의 [✋ 고르기]를 눌러 보세요.');
+  const pick = (a) => {
+    const ok = a.sub === 'linreg';
+    pickNote.className = `callout ${ok ? 'callout--add' : 'callout--warn'}`;
+    fill(pickNote, ok
+      ? ['⭕ 맞아요! 몸무게는 숫자라 ', el('b', {}, '예측(회귀)'), ' — 선형 회귀예요. 정답(몸무게)을 알려 주며 배우니 지도학습이에요.']
+      : ['❌ ', el('b', {}, a.name), `은(는) ${a.purpose}에 쓰여요. 몸무게처럼 `, el('b', {}, '숫자'), '를 내놓는 알고리즘을 찾아보세요.']);
+    if (ok) ctx.check('algo-map');
+  };
   const card = (cls, title, sub, svg, out) => el(`div.card.typecard${cls}`, {},
     el('div.typecard__head', {}, el('div', {}, el('div.card__title', {}, title), el('div.card__meta', {}, sub))),
     el('div.typecard__fig', {}, svg),
@@ -197,13 +207,15 @@ function purposes(root, ctx) {
       card('.card--result', '📈 예측 · 회귀 (regression)', '숫자 값을 내놓아요', miniRegression({ height: H }), ['내놓는 것: ', el('b', {}, '숫자'), ' — "4653g"']),
       card('.card--add', '🫧 군집 (clustering)', '정답 없이 무리를 만들어요', miniScatter('cluster', { height: H }), ['내놓는 것: ', el('b', {}, '무리 번호'), ' — "묶음 2"'])),
     el('h3', {}, '🗺 이 단원의 알고리즘 지도', el('span.card__meta', {}, ' — 무엇을 맞힐지 정하면, 이 표에서 알고리즘을 골라요')),
+    pickNote,
     el('table.mini.algomap', {},
       el('thead', {}, el('tr', {}, ['알고리즘', '학습 방법', '학습 목적', '한 줄 아이디어', '이 단원에서 해 볼 일', ''].map((h) => el('th', {}, h)))),
       el('tbody', {}, ALGO_MAP.map((a) => el('tr', {},
         el('td', {}, el('b', {}, a.name)), el('td', {}, a.how),
         el('td', {}, el(`span.tag.tag--${a.tag}`, {}, a.purpose), a.more ?? ''),
         el('td', {}, a.idea), el('td', {}, a.task),
-        el('td', {}, el('button.pill.pill--sm', { type: 'button', onclick: () => { ctx.check('algo-map'); ctx.go('ml', null, a.sub); } }, '배우러 가기 →')))))),
+        el('td', {}, el('button.pill.pill--sm', { type: 'button', onclick: () => pick(a) }, '✋ 고르기'), ' ',
+          el('button.pill.pill--sm', { type: 'button', onclick: () => ctx.go('ml', null, a.sub) }, '배우러 가기 →')))))),
     quizBox(PURPOSE_QUIZ, { row: true, title: '✅ 분류·예측·군집 중 무엇일까요?' })));
   return {};
 }

@@ -6,6 +6,7 @@
  * 행이 지워지거나 움직일 때 "같은 행"을 따라갈 수 있게 한다.
  */
 import { missingTable, dropTable } from './data/sets.js';
+import { josa, withJosa } from './josa.js';
 import { originalRecords, SPECIES } from './data/practice.js';
 import { isMissing, mean, sum, present, mode, fmt } from './stats.js';
 
@@ -207,7 +208,7 @@ export function fillMeanFrames(source = missingTable()) {
     const calc = { col, values: xs, sum: sum(xs), count: xs.length, mean: m };
     snap({ line: 2, icon: '🧮', col, calc, say: `평균 = 합 ${fmt(calc.sum)} ÷ 개수 ${calc.count} = ${fmt(m, 3)}` });
     for (const r of holes) { r[col] = m; filled[`${r._k}|${col}`] = true; }
-    snap({ line: 3, icon: '🖊️', col, calc, say: `'${col}' 빈칸 ${holes.length}개를 ${fmt(m, 3)}(으)로 채웠어요.` });
+    snap({ line: 3, icon: '🖊️', col, calc, say: `'${col}' 빈칸 ${holes.length}개를 ${withJosa(fmt(m, 3), '으로/로')} 채웠어요.` });
   }
   // 측정값이 모두 빈칸이었던 행 — 채운 값이 전부 어림값이다
   const allGuess = table.rows.filter((r) => FILL_COLUMNS.every((c) => filled[`${r._k}|${c}`]));
@@ -268,7 +269,7 @@ export function fillModeFrames(source = afterMeanFill(), raw = missingTable()) {
   snap({ line: 4, icon: '🏆', mode: m, say: `'${m}'이 ${counts.find((c) => c[0] === m)[1]}번으로 가장 많이 나왔어요 → 최빈값.` });
   const holes = table.rows.filter((r) => isMissing(r[col]));
   for (const r of holes) { r[col] = m; filled[`${r._k}|${col}`] = true; }
-  snap({ line: 5, icon: '🖊️', mode: m, done: true, say: `빈칸 ${holes.length}개를 '${m}'(으)로 채웠어요. 방법 A와 달리 ${table.rows.length}행이 모두 남은 채 빈칸이 0개예요.` });
+  snap({ line: 5, icon: '🖊️', mode: m, done: true, say: `빈칸 ${holes.length}개를 '${m}'${josa(m, '으로/로')} 채웠어요. 방법 A와 달리 ${table.rows.length}행이 모두 남은 채 빈칸이 0개예요.` });
 
   // 🤔 그럼 어떻게 고를까? — 측정값이 모두 빈 행은 지우고, 한두 칸만 빈 행은 채운다
   const choose = { drop: [], fill: [] };

@@ -3,6 +3,7 @@
  * 판다스의 isnull() · isnull().sum() · 인덱스 찾기 · quantile() 과 같은 값을 낸다.
  */
 import { missingTable, outlierValues } from './data/sets.js';
+import { withJosa } from './josa.js';
 import { isMissing, quartiles, sorted, fmt } from './stats.js';
 
 /* ═════════════════ 결측치 ① 여부 — df.isnull() ═════════════════ */
@@ -137,7 +138,7 @@ export function whereFrames(table = missingTable()) {
     if (miss.length) {
       snap({ line: 3, row: i, icon: '📍', hit: true, say: `인덱스 ${i}행(펭귄 ${row.번호}번)에 빈칸이 있어요: ${miss.join(', ')}` });
       list.push(i);
-      snap({ line: 4, row: i, icon: '📥', hit: true, say: `위치목록에 ${i}를 추가했어요 → [${list.join(', ')}]` });
+      snap({ line: 4, row: i, icon: '📥', hit: true, say: `위치목록에 ${withJosa(i, '을/를')} 추가했어요 → [${list.join(', ')}]` });
     } else {
       snap({ line: 3, row: i, icon: '✅', hit: false, say: `인덱스 ${i}행(펭귄 ${row.번호}번)은 빈칸이 없어요. 건너뛰어요.` });
     }

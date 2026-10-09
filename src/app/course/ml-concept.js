@@ -58,7 +58,7 @@ export default {
       terms: ['분류', '예측(회귀)', '군집'],
       missions: [
         { text: '🖱️ 문제 5개가 분류·예측·군집 중 무엇인지 고르기', check: 'quiz' },
-        { text: '🖱️ 알고리즘 지도에서 [배우러 가기 →] 눌러 보기', check: 'act:algo-map' },
+        { text: '🖱️ 지도에서 "몸무게 예측"에 맞는 알고리즘 고르기', check: 'act:algo-map' },
       ],
       ask: {
         q: '정답(종) 없이 비슷한 펭귄끼리 묶는 알고리즘은?',

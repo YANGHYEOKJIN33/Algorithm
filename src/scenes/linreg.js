@@ -203,7 +203,7 @@ const linregStep = {
   frames: () => LR.linregFrames(),
   mount({ stage, data }) {
     stage.classList.add('fit');
-    const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 30 }) });
+    const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 52 }) });
     fill(stage, speciesLegend(), el('div.fit__grow', {}, sc.svg));
     return {
       render(v) {

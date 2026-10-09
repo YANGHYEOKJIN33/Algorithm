@@ -206,7 +206,7 @@ df.head()
 `),
       code(String.raw`
 df.isnull().head(12)
-`, ['결과표는 원래 표와 크기가 같아요. True인 칸이 결측치예요(인덱스 3, 6, 8~11 행을 보세요).']),
+`, ['결과표는 원래 표와 크기가 같아요. True인 칸이 결측치예요(인덱스 3, 6, 8~11 행을 보세요).'], '       번호      종      섬   부리길이   부리깊이   날개길이    몸무게     성별     연도\n0   False  False  False  False  False  False  False  False  False\n1   False  False  False  False  False  False  False  False  False\n2   False  False  False  False  False  False  False  False  False\n3   False  False  False   True   True   True   True   True  False\n4   False  False  False  False  False  False  False  False  False\n5   False  False  False  False  False  False  False  False  False\n6   False  False  False   True  False  False  False  False  False\n7   False  False  False  False  False  False  False  False  False\n8   False  False  False  False  False  False  False   True  False\n9   False  False  False  False  False  False  False   True  False\n10  False  False  False  False  False  False  False   True  False\n11  False  False  False  False  False  False  False   True  False'),
       md(String.raw`
 ## 2. 결측치 개수 — \`isnull().sum()\`
 
@@ -226,11 +226,11 @@ has_nan = df.isnull().any(axis=1)
 where = df[has_nan].index
 print('결측치가 있는 행의 인덱스:', list(where))
 df.loc[where]
-`, ['df[조건]은 조건이 True인 행만 골라요.', 'df.loc[인덱스 목록]은 그 행들을 보여 줘요.']),
+`, ['df[조건]은 조건이 True인 행만 골라요.', 'df.loc[인덱스 목록]은 그 행들을 보여 줘요.'], '결측치가 있는 행의 인덱스: [3, 6, 8, 9, 10, 11, 47, 179, 219, 257, 269, 272]\n      번호    종     섬  부리길이  부리깊이   날개길이     몸무게   성별    연도\n3      4  아델리  토르거센   NaN   NaN    NaN     NaN  NaN  2007\n6      7  아델리  토르거센   NaN  17.8  181.0  3625.0   암컷  2007\n8      9  아델리  토르거센  34.1  18.1  193.0  3475.0  NaN  2007\n9     10  아델리  토르거센  42.0  20.2  190.0  4250.0  NaN  2007\n10    11  아델리  토르거센  37.8  17.1  186.0  3300.0  NaN  2007\n11    12  아델리  토르거센  37.8  17.3  180.0  3700.0  NaN  2007\n47    48  아델리    드림  37.5  18.9  179.0  2975.0  NaN  2007\n179  179   젠투   비스코  44.5  14.3  216.0  4100.0  NaN  2007\n219  219   젠투   비스코  46.2  14.4  214.0  4650.0  NaN  2008\n257  257   젠투   비스코  47.3  13.8  216.0  4725.0  NaN  2009\n269  269   젠투   비스코  44.5  15.7  217.0  4875.0  NaN  2009\n272  272   젠투   비스코   NaN   NaN    NaN     NaN  NaN  2009'),
       code(String.raw`
 # 열 하나만 보고 싶을 때
 df[df['몸무게'].isnull()]
-`, ["df['몸무게'].isnull()은 몸무게 열만 검사해요."]),
+`, ["df['몸무게'].isnull()은 몸무게 열만 검사해요."], '      번호    종     섬  부리길이  부리깊이  날개길이  몸무게   성별    연도\n3      4  아델리  토르거센   NaN   NaN   NaN  NaN  NaN  2007\n272  272   젠투   비스코   NaN   NaN   NaN  NaN  NaN  2009'),
       md(String.raw`
 ## 4. 이상치 — 사분위수와 울타리
 
@@ -318,16 +318,16 @@ print(df.shape)
 `),
       code(String.raw`
 df.groupby('종')[['부리길이', '부리깊이', '날개길이', '몸무게']].mean().round(1)
-`, ["groupby('종')은 종마다 묶어서 계산해요. 젠투는 날개가 길고 무겁고, 아델리는 부리가 짧아요."]),
+`, ["groupby('종')은 종마다 묶어서 계산해요. 젠투는 날개가 길고 무겁고, 아델리는 부리가 짧아요."], '     부리길이  부리깊이   날개길이     몸무게\n종                             \n아델리  38.8  18.4  190.0  3736.5\n젠투   47.5  15.0  217.2  5076.0\n턱끈   48.8  18.4  195.8  3733.1'),
       code(String.raw`
 # 글자 열은 개수표로 — 성별은 종을 가르지 못해요
 pd.crosstab(df['종'], df['성별'])
-`, ['crosstab은 두 열의 값 조합마다 개수를 세요. 어느 종이든 수컷·암컷이 비슷하게 있어요 → 성별은 핵심 속성이 아니에요.']),
+`, ['crosstab은 두 열의 값 조합마다 개수를 세요. 어느 종이든 수컷·암컷이 비슷하게 있어요 → 성별은 핵심 속성이 아니에요.'], '성별   수컷  암컷\n종          \n아델리  74  73\n젠투   61  58\n턱끈   34  34'),
       code(String.raw`
 features = ['부리길이', '부리깊이', '날개길이', '몸무게']   # 핵심 속성
 target = '종'                                               # 정답
 print('입력 속성:', features, '/ 정답:', target)
-`, ['사이트에서 고른 것과 같은 네 속성이에요. 번호·섬·성별·연도는 입력 X에서 빼요.', '입력에서 빼는 것과 표에서 지우는 것은 달라요. 표에서는 다음 칸에서 연도만 지워요.']),
+`, ['사이트에서 고른 것과 같은 네 속성이에요. 번호·섬·성별·연도는 입력 X에서 빼요.', '입력에서 빼는 것과 표에서 지우는 것은 달라요. 표에서는 다음 칸에서 연도만 지워요.'], '입력 속성: [\'부리길이\', \'부리깊이\', \'날개길이\', \'몸무게\'] / 정답: 종'),
       md(String.raw`
 ## 2. 데이터 삭제 — 필요 없는 열, 겹친 행, 잘못된 행
 
@@ -381,7 +381,7 @@ print(df['성별'].value_counts())
 m = df['성별'].mode()[0]
 df['성별'] = df['성별'].fillna(m)
 print('최빈값:', m)
-`, ['value_counts()는 값마다 개수를 세요(사이트의 세기표).', 'mode()[0]은 가장 많이 나온 값이에요.']),
+`, ['value_counts()는 값마다 개수를 세요(사이트의 세기표).', 'mode()[0]은 가장 많이 나온 값이에요.'], '성별\n수컷    168\n암컷    164\nName: count, dtype: int64\n최빈값: 수컷'),
       md(String.raw`
 ## 4. 텍스트 값 대체 — 글자를 숫자로
 
@@ -393,7 +393,7 @@ sp_map = {'아델리': 0, '턱끈': 1, '젠투': 2}
 df['성별_숫자'] = df['성별'].map(sex_map)
 df['종_숫자'] = df['종'].map(sp_map)
 df[['종', '종_숫자', '성별', '성별_숫자']].head()
-`, ['원래 열은 남겨 두고, 숫자로 바꾼 열을 새로 만들어 견줘 봐요.', '0·1·2는 이름표일 뿐 크기에 뜻이 없어요.']),
+`, ['원래 열은 남겨 두고, 숫자로 바꾼 열을 새로 만들어 견줘 봐요.', '0·1·2는 이름표일 뿐 크기에 뜻이 없어요.'], '     종  종_숫자  성별  성별_숫자\n0  아델리     0  수컷      0\n1  아델리     0  암컷      1\n2  아델리     0  암컷      1\n4  아델리     0  암컷      1\n5  아델리     0  수컷      0'),
       md(String.raw`
 ## ✅ 확인 — 빈칸이 하나도 없나요?
 `),
@@ -559,7 +559,7 @@ model.predict(pd.DataFrame([[43.5, 18.1]], columns=['부리길이', '부리깊�
 for k in [1, 3, 5, 7, 9, 15]:
     m = KNeighborsClassifier(n_neighbors=k).fit(X_train, y_train)
     print(f'k={k:2d}  정확도 {accuracy_score(y_test, m.predict(X_test)):.3f}')
-`, ['k가 너무 작으면 한 이웃에 휘둘리고, 너무 크면 멀리 있는 펭귄까지 투표해요. 알맞은 k를 실험으로 찾아요.']),
+`, ['k가 너무 작으면 한 이웃에 휘둘리고, 너무 크면 멀리 있는 펭귄까지 투표해요. 알맞은 k를 실험으로 찾아요.'], 'k= 1  정확도 0.942\nk= 3  정확도 0.957\nk= 5  정확도 0.957\nk= 7  정확도 0.942\nk= 9  정확도 0.957\nk=15  정확도 0.928'),
       md(String.raw`
 ## 4. 그림으로 보기
 `),
@@ -626,7 +626,7 @@ print(export_text(tree, feature_names=['날개길이', '부리길이']))
       code(String.raw`
 # 283번 펭귄(날개 178, 부리 46.1)은?
 tree.predict(pd.DataFrame([[178, 46.1]], columns=['날개길이', '부리길이']))
-`, ['날개가 짧아 왼쪽으로, 부리가 길어 오른쪽으로 → 턱끈!']),
+`, ['날개가 짧아 왼쪽으로, 부리가 길어 오른쪽으로 → 턱끈!'], "array(['턱끈'], dtype=object)"),
       md(String.raw`
 ## 3. 전체 데이터로 학습·평가
 `),
@@ -641,15 +641,15 @@ model = DecisionTreeClassifier(max_depth=3, random_state=0)
 model.fit(X_train, y_train)
 print('정확도:', accuracy_score(y_test, model.predict(X_test)))
 print(export_text(model, feature_names=features))
-`, ['max_depth=3은 질문을 최대 3번까지만 하라는 뜻이에요(너무 깊으면 훈련 데이터만 외워요).']),
+`, ['max_depth=3은 질문을 최대 3번까지만 하라는 뜻이에요(너무 깊으면 훈련 데이터만 외워요).', '전체 데이터로 배우면 첫 질문이 "날개길이 ≤ 207.5"로 바뀌어요. 사이트의 16마리 트리(203.5)와 견줘 보세요.'], '정확도: 0.9565217391304348\n|--- 날개길이 <= 207.50\n|   |--- 부리길이 <= 43.35\n|   |   |--- 부리길이 <= 42.35\n|   |   |   |--- class: 아델리\n|   |   |--- 부리길이 >  42.35\n|   |   |   |--- class: 아델리\n|   |--- 부리길이 >  43.35\n|   |   |--- 몸무게 <= 4125.00\n|   |   |   |--- class: 턱끈\n|   |   |--- 몸무게 >  4125.00\n|   |   |   |--- class: 턱끈\n|--- 날개길이 >  207.50\n|   |--- 부리깊이 <= 17.65\n|   |   |--- class: 젠투\n|   |--- 부리깊이 >  17.65\n|   |   |--- 부리깊이 <= 18.95\n|   |   |   |--- class: 아델리\n|   |   |--- 부리깊이 >  18.95\n|   |   |   |--- class: 턱끈'),
       FONT_CELL,
       code(String.raw`
 from sklearn.tree import plot_tree
 plt.figure(figsize=(12, 6))
 plot_tree(model, feature_names=features, class_names=list(model.classes_), filled=True, rounded=True)
 plt.show()
-print(dict(zip(features, model.feature_importances_.round(3))))
-`, ['plot_tree는 트리를 그림으로 그려 줘요. 상자 색은 많은 종을 나타내요.', 'feature_importances_는 속성마다 얼마나 중요하게 쓰였는지 보여 줘요.']),
+print({f: float(v) for f, v in zip(features, model.feature_importances_.round(3))})
+`, ['plot_tree는 트리를 그림으로 그려 줘요. 상자 색은 많은 종을 나타내요.', 'feature_importances_는 속성마다 얼마나 중요하게 쓰였는지 보여 줘요. 날개길이가 가장 중요해요.'], "(트리 그림이 나와요)\n{'부리길이': 0.371, '부리깊이': 0.07, '날개길이': 0.544, '몸무게': 0.015}"),
       md(String.raw`
 ## 🚀 도전
 
@@ -723,7 +723,7 @@ mse = mean_squared_error(y_test, pred)
 print(f'w = {model.coef_[0]:.2f}, b = {model.intercept_:.1f}')
 print(f'MSE = {mse:.0f},  RMSE = {mse ** 0.5:.0f}g  (보통 이만큼 빗나가요)')
 print('R² 점수 =', round(model.score(X_test, y_test), 3), '(1에 가까울수록 잘 맞음)')
-`, ['RMSE는 MSE의 제곱근이에요. "예측이 보통 몇 g쯤 빗나가나"로 읽으면 돼요.', 'score()는 R²(결정계수)를 줘요.']),
+`, ['RMSE는 MSE의 제곱근이에요. "예측이 보통 몇 g쯤 빗나가나"로 읽으면 돼요.', 'score()는 R²(결정계수)를 줘요.'], 'w = 47.75, b = -5382.5\nMSE = 131537,  RMSE = 363g  (보통 이만큼 빗나가요)\nR² 점수 = 0.814 (1에 가까울수록 잘 맞음)'),
       FONT_CELL,
       code(String.raw`
 plt.scatter(df['날개길이'], df['몸무게'], alpha=0.5, label='펭귄')
@@ -747,7 +747,7 @@ for step in range(200):
     c -= 0.05 * 2 * err.mean()
     if step % 40 == 0:
         print(f'{step:3d}번째: MSE = {(err ** 2).mean():,.0f}')
-`, ['반복할수록 MSE가 줄어들어요. 이것이 신경망이 학습하는 기본 방법이기도 해요.']),
+`, ['반복할수록 MSE가 줄어들어요. 이것이 신경망이 학습하는 기본 방법이기도 해요.'], '  0번째: MSE = 18,319,615\n 40번째: MSE = 158,959\n 80번째: MSE = 154,989\n120번째: MSE = 154,988\n160번째: MSE = 154,988'),
     ],
   },
 
@@ -808,7 +808,7 @@ model = KMeans(n_clusters=3, n_init=10, random_state=0)
 model.fit(Xs)                                # 정답 없이 X만!
 df['묶음'] = model.labels_                   # 점마다 묶음 번호(0, 1, 2)
 pd.crosstab(df['종'], df['묶음'])
-`, ['n_init=10은 처음 중심을 10번 다르게 골라 가장 좋은 결과를 쓰라는 뜻이에요(시작에 따라 결과가 달라지니까).', 'crosstab으로 묶음과 실제 종을 견줘요. 정답을 안 봤는데도 대부분 종별로 모여요.']),
+`, ['n_init=10은 처음 중심을 10번 다르게 골라 가장 좋은 결과를 쓰라는 뜻이에요(시작에 따라 결과가 달라지니까).', 'crosstab으로 묶음과 실제 종을 견줘요. 정답을 안 봤는데도 대부분 종별로 모여요.'], '묶음    0    1    2\n종                \n아델리   4  146    0\n젠투    6    1  116\n턱끈   54    5    9'),
       code(String.raw`
 # 크기를 맞추지 않으면? — 같은 일을 X 그대로 해 보기
 raw = KMeans(n_clusters=3, n_init=10, random_state=0).fit(X)
@@ -885,7 +885,7 @@ TARGET = '종'                                              # ✏️ 정답 열
 FEATURES = ['부리길이', '부리깊이', '날개길이', '몸무게']  # ✏️ 입력 열
 print(df.shape)
 df.head()
-`, ['내 데이터를 쓸 때는 DATA_URL, TARGET, FEATURES 세 줄만 바꾸면 돼요.', '크롤링이 필요하면 01번 노트북의 crawl_page 함수를 가져와 쓰세요.']),
+`, ['내 데이터를 쓸 때는 DATA_URL, TARGET, FEATURES 세 줄만 바꾸면 돼요.', '크롤링이 필요하면 01번 노트북의 crawl_page 함수를 가져와 쓰세요.'], '(345, 9)\n   번호    종     섬  부리길이  부리깊이   날개길이     몸무게   성별    연도\n0   1  아델리  토르거센  39.1  18.7  181.0  3750.0   수컷  2007\n1   2  아델리  토르거센  39.5  17.4  186.0  3800.0   암컷  2007\n2   3  아델리  토르거센  40.3  18.0  195.0  3250.0   암컷  2007\n3   4  아델리  토르거센   NaN   NaN    NaN     NaN  NaN  2007\n4   5  아델리  토르거센  36.7  19.3  193.0  3450.0   암컷  2007'),
       md(String.raw`
 ## 2. 데이터 살펴보기 — 결측치·이상치
 `),
@@ -893,7 +893,7 @@ df.head()
 print('결측치:'); print(df[FEATURES + [TARGET]].isnull().sum())
 print('겹친 행:', df.duplicated().sum())
 df[FEATURES].describe()
-`, ['빈칸·겹친 행·이상한 최솟값/최댓값이 있는지 확인해요.']),
+`, ['빈칸·겹친 행·이상한 최솟값/최댓값이 있는지 확인해요.'], '결측치:\n부리길이    3\n부리깊이    2\n날개길이    2\n몸무게     2\n종       0\ndtype: int64\n겹친 행: 1\n             부리길이        부리깊이        날개길이          몸무게\ncount  342.000000  343.000000  343.000000   343.000000\nmean    43.931871   17.162974  200.886297  4216.180758\nstd      5.453505    1.983985   14.051343   827.561497\nmin     32.100000   13.100000  172.000000  2700.000000\n25%     39.350000   15.600000  190.000000  3550.000000\n50%     44.450000   17.300000  197.000000  4050.000000\n75%     48.500000   18.700000  213.000000  4762.500000\nmax     59.600000   21.500000  231.000000  8200.000000'),
       FONT_CELL,
       code(String.raw`
 df[FEATURES].plot.box(subplots=True, layout=(1, len(FEATURES)), figsize=(12, 3))
@@ -912,7 +912,7 @@ df = df.dropna(subset=FEATURES, how='all')                  # 측정값이 모�
 df[FEATURES] = df[FEATURES].fillna(df[FEATURES].mean())     # 숫자 빈칸 → 평균
 df = df.dropna(subset=[TARGET])                             # 정답이 빈 행은 지우기
 print(df.shape, '/ 남은 빈칸:', df[FEATURES + [TARGET]].isnull().sum().sum())
-`, ['between(low, high)는 울타리 안에 있는지 확인해요.', '정답(y)이 비어 있으면 배울 수 없으니 지워요.', '글자로 된 입력 속성이 있다면 map으로 숫자로 바꾸세요(03번 노트북).']),
+`, ['between(low, high)는 울타리 안에 있는지 확인해요.', '정답(y)이 비어 있으면 배울 수 없으니 지워요.', '글자로 된 입력 속성이 있다면 map으로 숫자로 바꾸세요(03번 노트북).'], '(341, 9) / 남은 빈칸: 0'),
       md(String.raw`
 ## 4. 나누기
 `),
@@ -922,7 +922,7 @@ X = df[FEATURES]
 y = df[TARGET]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 print('훈련', X_train.shape, '/ 테스트', X_test.shape)
-`, ['테스트 데이터는 마지막 평가 때까지 쓰지 않아요.']),
+`, ['테스트 데이터는 마지막 평가 때까지 쓰지 않아요.'], '훈련 (272, 4) / 테스트 (69, 4)'),
       md(String.raw`
 ## 5. 모델 학습 ✏️ — 목적에 맞게 고르기
 
@@ -961,7 +961,7 @@ result = X_test.copy()
 result['정답'] = y_test
 result['예측'] = best.predict(X_test)
 result[result['정답'] != result['예측']]
-`, ['틀린 행을 모아 보면 어떤 경우에 헷갈리는지 보여요. 결론에 쓰기 좋아요.']),
+`, ['틀린 행을 모아 보면 어떤 경우에 헷갈리는지 보여요. 결론에 쓰기 좋아요.'], '       부리길이  부리깊이   날개길이     몸무게   정답  예측\n185  45.100  14.5  207.0  5050.0   젠투  턱끈\n112  45.600  20.3  191.0  4600.0  아델리  턱끈\n6    43.945  17.8  181.0  3625.0  아델리  턱끈'),
       md(String.raw`
 ## 7. 결론 ✏️
 

@@ -57,7 +57,7 @@ export function centerMark(cls) {
 }
 
 /** 칸의 실제 크기에 맞춘 그림 크기 — viewBox를 칸 비율과 같게 만들어 글자가 일정하게 보이게 한다 */
-export function sizeOf(container, { reserve = 0, min = [420, 220], max = [1100, 640] } = {}) {
+export function sizeOf(container, { reserve = 0, min = [420, 140], max = [1100, 640] } = {}) {
   const w = Math.max(min[0], Math.min(max[0], Math.floor(container.clientWidth - 8)));
   const h = Math.max(min[1], Math.min(max[1], Math.floor(container.clientHeight - reserve - 8)));
   return { width: w, height: h };

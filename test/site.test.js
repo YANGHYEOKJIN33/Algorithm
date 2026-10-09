@@ -50,6 +50,25 @@ test('만들어 둔 파일(연습 사이트·CSV·노트북)이 지금 원본과
   }
 });
 
+test('노트북 셀이 무언가를 보여 주면 "실행 결과 예시"(out)가 있다 — Colab을 못 쓰는 학생도 따라오게', () => {
+  const missing = [];
+  for (const nb of NOTEBOOKS) {
+    let n = 0;
+    for (const c of nb.cells) {
+      if (c.type === 'md') continue;
+      n += 1;
+      if (/koreanize|글꼴/.test(c.code) || c.out) continue;
+      const lines = c.code.split('\n').map((l) => l.replace(/#.*$/, '').trimEnd()).filter((l) => l.trim());
+      const last = lines.at(-1) ?? '';
+      const topPrint = lines.some((l) => /^print\(/.test(l));
+      const expr = last && !/^\s/.test(last) && !/^(import|from|for|if|def|with|try|while)\b/.test(last)
+        && !/^[\w\[\]'",. ]+\s*[-+*/]?=[^=]/.test(last) && !/^plt\.|\.plot\(|show\(\)|plot_tree|^!/.test(last);
+      if (topPrint || expr) missing.push(`${nb.id} 코드 셀 ${n}: ${last.slice(0, 50)}`);
+    }
+  }
+  assert.deepEqual(missing, []);
+});
+
 test('노트북은 올바른 nbformat 4 JSON이다', () => {
   for (const nb of NOTEBOOKS) {
     const json = JSON.parse(readFileSync(new URL(`../notebooks/${nb.id}.ipynb`, import.meta.url), 'utf8'));

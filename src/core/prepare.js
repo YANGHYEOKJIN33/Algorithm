@@ -3,6 +3,7 @@
  * pd.concat · pd.merge · train_test_split 이 하는 일을 한 단계씩 기록한다.
  */
 import { CONCAT_TABLES, MERGE_LEFT, MERGE_RIGHT, splitTable } from './data/sets.js';
+import { withJosa } from './josa.js';
 import { shuffle } from './random.js';
 
 /* ═════════════════ ① 세로로 합치기 — pd.concat ═════════════════ */
@@ -40,7 +41,7 @@ export function concatFrames() {
       : `다 붙였어요. 그런데 인덱스가 ${result.map((x) => x._i).join(', ')} — 같은 번호가 두 번씩 있어요! "인덱스 1"은 어느 행일까요?` });
   }
   result.forEach((r, i) => { r._i = i; });
-  snap({ line: 4, icon: '🔢', renumbered: true, say: `인덱스를 0~${result.length - 1}로 새로 매겼어요. 이제 "인덱스 1"은 한 행뿐이고, ${result.length}마리가 한 표에 모였어요!` });
+  snap({ line: 4, icon: '🔢', renumbered: true, say: `인덱스를 0~${withJosa(result.length - 1, '으로/로')} 새로 매겼어요. 이제 "인덱스 1"은 한 행뿐이고, ${result.length}마리가 한 표에 모였어요!` });
   return frames;
 }
 

@@ -162,7 +162,7 @@ const knnStep = {
   frames: () => KNN.knnFrames({ k: stepK }),
   mount({ stage, data, stageTools }, ctx) {
     stage.classList.add('fit');
-    const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 34 }) });
+    const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 52 }) });
     sc.mover('q', () => starPath(11));
     const ks = kSelector(() => stepK, (v) => { if (v === stepK) return; stepK = v; ks.sync(); ctx.reload(); ctx.check('step-k'); });
     fill(stageTools, ks.seg);

@@ -158,7 +158,7 @@ const kmeansStep = {
   frames: () => KM.kmeansFrames(),
   mount({ stage, data }) {
     stage.classList.add('fit');
-    const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 30 }) });
+    const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 52 }) });
     for (let j = 0; j < 3; j += 1) sc.mover(`c${j}`, () => centerMark(`cl${j}`));
     fill(stage, clusterLegend(), el('div.fit__grow', {}, sc.svg));
     return {
