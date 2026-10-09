@@ -143,6 +143,7 @@
 .askpop[hidden] { display: none; }
 .askpop__head { display: flex; align-items: center; gap: var(--sp-2); }
 .askpop__q { font-weight: 700; font-size: var(--fs-md); margin: 0; }
+.askpop__note { margin: 0; font-size: var(--fs-xs); color: var(--text-muted); }
 .askpop__opts { display: flex; flex-direction: column; gap: 4px; }
 
 /* 미션 완료 알림 — 레슨 막대 오른쪽 아래에 잠깐 뜬다(접어도 보이고, 그림·다음 단추를 가리지 않게) */
@@ -326,3 +327,13 @@
 .upage[aria-current="page"] { border-color: var(--current); background: var(--current-bg); opacity: 1; cursor: default; }
 .gloss__exact { border: 2px solid var(--current); background: var(--current-bg); border-radius: var(--radius); padding: var(--sp-2) var(--sp-3); }
 .gloss__exact .gloss__def { border-left-color: var(--current); margin-bottom: 0; }
+
+/* ── 📋 내 학습 기록 ── */
+.recordcopy { display: inline-flex; flex-direction: column; gap: 4px; max-width: 100%; }
+.recordbox {
+  width: min(560px, 80vw); font: inherit; font-size: var(--fs-xs); line-height: 1.5;
+  padding: var(--sp-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text); resize: vertical;
+}
+.course__score { margin: 2px 0 6px; font-size: var(--fs-xs); color: var(--text-muted); }
+.selfcheck__asks { margin-top: var(--sp-1); }

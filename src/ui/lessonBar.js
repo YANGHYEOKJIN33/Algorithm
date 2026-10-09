@@ -118,11 +118,13 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
   function drawAsk(page, key) {
     const qk = `ask:${key}`;
     const picked = progress.answers(qk)[0];
+    const first = progress.firsts(qk)[0];
     const ask = page.ask;
     fill(askPop,
       el('div.askpop__head', {}, el('strong', {}, '❓ 확인 문제'), el('span.topbar__spacer'),
         el('button.pill.pill--sm', { type: 'button', onclick: closeAsk }, '닫기 ✕')),
       el('p.askpop__q', {}, ask.q),
+      first === undefined ? el('p.askpop__note', {}, '처음 고른 답이 📋 학습 기록에 남아요. 찍지 말고 생각해서 골라요.') : null,
       el('div.askpop__opts', {}, ask.options.map((op, oi) => {
         let state = null;
         if (picked !== undefined) { if (oi === ask.answer && picked === oi) state = 'right'; else if (oi === picked) state = 'wrong'; }
@@ -137,7 +139,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
       })),
       picked !== undefined
         ? el(`p.callout${picked === ask.answer ? '.callout--add' : '.callout--warn'}`, {},
-          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why]
+          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why, first !== undefined && first !== ask.answer ? ' (처음 고른 답은 틀렸어요 — 💡 설명을 한 번 더 읽어 봐요.)' : '']
             : `❌ 아직이에요. ${getScene(page.scene).kind === 'step' ? '의사코드와 그림을 다시 따라가 보고' : '화면을 다시 살펴보고'} 다른 답을 골라 보세요.`)
         : null);
   }
@@ -157,7 +159,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
 
     // 단원 칩
     fill(unitChip,
-      el('span.unitchip__no', {}, tab.unit.no === 0 ? '시작' : `${tab.unit.no}단원`),
+      el('span.unitchip__no', {}, `${tab.unit.no}단원`),
       el('span.unitchip__name', {}, `${tab.icon} ${tab.label}`),
       tab.verb ? el('span.unitchip__verb', {}, tab.verb) : null,
       sub && sub.id !== 'review' && sub.name ? el('span.unitchip__sub', { title: sub.question ?? '' }, `› ${sub.name}`, sub.tag ? el('small', {}, ` (${sub.tag})`) : null) : null);

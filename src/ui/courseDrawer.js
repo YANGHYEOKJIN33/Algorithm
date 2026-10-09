@@ -5,6 +5,8 @@
 import { el, fill } from './dom.js';
 import { TABS, unitPages, goPatch, subPrefix, currentLesson, levelTag } from '../app/lessons.js';
 import { pageDone, pageCount, unitProgress, canDoDone } from '../app/missions.js';
+import { askScore, unitQuizScore, scoreText } from '../app/record.js';
+import { recordButton } from './recordCopy.js';
 
 export function createCourseDrawer(store, progress, { onReset } = {}) {
   const list = el('div.course');
@@ -27,12 +29,16 @@ export function createCourseDrawer(store, progress, { onReset } = {}) {
       done += pr.done;
       total += pr.total;
       const here = state.tab === tab.id;
+      const asks = askScore(progress, tab);
+      const quiz = unitQuizScore(progress, tab);
       return el(`section.course__unit${here ? '.is-here' : ''}`, {},
         el('header.course__head', {},
-          el('span.course__no', {}, tab.unit.no === 0 ? '시작' : `${tab.unit.no}단원`),
+          el('span.course__no', {}, `${tab.unit.no}단원`),
           el('h3', {}, `${tab.icon} ${tab.label}`, tab.verb ? el('small', {}, ` — ${tab.verb}`) : null),
           el('span.course__meter', { style: `--p:${pr.total ? pr.done / pr.total : 0}`, 'aria-label': `${pr.done} / ${pr.total}쪽 완료` }, el('span'), `${pr.done}/${pr.total}`)),
         tab.unit.question ? el('p.course__q', {}, `🤔 ${tab.unit.question}`) : null,
+        asks.tried || quiz.tried ? el('p.course__score', {},
+          `❓ 쪽 확인 문제 ${scoreText(asks)}`, quiz.total ? ` · 📝 단원 확인 문제 ${scoreText(quiz)}` : '') : null,
         tab.unit.canDo?.length ? el('ul.course__cando', {}, tab.unit.canDo.map((c) => el('li', { 'data-done': canDoDone(progress, tab, c) ? 'true' : null }, c.text))) : null,
         el('ol.course__pages', {}, unitPages(tab).map((it) => {
           const ok = pageDone(progress, tab, it.sub, it.page);
@@ -66,13 +72,14 @@ export function createCourseDrawer(store, progress, { onReset } = {}) {
 
   fill(dialog,
     el('div.modal__head', {}, el('span.panel__title', {}, '📚 목차와 내 진도'), summary, el('span.topbar__spacer'),
+      recordButton(progress),
       el('button.pill.pill--sm', {
         type: 'button', title: '이 브라우저에 저장된 진도(✅)를 모두 지워요',
         onclick: () => { if (confirm('진도(✅ 표시와 문제 답)를 모두 지울까요? 되돌릴 수 없어요.')) { progress.reset(); onReset?.(); render(); } },
       }, '↺ 진도 초기화'),
       closeBtn),
     el('div.modal__scroll', {}, list),
-    el('p.modal__note', {}, '진도는 이 컴퓨터의 이 브라우저에만 저장돼요. ✋ 할 일을 모두 하면 그 쪽에 ✓가 붙어요.'));
+    el('p.modal__note', {}, '진도는 이 컴퓨터의 이 브라우저에만 저장돼요. ✋ 할 일을 모두 하면 그 쪽에 ✓가 붙어요. "처음에 맞힘"은 다시 고르기 전 처음 고른 답으로 센 수예요.'));
   document.body.append(backdrop);
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
   document.addEventListener('keydown', (e) => { if (!backdrop.hidden && e.key === 'Escape') close(); });

@@ -3,12 +3,13 @@
  * `npm run build`가 함께 만들고, 테스트가 디스크의 파일이 지금 내용과 같은지 확인한다.
  */
 import { TABS, unitPages } from '../src/app/lessons.js';
+import { periodRows, pageRange } from '../src/app/plan.js';
 
 const cell = (t) => String(t ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
 function unitSection(tab) {
   const u = tab.unit;
-  const head = u.no === 0 ? `## 시작 ${tab.icon} ${tab.label} — ${tab.verb}` : `## ${u.no}단원 ${tab.icon} ${tab.label} — ${tab.verb}`;
+  const head = `## ${u.no}단원 ${tab.icon} ${tab.label} — ${tab.verb}`;
   const pages = unitPages(tab);
   const lines = [
     head,
@@ -44,6 +45,20 @@ function unitSection(tab) {
   return lines.join('\n');
 }
 
+/** 차시표 — docs/TEACHER.md의 표시 사이와 OBJECTIVES.md 맨 위에 같은 표가 들어간다 */
+export function planMarkdown() {
+  const rows = periodRows();
+  const last = rows.at(-1);
+  return [
+    '| 차시 | 쪽 | 배우는 것 | 쪽 시간 | 수업 팁 |',
+    '|---|---|---|---|---|',
+    ...rows.map((r) => `| ${r.no}${r.project ? '~' : ''} | ${pageRange(r.pages)} | ${cell(r.focus)} | ${r.minutes}분${r.core !== r.minutes ? ` (➕ 빼면 ${r.core}분)` : ''} | ${cell(r.tip ?? '')} |`),
+    '',
+    `쪽 시간의 합은 모두 ${rows.reduce((s, r) => s + r.minutes, 0)}분이고, 한 차시는 40분을 넘지 않게 묶었습니다(5분은 설명·마무리).`
+      + ` ${last.no}차시부터는 프로젝트입니다.`,
+  ].join('\n');
+}
+
 export function objectivesMarkdown() {
   return [
     '# 학습 목표표 (교사용)',
@@ -56,7 +71,11 @@ export function objectivesMarkdown() {
     '',
     '| 단원 | 동사 | 생각 열기 | 쪽 | 시간 |',
     '|---|---|---|---|---|',
-    ...TABS.map((t) => `| ${t.unit.no === 0 ? '시작' : `${t.unit.no}단원`} ${t.icon} ${t.label} | ${t.verb} | ${cell(t.unit.question)} | ${unitPages(t).length} | ${t.unit.minutes}분 |`),
+    ...TABS.map((t) => `| ${t.unit.no}단원 ${t.icon} ${t.label} | ${t.verb} | ${cell(t.unit.question)} | ${unitPages(t).length} | ${t.unit.minutes}분 |`),
+    '',
+    '## 차시 계획 (45분 수업)',
+    '',
+    planMarkdown(),
     '',
     ...TABS.map(unitSection),
   ].join('\n');

@@ -13,6 +13,8 @@ import { TABS, unitPages, pageKind, goPatch, refPatch, subPrefix, levelTag } fro
 import { pageDone, pageCount, canDoDone, unitProgress } from '../app/missions.js';
 import { getScene } from './index.js';
 import { quizBox } from '../ui/quizBox.js';
+import { askScore, scoreText } from '../app/record.js';
+import { recordButton } from '../ui/recordCopy.js';
 
 /** 시작 화면의 6단계와 같은 흐름 띠 — 지금 단원을 강조 */
 export function unitStrip(currentId, go) {
@@ -139,6 +141,11 @@ function unitReview(root, ctx) {
   const u = tab.unit;
   const selfBox = el('ul.selfcheck');
   const hookBox = el('div');
+  const askLine = el('p.card__meta.selfcheck__asks');
+  function drawAsks() {
+    const a = askScore(ctx.progress, tab);
+    askLine.textContent = a.total ? `❓ 이 단원 쪽마다의 확인 문제: ${scoreText(a)} — 처음 고른 답으로 세요. 틀렸던 쪽은 다시 보고 오면 좋아요.` : '';
+  }
 
   const allTerms = [...new Set(unitPages(tab).flatMap((it) => it.page.terms ?? []))];
   const go = (ref) => ctx.store.set(refPatch(tab, ref));
@@ -191,13 +198,15 @@ function unitReview(root, ctx) {
         el('section.ucard.ucard--goal', {},
           el('h3', {}, '✅ 할 수 있어요? — 스스로 점검'),
           selfBox,
-          el('p.card__meta', {}, '"🤔 아직"이면 [다시 보기 →]로 그 쪽에 다녀와요. 솔직하게 고를수록 도움이 돼요.')),
+          el('p.card__meta', {}, '"🤔 아직"이면 [다시 보기 →]로 그 쪽에 다녀와요. 솔직하게 고를수록 도움이 돼요.'),
+          askLine),
         hookBox),
       el('div.unit__col', {},
         u.quiz?.length ? el('section.ucard', {},
           quizBox(u.quiz, {
             title: '❓ 단원 확인 문제',
             saved: ctx.progress.answers(`unit:${tab.id}`),
+            firsts: ctx.progress.firsts(`unit:${tab.id}`),
             onPick: (qi, oi) => ctx.progress.answer(`unit:${tab.id}`, qi, oi),
             onReview: go,
           })) : null,
@@ -211,6 +220,7 @@ function unitReview(root, ctx) {
           el('button.pill.ctrl--primary', { type: 'button', onclick: () => ctx.go(nextTab.id) }, `다음: ${nextTab.unit.no}단원 ${nextTab.icon} ${nextTab.label} →`)) : finale(ctx)))));
   drawSelf();
   drawHook();
+  drawAsks();
   return {};
 }
 
@@ -223,13 +233,15 @@ function finale(ctx) {
     const pr = unitProgress(ctx.progress, t);
     done += pr.done;
     total += pr.total;
-    if (pr.done < pr.total) left.push(`${t.unit.no === 0 ? '시작' : `${t.unit.no}단원`} ${t.icon} ${t.label} ${pr.done}/${pr.total}`);
+    if (pr.done < pr.total) left.push(`${t.unit.no}단원 ${t.icon} ${t.label} ${pr.done}/${pr.total}`);
   }
   return el('section.ucard.ucard--sum', {},
     el('h3', {}, '🎓 수업을 마쳤어요!'),
     el('p', {}, `전체 ${done} / ${total}쪽을 마쳤어요. `, left.length ? `아직 남은 쪽이 있는 단원: ${left.join(' · ')}` : '모든 쪽의 할 일을 다 했어요. 👏'),
     el('p', {}, '이제 배운 순서(수집 → 가공 → 전처리 → 학습 준비 → 기계학습 → 평가)를 내 주제로 따라가 볼 차례예요.'),
+    el('p.card__meta', {}, '선생님이 기록을 걷으면 [📋 내 학습 기록 복사]를 눌러 붙여 넣으세요. 단원마다 진도와 처음에 맞힌 문제 수가 들어 있어요.'),
     el('div.unit__go', {},
+      recordButton(ctx.progress),
       el('button.pill', { type: 'button', onclick: () => document.querySelector('[title^="모든 단원"]')?.click() }, '📚 목차에서 못 한 쪽 찾기'),
       el('button.pill.ctrl--primary', { type: 'button', onclick: () => ctx.go('project', 'guide') }, '🚀 6-4 내 프로젝트 계획으로 →')));
 }

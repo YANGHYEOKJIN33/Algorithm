@@ -63,7 +63,7 @@ export function mountTopbar(root, store, { progress, onHelp, onGlossary, onCours
       const { done, total } = unitProgress(progress, t);
       bar.style.setProperty('--p', String(total ? done / total : 0));
       btn.dataset.complete = done === total && total > 0 ? 'true' : 'false';
-      btn.title = `${t.unit.no === 0 ? '시작' : `${t.unit.no}단원`} ${t.label}${t.verb ? ` — ${t.verb}` : ''} · ${t.tip}\n진도: ${done} / ${total}쪽 완료`;
+      btn.title = `${t.unit.no}단원 ${t.label}${t.verb ? ` — ${t.verb}` : ''} · ${t.tip}\n진도: ${done} / ${total}쪽 완료`;
     }
     const ml = TABS.find((t) => t.id === 'ml');
     for (const { s, count } of subParts) {

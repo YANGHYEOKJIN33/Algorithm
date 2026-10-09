@@ -5,12 +5,14 @@
  * 틀리면 정답을 바로 보여 주지 않는다 — "다시 생각해 봐요"와 [그 쪽 다시 보기]만. 맞히거나 두 번 틀리면 정답·이유를 연다.
  * 고를 때마다 'quiz:answer' 사건({ answered, right, total })을 올려 보낸다 → 미션 'quiz'·'right:N'
  * 선택: saved(이미 고른 답 { 번호: 보기 }) · onPick(번호, 보기) — 진도에 저장할 때
+ *       firsts(처음 고른 답 { 번호: 보기 }) — 주면 점수 줄에 "처음에 맞힘 n"을 함께 보인다(📋 학습 기록과 같은 수)
  *       onReview(page) — 틀린 문제 아래 "📖 그 쪽 다시 보기" 단추
  */
 import { el, fill } from './dom.js';
 
-export function quizBox(questions, { row = false, title = null, saved = null, onPick = null, onReview = null } = {}) {
+export function quizBox(questions, { row = false, title = null, saved = null, firsts = null, onPick = null, onReview = null } = {}) {
   const picked = questions.map((_, i) => (saved && saved[i] !== undefined ? saved[i] : null));
+  const first = firsts ? questions.map((_, i) => (firsts[i] !== undefined ? firsts[i] : null)) : null;
   // 문제마다 틀린 횟수 — 저장된 답이 틀린 것이면 한 번 틀린 것으로 시작
   const wrongs = questions.map((qq, i) => (picked[i] !== null && picked[i] !== qq.answer ? 1 : 0));
   const score = el('span.quiz__score');
@@ -20,7 +22,10 @@ export function quizBox(questions, { row = false, title = null, saved = null, on
   function draw() {
     const answered = picked.filter((p) => p !== null).length;
     const right = picked.filter((p, i) => p === questions[i].answer).length;
-    score.textContent = answered ? `푼 문제 ${answered} / ${questions.length} · 맞힌 문제 ${right}` : `${questions.length}문제`;
+    const firstRight = first ? first.filter((p, i) => p === questions[i].answer).length : 0;
+    score.textContent = answered
+      ? `푼 문제 ${answered} / ${questions.length} · 맞힌 문제 ${right}${first ? ` · 처음에 맞힘 ${firstRight}` : ''}`
+      : `${questions.length}문제${first ? ' · 처음 고른 답이 기록돼요' : ''}`;
     bar.style.setProperty('--p', String(answered / questions.length));
     fill(list, questions.map((qq, qi) => el('div.quiz__q', { 'data-state': picked[qi] === null ? null : picked[qi] === qq.answer ? 'right' : 'wrong' },
       el('div.quiz__ask', {}, `Q${qi + 1}. ${qq.q}`),
@@ -36,6 +41,7 @@ export function quizBox(questions, { row = false, title = null, saved = null, on
           onclick: (e) => {
             if (picked[qi] === oi) return;
             picked[qi] = oi;
+            if (first && first[qi] === null) first[qi] = oi;
             if (oi !== qq.answer) wrongs[qi] += 1;
             onPick?.(qi, oi);
             draw();

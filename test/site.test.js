@@ -8,6 +8,7 @@ import { GLOSSARY } from '../src/app/glossary.js';
 import { QUIZ } from '../src/app/quiz.js';
 import { allFiles, cleanRecords, mergeParts, UNLABELED } from '../scripts/build.mjs';
 import { courseProblems } from '../scripts/check-course.mjs';
+import { PERIODS, periodRows, coursePages } from '../src/app/plan.js';
 
 test('수업 내용이 약속을 지킨다 — 🎯 목표(~할 수 있다)·✋ 할 일(이룰 수 있는 확인 낱말)·학습 요소·단원 표지/정리 자료', () => {
   assert.ok(allPages().length >= 50, `쪽 수 ${allPages().length}`);
@@ -29,6 +30,18 @@ test('탭마다 쪽 위치를 따로 기억하고, 범위를 벗어나지 않는
   assert.equal(currentLesson({ tab: 'ml', mlTab: 'concept' }).steps[0].auto, 'cover');
   assert.equal(currentLesson({ tab: 'ml', mlTab: 'review' }).steps[0].auto, 'review');
   assert.equal(unitPages(TABS.find((t) => t.id === 'inspect'))[1].label, '2-1');
+});
+
+test('차시 계획 — 모든 쪽을 차례대로 한 번씩 담고, 한 차시는 40분(➕ 선택 쪽 빼고)을 넘지 않는다', () => {
+  const rows = periodRows();
+  assert.equal(rows.length, PERIODS.length);
+  rows.forEach((r) => assert.ok(r.start >= 0, `차시 ${r.no}의 시작 쪽 '${r.from}'이 없다`));
+  assert.equal(rows[0].start, 0, '1차시는 첫 쪽에서 시작한다');
+  rows.slice(1).forEach((r, i) => assert.ok(r.start > rows[i].start, `차시 ${r.no}이 앞 차시보다 뒤에서 시작해야 한다`));
+  assert.equal(rows.reduce((s, r) => s + r.pages.length, 0), coursePages().length);
+  for (const r of rows) assert.ok(r.core <= 40, `차시 ${r.no}: ${r.core}분`);
+  // 단원 표지의 '약 N분'은 쪽 시간의 합 — 손으로 적지 않는다
+  for (const t of TABS) assert.equal(t.unit.minutes, unitPages(t).reduce((s, it) => s + it.page.minutes, 0), t.id);
 });
 
 test('수업 순서 탭 7개 — 수집 → 가공 → 전처리 → 학습 준비 → 기계학습 → 프로젝트', () => {

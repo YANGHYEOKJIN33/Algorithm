@@ -19,7 +19,7 @@
  *                                          (기계학습은 'knn:idea'처럼 '하위탭:쪽id')
  *    before, after,      들어올 때 / 나갈 때 데이터의 모습(한 줄씩)
  *    note,               표지에 강조할 한마디(선택)
- *    minutes,            단원 전체 예상 시간(분)
+ *    minutes             단원 전체 예상 시간(분) — 적지 않는다. 표지·정리를 포함한 쪽 시간의 합으로 저절로 채운다
  *    standards: [{ code, text }]           2022 개정 교육과정 성취기준
  *    summary: [문장 3~4개]                 1분 요약
  *    cheats: [{ idea, code }]              🐍 파이썬 한 줄 정리(프로젝트 때 다시 찾아보는 용도)
@@ -101,6 +101,8 @@ function build(raw) {
   } else {
     tab.pages = [...(cover ? [coverPage(raw)] : []), ...raw.pages.map(withAsk), ...(review ? [reviewPage(raw)] : [])];
   }
+  const pages = tab.sub ? tab.sub.flatMap((s) => s.pages) : tab.pages;
+  tab.unit = { ...raw.unit, minutes: pages.reduce((sum, p) => sum + (p.minutes ?? 0), 0) };
   return tab;
 }
 
