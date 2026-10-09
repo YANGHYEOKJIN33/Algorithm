@@ -39,6 +39,8 @@ export function mountControls(root, store, player) {
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return;
     if (!document.body.classList.contains('is-step')) return;
     if (document.querySelector('.modal__backdrop:not([hidden])')) return;
+    // 단추·링크에 초점이 있으면 Space는 그 단추를 누르는 일 — 재생 단축키로 가로채지 않는다
+    if (e.key === ' ' && e.target?.closest?.('button, a, [role="button"], summary, label') && !e.target.closest('#controlbar')) return;
     const map = { ' ': 'play', ArrowRight: 'step', ArrowLeft: 'back', Home: 'reset', End: 'end' };
     const btn = buttons.get(map[e.key]);
     if (!btn || btn.disabled) return;

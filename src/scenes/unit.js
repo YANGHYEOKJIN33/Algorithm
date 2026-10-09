@@ -9,8 +9,8 @@
  * 내용은 모두 course/<단원>.js의 unit에서 가져온다(장면에는 글을 적지 않는다).
  */
 import { el, fill } from '../ui/dom.js';
-import { TABS, unitPages, pageKind, goPatch, refPatch, subPrefix } from '../app/lessons.js';
-import { pageDone, pageCount, canDoDone } from '../app/missions.js';
+import { TABS, unitPages, pageKind, goPatch, refPatch, subPrefix, levelTag } from '../app/lessons.js';
+import { pageDone, pageCount, canDoDone, unitProgress } from '../app/missions.js';
 import { getScene } from './index.js';
 import { quizBox } from '../ui/quizBox.js';
 
@@ -41,7 +41,8 @@ function stdList(unit) {
 function unitCover(root, ctx) {
   const { tab } = ctx.lesson;
   const u = tab.unit;
-  const pages = unitPages(tab).filter((it) => it.page.auto !== 'cover');
+  const all = unitPages(tab);                                    // 표지·정리까지 — 목차·탭 진도와 같은 수
+  const pages = all.filter((it) => it.page.auto !== 'cover');     // 출발·이어서 하기에 쓰는 본문 쪽
   const hookBox = el('div.hook');
   const canDoList = el('ul.cando');
   const pageList = el('ol.upages');
@@ -61,23 +62,25 @@ function unitCover(root, ctx) {
   }
 
   function drawLists() {
-    listCount.textContent = ` · ${doneCount()}/${pages.length} 완료`;
+    const pr = unitProgress(ctx.progress, tab);
+    listCount.textContent = ` · ${pr.done}/${pr.total} 완료 (표지·정리 포함)`;
     heroStart.textContent = startLabel();
     footStart.textContent = startLabel();
     fill(canDoList, (u.canDo ?? []).map((c) => el('li', { 'data-done': canDoDone(ctx.progress, tab, c) ? 'true' : null }, c.text)));
-    fill(pageList, pages.map((it) => {
+    fill(pageList, all.map((it) => {
       const ok = pageDone(ctx.progress, tab, it.sub, it.page);
       const cnt = pageCount(ctx.progress, tab, it.sub, it.page);
       const k = kindOf(it.page);
+      const here = it.page === ctx.lesson.page;
       return el('li', {}, el('button.upage', {
-        type: 'button', 'data-done': ok ? 'true' : null,
+        type: 'button', 'data-done': ok ? 'true' : null, 'aria-current': here ? 'page' : null, disabled: here ? true : null,
         onclick: () => ctx.store.set(goPatch(tab.id, it.page.id, it.sub?.id)),
       },
       el('span.upage__label', {}, ok ? '✓' : it.label),
       el('span.upage__main', {},
-        el('span.upage__title', {}, subPrefix(it, ' · '), it.page.short && it.page.auto ? it.page.short : it.page.title),
+        el('span.upage__title', {}, subPrefix(it, ' · '), here ? '📍 지금 보는 표지' : it.page.short && it.page.auto ? `${it.page.short} — 1분 요약·확인 문제` : it.page.title),
         it.page.objective ? el('span.upage__obj', {}, `🎯 ${it.page.objective}`) : null),
-      el('span.upage__meta', {}, `${k.icon} ${k.name}`, it.page.minutes ? ` · ${it.page.minutes}분` : '', cnt.total ? ` · ✋ ${cnt.done}/${cnt.total}` : '')));
+      el('span.upage__meta', {}, `${k.icon} ${k.name}`, it.page.minutes ? ` · ${it.page.minutes}분` : '', levelTag(it.page) ? ` · ${levelTag(it.page)}` : '', cnt.total ? ` · ✋ ${cnt.done}/${cnt.total}` : '')));
     }));
   }
 
@@ -98,7 +101,7 @@ function unitCover(root, ctx) {
     el('header.unit__hero', {},
       el('div.unit__heroText', {},
         el('p.unit__kicker', {}, `${u.no}단원 · ${tab.icon} ${tab.label}`, tab.verb ? el('strong', {}, ` — ${tab.verb}`) : null,
-          u.minutes ? el('span.card__meta', {}, ` · 약 ${u.minutes}분 · ${pages.length}쪽`) : null),
+          u.minutes ? el('span.card__meta', {}, ` · 약 ${u.minutes}분 · ${all.length}쪽(표지·정리 포함)`) : null),
         el('h2.unit__q', {}, `🤔 ${u.question ?? tab.label}`),
         u.bigIdea ? el('p.unit__idea', {}, el('strong', {}, '핵심 아이디어 '), u.bigIdea) : null,
         el('div.unit__heroGo', {}, heroStart, el('span.card__meta', {}, '먼저 아래 🎯 목록과 🤔 생각 열기를 보고 출발해요'))),
@@ -205,10 +208,30 @@ function unitReview(root, ctx) {
           el('h3', {}, '📖 이 단원의 핵심 용어'),
           el('div.termrow', {}, allTerms.map((t) => el('button.termchip', { type: 'button', onclick: () => ctx.glossary?.open(t) }, t)))) : null,
         nextTab ? el('div.unit__go', {},
-          el('button.pill.ctrl--primary', { type: 'button', onclick: () => ctx.go(nextTab.id) }, `다음: ${nextTab.unit.no}단원 ${nextTab.icon} ${nextTab.label} →`)) : null))));
+          el('button.pill.ctrl--primary', { type: 'button', onclick: () => ctx.go(nextTab.id) }, `다음: ${nextTab.unit.no}단원 ${nextTab.icon} ${nextTab.label} →`)) : finale(ctx)))));
   drawSelf();
   drawHook();
   return {};
+}
+
+/** 수업 마지막 쪽 — 전체 진도와 못 한 쪽, 그리고 내 프로젝트로 */
+function finale(ctx) {
+  let done = 0;
+  let total = 0;
+  const left = [];
+  for (const t of TABS) {
+    const pr = unitProgress(ctx.progress, t);
+    done += pr.done;
+    total += pr.total;
+    if (pr.done < pr.total) left.push(`${t.unit.no === 0 ? '시작' : `${t.unit.no}단원`} ${t.icon} ${t.label} ${pr.done}/${pr.total}`);
+  }
+  return el('section.ucard.ucard--sum', {},
+    el('h3', {}, '🎓 수업을 마쳤어요!'),
+    el('p', {}, `전체 ${done} / ${total}쪽을 마쳤어요. `, left.length ? `아직 남은 쪽이 있는 단원: ${left.join(' · ')}` : '모든 쪽의 할 일을 다 했어요. 👏'),
+    el('p', {}, '이제 배운 순서(수집 → 가공 → 전처리 → 학습 준비 → 기계학습 → 평가)를 내 주제로 따라가 볼 차례예요.'),
+    el('div.unit__go', {},
+      el('button.pill', { type: 'button', onclick: () => document.querySelector('[title^="모든 단원"]')?.click() }, '📚 목차에서 못 한 쪽 찾기'),
+      el('button.pill.ctrl--primary', { type: 'button', onclick: () => ctx.go('project', 'guide') }, '🚀 6-4 내 프로젝트 계획으로 →')));
 }
 
 export const UNIT_SCENES = {

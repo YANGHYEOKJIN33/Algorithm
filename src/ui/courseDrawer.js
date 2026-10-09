@@ -3,10 +3,10 @@
  * (Khan Academy의 단원 목록·Learn Git Branching의 레벨 고르기처럼 "어디까지 했나"가 보이게)
  */
 import { el, fill } from './dom.js';
-import { TABS, unitPages, goPatch, subPrefix } from '../app/lessons.js';
+import { TABS, unitPages, goPatch, subPrefix, currentLesson, levelTag } from '../app/lessons.js';
 import { pageDone, pageCount, unitProgress, canDoDone } from '../app/missions.js';
 
-export function createCourseDrawer(store, progress) {
+export function createCourseDrawer(store, progress, { onReset } = {}) {
   const list = el('div.course');
   const summary = el('span.panel__hint');
   const dialog = el('div.modal.modal--wide', { role: 'dialog', 'aria-modal': 'true', 'aria-label': '목차와 진도' });
@@ -18,6 +18,8 @@ export function createCourseDrawer(store, progress) {
 
   function render() {
     const state = store.get();
+    const now = currentLesson(state);
+    const nowPage = now.steps[now.index];
     let done = 0;
     let total = 0;
     fill(list, TABS.map((tab) => {
@@ -35,12 +37,14 @@ export function createCourseDrawer(store, progress) {
         el('ol.course__pages', {}, unitPages(tab).map((it) => {
           const ok = pageDone(progress, tab, it.sub, it.page);
           const cnt = pageCount(progress, tab, it.sub, it.page);
+          const isNow = it.page === nowPage;
           return el('li', {}, el('button.course__page', {
-            type: 'button', 'data-done': ok ? 'true' : null,
+            type: 'button', 'data-done': ok ? 'true' : null, 'aria-current': isNow ? 'page' : null,
             onclick: () => go(goPatch(tab.id, it.page.id, it.sub?.id)),
           },
           el('span.course__label', {}, ok ? '✓' : it.label),
-          el('span.course__title', {}, subPrefix(it, '[]'), it.page.title),
+          el('span.course__title', {}, isNow ? el('span.tag.tag--current', {}, '📍 지금') : null, isNow ? ' ' : null,
+            subPrefix(it, '[]'), it.page.title, levelTag(it.page) ? ` ${levelTag(it.page)}` : ''),
           el('span.course__obj', {}, it.page.objective ?? ''),
           el('span.course__cnt', {}, cnt.total ? `✋ ${cnt.done}/${cnt.total}` : '')));
         })));
@@ -53,10 +57,10 @@ export function createCourseDrawer(store, progress) {
     lastFocus = document.activeElement;
     render();
     backdrop.hidden = false;
-    const here = dialog.querySelector('.is-here');
+    const here = dialog.querySelector('[aria-current="page"]') ?? dialog.querySelector('.is-here');
     const scroller = dialog.querySelector('.modal__scroll');
     if (scroller) scroller.scrollTop = 0;
-    if (here && scroller) scroller.scrollTop = here.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 8;
+    if (here && scroller) scroller.scrollTop = here.getBoundingClientRect().top - scroller.getBoundingClientRect().top - scroller.clientHeight / 3;
     closeBtn.focus();
   }
 
@@ -64,7 +68,7 @@ export function createCourseDrawer(store, progress) {
     el('div.modal__head', {}, el('span.panel__title', {}, '📚 목차와 내 진도'), summary, el('span.topbar__spacer'),
       el('button.pill.pill--sm', {
         type: 'button', title: '이 브라우저에 저장된 진도(✅)를 모두 지워요',
-        onclick: () => { if (confirm('진도(✅ 표시와 문제 답)를 모두 지울까요? 되돌릴 수 없어요.')) { progress.reset(); render(); } },
+        onclick: () => { if (confirm('진도(✅ 표시와 문제 답)를 모두 지울까요? 되돌릴 수 없어요.')) { progress.reset(); onReset?.(); render(); } },
       }, '↺ 진도 초기화'),
       closeBtn),
     el('div.modal__scroll', {}, list),

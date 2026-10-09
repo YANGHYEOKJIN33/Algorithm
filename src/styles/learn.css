@@ -145,10 +145,10 @@
 .askpop__q { font-weight: 700; font-size: var(--fs-md); margin: 0; }
 .askpop__opts { display: flex; flex-direction: column; gap: 4px; }
 
-/* 미션 완료 알림 — ✋ 할 일 상자 위에 잠깐 뜬다(그림을 가리지 않게) */
+/* 미션 완료 알림 — 레슨 막대 오른쪽 아래에 잠깐 뜬다(접어도 보이고, 그림·다음 단추를 가리지 않게) */
 .missions { position: relative; }
 .lesson__toast {
-  position: absolute; z-index: 70; right: 8px; bottom: -13px; transform: translateY(4px);
+  position: absolute; z-index: 70; right: var(--sp-4); bottom: -13px; transform: translateY(4px);
   background: var(--add); color: #fff; font-weight: 700; font-size: var(--fs-sm);
   padding: 4px var(--sp-4); border-radius: 999px; box-shadow: var(--shadow);
   opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; white-space: nowrap;
@@ -322,3 +322,7 @@
 /* 표지 머리 칸의 출발 단추 — 첫 화면에서 바로 보이게 */
 .unit__heroGo { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-1); }
 .unit__heroGo .unit__start { padding: var(--sp-1) var(--sp-4); }
+.course__page[aria-current="page"] { border-color: var(--current); box-shadow: inset 4px 0 0 var(--current); background: var(--current-bg); }
+.upage[aria-current="page"] { border-color: var(--current); background: var(--current-bg); opacity: 1; cursor: default; }
+.gloss__exact { border: 2px solid var(--current); background: var(--current-bg); border-radius: var(--radius); padding: var(--sp-2) var(--sp-3); }
+.gloss__exact .gloss__def { border-left-color: var(--current); margin-bottom: 0; }

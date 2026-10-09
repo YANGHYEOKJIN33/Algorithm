@@ -52,7 +52,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
   const missionHead = el('div.missions__head');
   const missionList = el('ul.missions__list');
   const toast = el('div.lesson__toast', { 'aria-live': 'polite' });
-  const missionBox = el('section.missions', { 'aria-label': '할 일' }, missionHead, missionList, toast);
+  const missionBox = el('section.missions', { 'aria-label': '할 일' }, missionHead, missionList);
   const askPop = el('div.askpop', { hidden: true, role: 'dialog', 'aria-label': '확인 문제' });
 
   const body = el('div.lesson__body', {},
@@ -60,7 +60,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
     missionBox);
   fill(root,
     el('div.lesson__head', {}, unitChip, stepper, mini, el('span.topbar__spacer'), foldBtn, el('div.lesson__navs', {}, prev, next)),
-    body, askPop);
+    body, askPop, toast);
 
   function nextPlace() {
     const state = store.get();
@@ -85,6 +85,12 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
       const si = tab.sub.findIndex((x) => x.id === sub.id);
       if (si > 0) { const ps = tab.sub[si - 1]; return { mlTab: ps.id, [`step:${tab.id}:${ps.id}`]: ps.pages.length - 1 }; }
     }
+    const ti = TABS.findIndex((t) => t.id === tab.id);
+    if (ti > 0) {
+      const pt = TABS[ti - 1];
+      if (pt.sub) { const ls = pt.sub.at(-1); return { tab: pt.id, mlTab: ls.id, [`step:${pt.id}:${ls.id}`]: ls.pages.length - 1 }; }
+      return { tab: pt.id, [`step:${pt.id}`]: pt.pages.length - 1 };
+    }
     return null;
   }
 
@@ -97,13 +103,25 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
 
   /* ── ❓ 확인 문제 ── */
   let askOpen = false;
+  function closeAsk() {
+    if (!askOpen) return;
+    askOpen = false;
+    askPop.hidden = true;
+    const btn = missionList.querySelector('.askbtn');
+    btn?.setAttribute('aria-expanded', 'false');
+    btn?.focus();
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && askOpen) closeAsk(); });
+  document.addEventListener('pointerdown', (e) => {
+    if (askOpen && !askPop.contains(e.target) && !e.target.closest?.('.askbtn')) closeAsk();
+  });
   function drawAsk(page, key) {
     const qk = `ask:${key}`;
     const picked = progress.answers(qk)[0];
     const ask = page.ask;
     fill(askPop,
       el('div.askpop__head', {}, el('strong', {}, '❓ 확인 문제'), el('span.topbar__spacer'),
-        el('button.pill.pill--sm', { type: 'button', onclick: () => { askOpen = false; askPop.hidden = true; } }, '닫기 ✕')),
+        el('button.pill.pill--sm', { type: 'button', onclick: closeAsk }, '닫기 ✕')),
       el('p.askpop__q', {}, ask.q),
       el('div.askpop__opts', {}, ask.options.map((op, oi) => {
         let state = null;
@@ -204,10 +222,14 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
     mini.title = mini.textContent;
 
     // 앞뒤
-    prev.disabled = !prevPlace();
+    const pp = prevPlace();
+    prev.disabled = !pp;
+    // 단원의 처음이면 [이전]이 앞 단원으로 간다는 것을 글자로
+    if (index === 0 && pp?.tab) { const pt = TABS.find((t) => t.id === pp.tab); prev.textContent = `← ${pt.icon} ${pt.label}`; }
+    else prev.textContent = '← 이전';
     const np = nextPlace();
     next.disabled = !np;
-    next.classList.toggle('is-ready', all);
+    next.classList.toggle('is-ready', all && Boolean(np));
     if (index < steps.length - 1) next.textContent = '다음 →';
     else if (sub && tab.sub.findIndex((x) => x.id === sub.id) < tab.sub.length - 1) next.textContent = `${tab.sub[tab.sub.findIndex((x) => x.id === sub.id) + 1].name} →`;
     else if (np) { const nt = TABS[TABS.findIndex((t) => t.id === tab.id) + 1]; next.textContent = `${nt.icon} ${nt.label} →`; }
@@ -229,7 +251,10 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
     const { tab, sub, steps, index } = currentLesson(store.get());
     const page = steps[index];
     const all = pageDone(progress, tab, sub, page);
-    toast.textContent = all ? '🎉 이 쪽의 할 일을 모두 마쳤어요! [다음 →]으로 가요.' : '✅ 할 일 하나 완료!';
+    const last = !nextPlace();
+    toast.textContent = !all ? '✅ 할 일 하나 완료!'
+      : last ? '🎉 마지막 쪽까지 마쳤어요! 수업을 모두 끝냈어요.'
+        : `🎉 이 쪽의 할 일을 모두 마쳤어요! [${next.textContent}]으로 가요.`;
     toast.classList.add('is-on');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-on'), 2600);

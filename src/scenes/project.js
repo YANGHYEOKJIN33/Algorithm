@@ -241,7 +241,7 @@ const FLOW = {
   prep: { did: '핵심 속성 4개를 고르고, 지우고, 채우고, 글자를 숫자로 바꿨어요.', pseudo: '속성 고르기 · 행/열 지우기 · 평균/최빈값으로 채우기 · 바꿈표로 바꾸기', py: 'drop() · drop_duplicates() · dropna() · fillna() · map()' },
   ready: { did: '표를 합치고, X와 y, 훈련 80%와 테스트 20%로 나눴어요.', pseudo: '아래로 잇기 · 열쇠로 짝 찾기 · 섞기 → 앞 80% / 나머지 20%', py: 'concat() · merge() · train_test_split()' },
   ml: { did: '분류(k-최근접 이웃·트리), 예측(선형 회귀), 군집(k-평균)을 배웠어요.', pseudo: '거리·다수결 / 질문으로 나누기 / 평균에서 벗어난 정도 / 배정↔이동', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
-  project: { did: '처음 보는 테스트 데이터로 정확도를 쟀어요(6마리 중 5마리, 83%).', pseudo: '테스트마다 예측 → 정답과 견주기 → 맞힌수 ÷ 전체', py: 'predict() · accuracy_score() · mean_squared_error()' },
+  project: { did: '처음 보는 테스트 데이터로 정확도를 쟀어요(화면 6마리 중 5마리 83% · Colab 69줄 중 66줄 95.7%).', pseudo: '테스트마다 예측 → 정답과 견주기 → 맞힌수 ÷ 전체', py: 'predict() · accuracy_score() · mean_squared_error()' },
 };
 
 function summary(root, ctx) {

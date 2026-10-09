@@ -27,7 +27,7 @@ export function mountTopbar(root, store, { progress, onHelp, onGlossary, onCours
     const count = el('span.subtab__count');
     const btn = el('button.pill.subtab', {
       type: 'button', role: 'tab', onclick: () => store.set({ tab: 'ml', mlTab: s.id }),
-    }, s.id === 'review' ? `✅ ${s.name}` : s.name, count);
+    }, s.id === 'review' ? `📝 ${s.name}` : s.name, count);
     return { s, btn, count };
   });
   const subtabs = el('div.subtabs', { role: 'tablist', 'aria-label': '기계학습 하위 탭' },

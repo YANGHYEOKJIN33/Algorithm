@@ -22,7 +22,9 @@ const player = createPlayer(store);
 const progress = createProgress();
 const missions = createMissions(progress);
 const glossary = createGlossaryPanel();
-const course = createCourseDrawer(store, progress);
+let host = null;
+// 진도를 지우면 지금 쪽도 다시 붙인다(문제 상자·표지가 기억하던 답을 버리게)
+const course = createCourseDrawer(store, progress, { onReset: () => host?.remount() });
 const onboarding = createOnboarding({ onTour: () => store.set(goPatch('start', 'tour')) });
 
 mountTopbar(qs('#topbar'), store, { progress, onHelp: onboarding.open, onGlossary: () => glossary.open(), onCourse: course.open });
@@ -30,7 +32,7 @@ mountLessonBar(qs('#lessonbar'), store, { progress, missions, player, glossary }
 mountControls(qs('#controlbar'), store, player);
 mountActionCard(qs('#actionbar'), player);
 const codePanel = createCodePanel(qs('#panel-code'), store);
-mountSceneHost(store, player, codePanel, { glossary, progress, missions });
+host = mountSceneHost(store, player, codePanel, { glossary, progress, missions });
 
 // 보기 설정(테마·글자 크기)을 문서 뿌리에 반영한다
 store.subscribe((state) => {

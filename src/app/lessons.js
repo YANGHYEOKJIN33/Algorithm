@@ -78,7 +78,7 @@ function reviewPage(tab) {
     terms: [],
     missions: [
       { text: '✅ 할 수 있어요 점검표에 모두 표시하기', check: 'act:selfcheck' },
-      { text: '❓ 단원 확인 문제 모두 풀기', check: 'quiz' },
+      { text: '❓ 단원 확인 문제 모두 맞히기 (틀리면 다시 보고 와요)', check: `right:${tab.unit.quiz?.length ?? 3}` },
     ],
     minutes: 5,
   };
@@ -181,6 +181,13 @@ export function subPrefix(it, sep) {
   const sub = it.sub;
   if (!sub || sub.id === 'review' || it.page.auto || it.page.title.startsWith(sub.name)) return '';
   return sep === ' · ' ? `${sub.name}${sep}` : `[${sub.name}] `;
+}
+
+/** 쪽의 수준 꼬리표 — 목록에서 미리 보이게 */
+export function levelTag(page) {
+  if (page.level === 'challenge') return '🔥 도전';
+  if (page.level === 'optional') return '➕ 선택';
+  return '';
 }
 
 /** 쪽의 종류 — 단계 표시 줄의 배지 */

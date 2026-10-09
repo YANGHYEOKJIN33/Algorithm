@@ -130,8 +130,17 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
     const { tab, sub, index } = currentLesson(state);
     const sig = `${tab.id}|${sub?.id ?? ''}|${index}`;
     if (sig === lastSig) return;
+    // 단원 표지를 떠나면(다음 →·단계 표시 줄·쪽 목록·하위 탭·목차 어느 길로든) 표지의 "출발" 미션을 이룬다
+    if (lastSig && ctx.lesson?.page?.auto === 'cover') missions?.act('begin');
     lastSig = sig;
     teardown();
     mount(state);
+    // 좁은 화면은 페이지 전체가 스크롤된다 — 새 쪽은 맨 위(목표)부터 보이게
+    if (window.scrollY > 0) window.scrollTo({ top: 0 });
   });
+
+  return {
+    /** 지금 쪽을 다시 붙인다 — 진도 초기화 뒤 장면이 기억하던 답을 버리려고 */
+    remount() { teardown(); mount(store.get()); },
+  };
 }
