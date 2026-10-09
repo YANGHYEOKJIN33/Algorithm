@@ -23,7 +23,7 @@
  *    standards: [{ code, text }]           2022 개정 교육과정 성취기준
  *    summary: [문장 3~4개]                 1분 요약
  *    cheats: [{ idea, code }]              🐍 파이썬 한 줄 정리(프로젝트 때 다시 찾아보는 용도)
- *    quiz: [{ q, options, answer, why, page }]   단원 확인 문제 3개 — 틀리면 page로 다시 보러 간다
+ *    quiz: [{ q, options, answer, why, page }]   단원 확인 문제 3~6개 — 틀리면 page로 다시 보러 간다
  *    cover: false / review: false          표지·정리를 붙이지 않을 때
  *  }
  *  pages: [쪽] 또는 sub: [{ id, name, tag('분류 · 지도학습'), question, pages }]

@@ -302,7 +302,7 @@ const box = {
       fill(stage,
         el('div.fit__grow', {}, numberLine({ items: f.items, stats: f.stats, show: { ...f.show, fences: false }, real, H: 190 })),
         el('p.panel__hint', {}, real
-          ? '실제 비율: 8200g이 너무 멀어서 상자가 아주 납작해 보여요. Colab의 plt.boxplot()도 이렇게 그려요.'
+          ? '실제 비율: 8200g이 너무 멀어서 상자가 아주 납작해 보여요. Colab 02의 13마리 셀도 이렇게 그려요(세로로).'
           : '≈ 표시는 축을 끊어 그렸다는 뜻이에요. 8200g은 실제로는 훨씬 멀리 있어요.'));
     }
     return {
@@ -316,7 +316,8 @@ const box = {
           part(f.show.box, '▭', '상자', `Q1 ${fmt(st.q1)} ~ Q3 ${fmt(st.q3)} — 가운데 절반의 값`),
           part(f.show.median, '│', '가운데 선', `Q2 ${fmt(st.q2)} — 중앙값`),
           part(f.show.whiskers, '⟷', '수염', `${fmt(st.whiskerLow)} ~ ${fmt(st.whiskerHigh)} — 울타리(${fmt(st.lower)} ~ ${fmt(st.upper)}) 안의 가장 먼 값까지`),
-          part(f.show.outliers, '●', '따로 찍힌 점', `${st.outliers.join(', ')} — 이상치`)));
+          part(f.show.outliers, '●', '따로 찍힌 점', `${st.outliers.join(', ')} — 이상치`),
+          f.compare ? part(true, '🐍', '345줄 전체', `상자 ${fmt(f.compare.q1)} ~ ${fmt(f.compare.q3)} · 선 ${fmt(f.compare.q2)} · 수염 ${fmt(f.compare.whiskerLow)} ~ ${fmt(f.compare.whiskerHigh)} · 점 ${f.compare.outliers.join(', ')} — Colab 02의 전체 그림(읽는 법은 같고 값만 달라요)`) : null));
       },
     };
   },

@@ -10,9 +10,9 @@ index.html                화면 뼈대 — 빈 패널만 두고 내용은 JS가
 practice/                 크롤링 연습 사이트(정적 HTML 7쪽) ← npm run build가 만든다
 data/                     수업용 CSV 4개 + source/(원본) ← npm run build가 만든다
 notebooks/                Colab 노트북 9개 ← npm run build가 만든다
-scripts/build.mjs         위 세 폴더와 docs/OBJECTIVES.md를 원본에서 만드는 생성기
+scripts/build.mjs         위 세 폴더와 docs/OBJECTIVES.md, docs/TEACHER.md의 차시표를 원본에서 만드는 생성기
 scripts/check-course.mjs  수업 내용 점검기(목표 형식·할 일 확인 낱말·학습 요소) — 테스트도 쓴다
-scripts/objectives.mjs    교사용 학습 목표표(docs/OBJECTIVES.md) 만들기
+scripts/objectives.mjs    교사용 학습 목표표(docs/OBJECTIVES.md — ❓ 정답 포함)와 차시표 만들기
 src/
   core/                   순수 로직 — 화면을 전혀 모른다 (Node 테스트 대상)
     data/penguins.js      원본 344마리(우리말로만 옮김)
@@ -27,7 +27,9 @@ src/
     course/<단원>.js      단원 하나 = 파일 하나: unit(생각 열기·할 수 있어요·1분 요약·확인 문제·성취기준)과
                           쪽(🎯 objective·why·terms·✋ missions·❓ ask·장면 이름). 기계학습은 ml.js + ml-<하위탭>.js
     lessons.js            course/를 모아 단원 표지·정리 쪽을 붙이고, 쪽 찾기·번호표(2-3)를 준다 — 머리말이 자료 형식
-    progress.js           학습 진도(브라우저 저장) — 쪽마다 마친 할 일, 문제 답, 생각 열기, 스스로 점검
+    progress.js           학습 진도(브라우저 저장) — 쪽마다 마친 할 일, 문제 답(지금 답 + 처음 고른 답), 생각 열기, 스스로 점검
+    record.js             📋 내 학습 기록 — 처음에 맞힌 문제 수·진도·스스로 점검을 모아 복사할 글로
+    plan.js               차시 계획(45분 × 13차시) — 쪽 시간을 더해 차시마다 묶는다(문서 생성·테스트가 쓴다)
     missions.js           할 일 자동 체크 — 재생기·문제 상자·Colab·장면의 ctx.check(이름) 사건을 받아 ✅
     state.js              상태 저장소(구독 방식 + 브라우저 저장)
     player.js             재생기 — 장면 목록을 앞뒤로 넘긴다
@@ -38,7 +40,7 @@ src/
     start collect inspect prep ready concepts knn tree linreg kmeans project python
     unit.js               🧭 단원 표지 · 📝 단원 정리 (내용은 course/의 unit에서)
   viz/                    그림 부품 — 표(데이터프레임) · 리스트/사전/변수 상자 · 산점도 · SVG 도우미
-  ui/                     화면 틀 — 상단 탭(진도) · 레슨 막대(단원 칩·쪽 단계·🎯·✋·❓) · 📚 목차 · 실행 제어 · 동작 카드
+  ui/                     화면 틀 — 상단 탭(진도) · 레슨 막대(단원 칩·쪽 단계·🎯·✋·❓) · 📚 목차(📋 학습 기록 복사) · 실행 제어 · 동작 카드
                           · 의사코드 패널 · 장면 무대 · 용어 사전 · 안내
   styles/                 tokens(색·간격) · base · layout · components · viz
 test/                     node:test — 판다스·사이킷런과 같은 값인지, 만들어 둔 파일이 원본과 같은지

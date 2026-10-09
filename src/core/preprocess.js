@@ -342,3 +342,82 @@ export function replaceFrames(source = afterAllFill()) {
   snap({ line: 6, icon: '🧾', done: true, say: '모든 칸이 숫자가 되었어요. 기계학습 모델에 넣을 수 있는 표예요!' });
   return frames;
 }
+
+/* ═════════════════ ⑦ 크기 맞추기(정규화) — 최소-최대 정규화 ═════════════════
+   거리로 이웃을 찾는 알고리즘(k-최근접 이웃·k-평균)은 열마다 차이를 그대로 제곱해 더한다.
+   g 단위인 몸무게는 숫자가 수천이라, 크기를 맞추지 않으면 몸무게 차이가 거리를 거의 혼자 정한다.
+   빈칸을 모두 채운 10행 표의 숫자 열 세 개를 열마다 (값 − 작은값) ÷ (큰값 − 작은값)으로 0~1에 맞춘다. */
+
+export const SCALE_COLUMNS = FILL_COLUMNS;
+/** 거리를 견줘 볼 두 펭귄 — 1번(아델리)과 153번(젠투) */
+export const SCALE_PAIR = [1, 153];
+
+export const SCALE_PSEUDO = [
+  { code: '거리 ← √(부리길이 차² + 날개길이 차² + 몸무게 차²)', note: '두 펭귄이 얼마나 다른지 재는 거리예요(피타고라스). 열마다 차이를 제곱해 그대로 더하니, 숫자가 큰 열의 차이가 거리를 정해 버려요.' },
+  { code: '반복: 숫자로 된 각 열 (부리길이, 날개길이, 몸무게)', note: '열마다 따로 크기를 맞춰요. 번호와 글자 열(종·성별)은 그대로 둬요.' },
+  { code: '    작은값 ← 그 열의 가장 작은 값,  큰값 ← 가장 큰 값', note: '작은값은 0, 큰값은 1이 될 기준이에요. 큰값 − 작은값이 그 열의 폭이에요.' },
+  { code: '    각 칸 ← (값 − 작은값) ÷ (큰값 − 작은값)', note: '가장 작은 값은 0, 가장 큰 값은 1, 나머지는 그 사이가 돼요. 단위(mm·g)는 사라지고 "그 열에서 어디쯤인지"만 남아요.' },
+  { code: '거리를 다시 잰다', note: '이제 세 열이 모두 0~1이라, 어느 한 열이 거리를 혼자 정하지 못해요.' },
+];
+export const SCALE_PYTHON = [
+  'd = ((a - b) ** 2).sum() ** 0.5        # a, b: 두 펭귄의 숫자 열',
+  "for col in ['부리길이', '날개길이', '몸무게']:",
+  '    lo, hi = df[col].min(), df[col].max()',
+  '    df[col] = (df[col] - lo) / (hi - lo)',
+  'd = ((a - b) ** 2).sum() ** 0.5        # 같은 두 펭귄, 다시',
+];
+
+/** 두 행의 열마다 차이와, √ 안에서 그 차이(제곱)가 차지하는 몫 */
+export function pairGap(a, b, cols = SCALE_COLUMNS) {
+  const parts = cols.map((col) => ({ col, a: a[col], b: b[col], diff: Math.abs(b[col] - a[col]) }));
+  const total = parts.reduce((s, p) => s + p.diff ** 2, 0);
+  for (const p of parts) p.share = total ? p.diff ** 2 / total : 0;
+  return { parts, dist: Math.sqrt(total) };
+}
+
+/** 열 하나를 0~1로 — 작은값·큰값과 바꾼 값 목록 */
+export function minMax(values) {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  return { lo, hi, scaled: values.map((v) => (hi === lo ? 0 : (v - lo) / (hi - lo))) };
+}
+
+export function scaleFrames(source = afterAllFill()) {
+  const table = withKeys(source);
+  table.rows.forEach((r, i) => { r._i = i; });
+  const scaled = {};          // 열 → true (0~1로 바꾼 열)
+  const ranges = {};          // 열 → { lo, hi }
+  const frames = [];
+  const pairRows = () => SCALE_PAIR.map((id) => table.rows.find((r) => r.번호 === id));
+  const snap = (extra) => frames.push({ table: cloneTable(table), scaled: { ...scaled }, ranges: { ...ranges },
+    pair: pairRows().map((r) => r._k), col: null, lo: null, hi: null, minKeys: [], maxKeys: [], example: null, gap: null, ...extra });
+  const [a, b] = pairRows();
+  const name = (r) => `${r.번호}번 ${r.종}`;
+
+  const before = pairGap(a, b);
+  const terms = (g) => g.parts.map((p) => `${fmt(p.diff, 2)}²`).join(' + ');
+  const heavy = before.parts.reduce((m, p) => (p.share > m.share ? p : m));
+  snap({ line: 1, icon: '📏', gap: before, showPair: true,
+    say: `왜 크기를 맞출까요? ${withJosa(name(a), '과/와')} ${name(b)}의 거리를 재면 √(${terms(before)}) ≈ ${fmt(before.dist, 1)}이에요. ${heavy.col} 차이 ${withJosa(fmt(heavy.diff), '과/와')} 거의 같아요 — 숫자가 큰 ${withJosa(heavy.col, '이/가')} 거리를 혼자 정해요.` });
+
+  for (const col of SCALE_COLUMNS) {
+    const vals = table.rows.map((r) => r[col]);
+    const { lo, hi, scaled: out } = minMax(vals);
+    ranges[col] = { lo, hi };
+    const minKeys = table.rows.filter((r) => r[col] === lo).map((r) => r._k);
+    const maxKeys = table.rows.filter((r) => r[col] === hi).map((r) => r._k);
+    const at = (keys) => table.rows.filter((r) => keys.includes(r._k)).map((r) => r._i).join('·');
+    snap({ line: 3, icon: '🔎', col, lo, hi, minKeys, maxKeys,
+      say: `'${col}' 열 — 작은값 ${fmt(lo, 3)}(인덱스 ${at(minKeys)}행), 큰값 ${fmt(hi, 3)}(인덱스 ${at(maxKeys)}행). 폭 = ${fmt(hi, 3)} − ${fmt(lo, 3)} = ${fmt(hi - lo, 3)}` });
+    const example = pairRows().map((r) => ({ id: r.번호, v: r[col], out: hi === lo ? 0 : (r[col] - lo) / (hi - lo) }));
+    table.rows.forEach((r, i) => { r[col] = out[i]; });
+    scaled[col] = true;
+    snap({ line: 4, icon: '🖊️', col, lo, hi, example,
+      say: `'${col}' 칸마다 (값 − ${fmt(lo, 3)}) ÷ ${withJosa(fmt(hi - lo, 3), '을/를')} 계산해 바꿨어요. 작은값은 0, 큰값은 1이 됐어요.` });
+  }
+
+  const after = pairGap(...pairRows());
+  snap({ line: 5, icon: '🧾', done: true, gap: after, before, showPair: true,
+    say: `같은 두 펭귄을 다시 재면 √(${terms(after)}) ≈ ${fmt(after.dist, 2)}. 이제 ${heavy.col}만이 아니라 세 열이 모두 거리에 힘을 보태요.` });
+  return frames;
+}

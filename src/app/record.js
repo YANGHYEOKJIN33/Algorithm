@@ -8,7 +8,8 @@ import { pageKey } from './progress.js';
 import { unitProgress, canDoDone } from './missions.js';
 import { QUIZ } from './quiz.js';
 
-export const FINAL_KEY = 'final';
+/** 6-3 이해 확인의 저장 열쇠 — 문제를 바꾸면 숫자를 올려, 예전 답이 새 문제에 붙지 않게 한다 */
+export const FINAL_KEY = 'final:2';
 
 /** 문제 묶음 하나를 처음 고른 답으로 센다 — { right, tried, total } */
 export function firstScore(progress, quizKey, questions) {

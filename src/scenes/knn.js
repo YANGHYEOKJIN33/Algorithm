@@ -140,7 +140,7 @@ function knnExplore(root, ctx) {
         el('button.pill', { type: 'button', onclick: () => { q = { x: KNN_QUERY.x, y: KNN_QUERY.y }; draw(); } }, '↺ 341번 펭귄으로'),
         speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄')])),
       el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '👆 그래프의 빈 곳을 누르면 새 펭귄(★)이 그 자리로 옮겨 가요. 훈련 데이터 18마리(종마다 6마리)예요.')),
+      el('p.panel__hint', {}, '👆 그래프의 빈 곳을 누르면 새 펭귄(★)이 그 자리로 옮겨 가요. 훈련 데이터 18마리(종마다 6마리)예요. 341번은 펭귄의 원래 번호예요 — 341마리와는 상관없어요.')),
     side));
   draw();
   return {};

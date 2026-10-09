@@ -32,7 +32,7 @@ const STAGE_EXTRA = {
   inspect: { what: '빈칸(결측치)이 어디에 몇 개 있는지, 동떨어진 값(이상치)이 있는지 찾아요.', change: ['표 345줄', 'NaN 20칸 · 8200g?! · 겹친 행'], tools: 'isnull() · quantile() · boxplot()' },
   prep: { what: '필요한 속성만 남기고, 잘못된 행은 지우고, 빈칸은 채우고, 글자는 숫자로 바꿔요.', change: ['수컷·암컷', '0·1'], tools: 'drop() · fillna() · map()' },
   ready: { what: '흩어진 표를 하나로 합치고, 입력 X와 정답 y, 훈련 80%와 테스트 20%로 나눠요.', change: ['한 표', '훈련 | 테스트'], tools: 'concat() · merge() · train_test_split()' },
-  ml: { what: '훈련 데이터로 모델을 학습시켜요. 분류·예측·군집에 맞는 알고리즘을 골라요.', change: ['부리·날개', '"젠투!"'], tools: 'KNeighborsClassifier · DecisionTree · LinearRegression · KMeans' },
+  ml: { what: '훈련 데이터로 모델을 학습시켜요. 분류·회귀·군집에 맞는 알고리즘을 골라요.', change: ['부리·날개', '"젠투!"'], tools: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
   project: { what: '처음 보는 테스트 데이터로 정확도를 재고, 나만의 주제로 프로젝트를 해요.', change: ['6마리 중 5마리 정답', '정확도 83%'], tools: 'accuracy_score() · Colab' },
 };
 
@@ -59,7 +59,7 @@ function pipeline(root, ctx) {
       }, op)),
       el('p.smap-hook__note', {}, mine === null
         ? '정답을 맞히는 게 아니라 내 생각을 먼저 정해 보는 거예요. 아래 지도를 보면 힌트가 있어요.'
-        : `내 생각: "${h.options[mine]}" — 시작 단원 정리에서 정답을 확인해요. 🔒`));
+        : `내 생각: "${h.options[mine]}" — 0단원 정리에서 정답을 확인해요. 🔒`));
   }
 
   function drawSteps() {

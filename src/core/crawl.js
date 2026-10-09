@@ -18,7 +18,7 @@ export const PSEUDO = [
   { code: '    반복: 줄들의 각 줄 tr (제목 줄은 건너뜀)', note: '제목 줄을 빼고, 펭귄 한 마리가 적힌 줄을 하나씩 봐요. 줄마다 ④·⑤를 해요.' },
   { code: '        칸들 ← tr 안 <td> 태그들의 글자', note: "④ 칸 꺼내기 — <td>는 칸 하나(table data)예요. 태그는 버리고 안의 글자만 꺼내요. '3750'처럼 아직 글자예요." },
   { code: '        행목록에 칸들을 추가한다', note: '⑤ 모으기 — 꺼낸 칸들(한 줄)을 행목록 맨 뒤에 붙여요. 리스트 안에 리스트가 쌓여요.' },
-  { code: '표 ← 행목록으로 데이터프레임을 만든다', note: '리스트를 행과 열이 있는 표(데이터프레임)로 바꿔요. 이제 분석할 수 있어요.' },
+  { code: '표 ← 행목록으로 데이터프레임을 만든다', note: '리스트를 행과 열이 있는 표(데이터프레임)로 바꿔요. 열 이름은 건너뛰었던 제목 줄(<th>)의 글자를 써요.' },
   { code: '표를 CSV 파일로 저장한다', note: '쉼표로 칸을 나눈 글자 파일(CSV)로 저장하면 다음 수업에서 다시 불러 쓸 수 있어요. 다시 읽을 때 글자가 숫자로 바뀌어요.' },
 ];
 
@@ -31,7 +31,7 @@ export const PYTHON = [
   '    for tr in trs[1:]:',
   "        cells = [td.text for td in tr.find_all('td')]",
   '        rows.append(cells)',
-  `df = pd.DataFrame(rows, columns=[${CRAWL_COLUMNS.map((c) => `'${c}'`).join(', ')}])`,
+  "df = pd.DataFrame(rows, columns=[th.text for th in trs[0].find_all('th')])",
   "df.to_csv('penguins.csv', index=False)",
 ];
 
@@ -101,7 +101,7 @@ export function crawlFrames() {
   }
 
   const table = { columns: [...CRAWL_COLUMNS], rows: rows.map((r) => [...r]) };
-  snap({ line: 9, icon: '🧾', phase: 'frame', table, say: `행목록 ${rows.length}줄을 데이터프레임(표)으로 바꿨어요. 왼쪽 0, 1, 2…는 판다스가 붙이는 인덱스예요.` });
+  snap({ line: 9, icon: '🧾', phase: 'frame', table, say: `행목록 ${rows.length}줄을 데이터프레임(표)으로 바꿨어요. 열 이름(${CRAWL_COLUMNS.join('·')})은 제목 줄 <th>에서 가져와요. 왼쪽 0, 1, 2…는 판다스가 붙이는 인덱스예요.` });
   const csv = [CRAWL_COLUMNS.join(','), ...rows.map((r) => r.join(','))].join('\n');
   snap({ line: 10, icon: '💾', phase: 'save', table, csv, say: "CSV 파일로 저장했어요. 칸은 쉼표로, 줄은 줄바꿈으로 나뉘어요. 크롤링 끝! 다시 읽으면 '3750' 같은 글자가 숫자가 돼요." });
   return frames;

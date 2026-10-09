@@ -95,13 +95,17 @@ function copyButton(text) {
   return btn;
 }
 
+/**
+ * 점검표 세 칸 — 진도에는 nb:<노트북 id>의 0·1·2번으로 저장한다(순서를 바꾸지 않는다).
+ * 세 번째 칸 뒤에는 노트북마다 다른 "선생님께 보여 줄 결과"(notebooks.js의 check)가 붙는다.
+ */
 const CHECKS = [
   '📒 Colab에서 열고, 파일 → 드라이브에 사본 저장',
   '▶ 셀을 위에서부터 차례로 끝까지 실행',
-  '🔍 내 결과가 셀 아래 "실행 결과 예시"와 같은지 확인',
+  '🔍 내 결과 확인: ',
 ];
 
-/** ✅ 실습 점검표 — 무엇을 하면 실습이 끝난 것인지 */
+/** ✅ 실습 점검표 — 무엇을 하면 실습이 끝난 것인지, 선생님께 무엇을 보여 주면 되는지 */
 function checklist(nb, ctx) {
   const key = `nb:${nb.id}`;
   const box = el('section.nbcheck', { 'aria-label': '실습 점검표' });
@@ -110,6 +114,7 @@ function checklist(nb, ctx) {
     const n = CHECKS.filter((_, i) => got[i]).length;
     fill(box,
       el('div.nbcheck__head', {}, el('strong', {}, '✅ 실습 점검표'), el('span.card__meta', {}, ` ${n} / ${CHECKS.length} — 모두 체크하면 이 실습 끝!`)),
+      el('p', {}, '🙋 선생님께 보여 줄 것: ', el('strong', {}, '아래 🔍 결과가 나온 내 Colab 화면')),
       el('ul.nbcheck__list', {}, CHECKS.map((t, i) => el('li', {}, el('label', {},
         el('input', {
           type: 'checkbox', checked: got[i] ? true : null,
@@ -119,7 +124,7 @@ function checklist(nb, ctx) {
             if (CHECKS.every((_, k) => now[k])) ctx?.check('nb-done');
             draw();
           },
-        }), ' ', t)))),
+        }), el('span', {}, t, i === CHECKS.length - 1 ? el('strong', {}, nb.check) : null))))),
       el('p.card__meta', {}, '💡 학교에서 Colab을 쓸 수 없으면: 아래 셀마다 붙은 "실행 결과 예시"를 보며 코드가 하는 일을 따라가요. 코드 셀의 📋 복사로 다른 파이썬 환경에서 실행해도 돼요.'));
   }
   draw();

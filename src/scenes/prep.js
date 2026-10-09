@@ -1,5 +1,7 @@
 /**
- * 🧹 전처리 — 핵심 속성 · 데이터 삭제 · 결측치 삭제 · 평균값/최빈값 대체 · 텍스트 값 대체
+ * 🧹 전처리 — 핵심 속성 · 데이터 삭제 · 결측치 삭제 · 평균값/최빈값 대체 · 텍스트 값 대체 · 크기 맞추기(정규화)
+ *
+ * 크기 맞추기 장면의 모양(.pp-*)은 공용 CSS를 건드리지 않으려고 장면이 처음 붙을 때 <style> 하나로 넣는다.
  */
 import { el, fill } from '../ui/dom.js';
 import { createFlip } from '../ui/flip.js';
@@ -373,4 +375,121 @@ const replace = {
   },
 };
 
-export const PREP_SCENES = { features, drop, dropna, fillmean, fillmode, replace };
+/* ═════════════ 크기 맞추기(정규화) ═════════════ */
+
+const PP_STYLE_ID = 'prep-scale-style';
+const PP_CSS = String.raw`
+.pp-scale { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: flex-start; }
+.pp-scale > .dtable { flex: 0 0 auto; }
+.pp-card { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm);
+  border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-2) var(--sp-3); background: var(--surface); }
+.pp-card__head { font-weight: 700; }
+.pp-card .mini th, .pp-card .mini td { white-space: nowrap; text-align: right; }
+.pp-card .mini th:first-child { text-align: left; }
+.pp-card .mini td.is-scaled { color: var(--result); font-weight: 700; }
+.pp-dist { font-family: var(--font-code); }
+.pp-dist strong { font-size: var(--fs-lg); }
+.pp-share { display: flex; height: 22px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-strong); }
+.pp-share > span { display: block; text-align: center; line-height: 20px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-xs); font-weight: 700; color: var(--surface); transition: width .4s ease; }
+.pp-share > .c0 { background: var(--current); }
+.pp-share > .c1 { background: var(--add); }
+.pp-share > .c2 { background: var(--result); }
+.pp-sharerow { display: grid; grid-template-columns: 5.6em minmax(0, 1fr); gap: 6px; align-items: center; }
+.pp-sharerow__k { font-size: var(--fs-xs); font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+.pp-key { display: flex; flex-wrap: wrap; gap: 2px var(--sp-2); font-size: var(--fs-xs); color: var(--text-muted); }
+.pp-key i { display: inline-block; width: .8em; height: .8em; border-radius: 2px; margin-right: 3px; vertical-align: -1px; }
+.pp-key .c0 { background: var(--current); } .pp-key .c1 { background: var(--add); } .pp-key .c2 { background: var(--result); }
+`;
+function ensurePrepStyle() {
+  if (typeof document === 'undefined' || document.getElementById(PP_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = PP_STYLE_ID;
+  style.textContent = PP_CSS;
+  document.head.append(style);
+}
+
+/** 몫을 % 글자로 — 99.8%를 100%로, 0.2%를 0%로 뭉개지 않는다 */
+const share = (x) => (x >= 0.995 || (x < 0.01 && x >= 0.001) ? `${(x * 100).toFixed(1)}%` : x >= 0.01 ? `${Math.round(x * 100)}%` : '0.1% 미만');
+
+/** 누가 거리를 정하나 — 열마다 차이(제곱)가 √ 안에서 차지하는 몫을 한 줄 막대로 */
+function shareBar(gap, label) {
+  return el('div.pp-sharerow', {},
+    el('span.pp-sharerow__k', {}, label),
+    el('div.pp-share', { role: 'img', 'aria-label': `${label}: ${gap.parts.map((p) => `${p.col} ${share(p.share)}`).join(', ')}` },
+      gap.parts.map((p, i) => el(`span.c${i}`, { style: `width:${p.share * 100}%` }, p.share >= 0.12 ? `${p.col} ${share(p.share)}` : ''))));
+}
+
+/** 두 펭귄 카드 — 열마다 값·차이, 거리, 누가 거리를 정하나 */
+function pairCard(f, rows) {
+  const cols = PP.SCALE_COLUMNS;
+  const digits = (c) => (f.scaled[c] ? 2 : 3);
+  const head = el('tr', {}, el('th', {}, ''), cols.map((c) => el('th', {}, c)));
+  const line = (label, get, cls = () => '') => el('tr', {}, el('th', {}, label), cols.map((c) => el(`td${cls(c)}`, {}, get(c))));
+  const scaledCls = (c) => (f.scaled[c] ? '.is-scaled' : '');
+  const [a, b] = rows;
+  const gap = f.gap;
+  const terms = gap ? gap.parts.map((p) => `${fmt(p.diff, f.done ? 2 : 3)}²`).join(' + ') : '';
+  return el('div.pp-card', {},
+    el('div.pp-card__head', {}, `📏 두 펭귄의 거리 — ${a.번호}번 ${a.종} ↔ ${b.번호}번 ${b.종}`),
+    el('table.mini', {},
+      el('thead', {}, head),
+      el('tbody', {},
+        line(`${a.번호}번`, (c) => fmt(a[c], digits(c)), scaledCls),
+        line(`${b.번호}번`, (c) => fmt(b[c], digits(c)), scaledCls),
+        line('차이', (c) => fmt(Math.abs(b[c] - a[c]), digits(c)), scaledCls))),
+    gap ? el('div.pp-dist', {}, `거리 = √(${terms}) ≈ `, el('strong', {}, fmt(gap.dist, f.done ? 2 : 1))) : null,
+    f.done ? shareBar(f.before, '정규화 전') : null,
+    gap ? shareBar(gap, f.done ? '정규화 뒤' : '누가 정하나') : el('p.panel__hint', { style: 'margin:0' }, '열마다 0~1로 바꾸는 중이에요. 세 열을 모두 바꾼 뒤 거리를 다시 재요.'),
+    gap ? el('div.pp-key', {}, gap.parts.map((p, i) => el('span', {}, el(`i.c${i}`), `${p.col} ${share(p.share)}`))) : null);
+}
+
+const scaleScene = {
+  kind: 'step',
+  pseudo: PP.SCALE_PSEUDO,
+  python: PP.SCALE_PYTHON,
+  notebook: NB,
+  stageTitle: '빈칸을 모두 채운 표 df',
+  stageHint: '파랑 = 견줄 두 펭귄 · 테두리 = 작은값·큰값 · 주황 = 0~1로 바꾼 칸',
+  dataTitle: '작은값 · 큰값 · 계산',
+  rows: ['1.38fr', '0.62fr'],
+  frames: () => PP.scaleFrames(),
+  mount({ stage, data }) {
+    ensurePrepStyle();
+    return {
+      render(v) {
+        const f = v.frame;
+        const t = f.table;
+        const ends = new Set([...f.minKeys, ...f.maxKeys]);
+        const pairRows = f.pair.map((k) => t.rows.find((r) => r._k === k));
+        fill(stage, el('div.pp-scale', {},
+          dataTable({
+            columns: t.columns, rows: t.rows, index: idx,
+            cell: (r, c) => (isMissing(r[c]) ? 'NaN' : fmt(r[c], f.scaled[c] ? 2 : 3)),
+            rowClass: (r) => (f.showPair && f.pair.includes(r._k) ? 'is-row' : ''),
+            cellClass: (r, c) => [f.scaled[c] ? 'is-changed' : '', c === f.col && ends.has(r._k) ? 'is-focus' : ''].join(' '),
+            colClass: (c) => (c === f.col ? 'is-col' : ''),
+          }),
+          pairCard(f, pairRows)));
+
+        const formula = (lo, hi) => el('div.meancalc', { style: 'flex:1 1 300px; margin:0' },
+          el('div.meancalc__eq', {}, el('span.meancalc__name', {}, '각 칸 ← (값 − 작은값) ÷ (큰값 − 작은값)')),
+          f.example
+            ? f.example.map((x) => el('div.meancalc__res', {}, `${x.id}번: (${fmt(x.v, 3)} − ${fmt(lo, 3)}) ÷ ${fmt(hi - lo, 3)} = `, el('strong', {}, fmt(x.out, 2))))
+            : el('div.meancalc__res', {}, lo === null ? '열마다 작은값과 큰값을 먼저 찾아요.' : `= (값 − ${fmt(lo, 3)}) ÷ (${fmt(hi, 3)} − ${fmt(lo, 3)}) = (값 − ${fmt(lo, 3)}) ÷ ${fmt(hi - lo, 3)}`));
+        if (f.done) {
+          fill(data, el('div.varrow', { style: 'align-items:center' },
+            counters([['바꾼 열', `${Object.keys(f.scaled).length}개`, 'add'], ['모든 값', '0 ~ 1', 'add'], ['거리', `${fmt(f.before.dist, 1)} → ${fmt(f.gap.dist, 2)}`]]),
+            el('p.panel__hint', { style: 'flex:1 1 300px; margin:0' },
+              '거리의 숫자 크기는 달라졌지만, 이제 몸무게 혼자가 아니라 세 열이 모두 힘을 보태요. 모델을 평가할 때는 작은값·큰값을 훈련 데이터에서만 구해요 → 6-1에서 직접 고쳐 봐요.')));
+          return;
+        }
+        fill(data, el('div.varrow', {},
+          varBox('작은값', f.lo === null ? '?' : fmt(f.lo, 3), { hot: f.line === 3, sub: f.col ? `'${f.col}'의 최솟값` : '' }),
+          varBox('큰값', f.hi === null ? '?' : fmt(f.hi, 3), { hot: f.line === 3, sub: f.col ? `'${f.col}'의 최댓값` : '' }),
+          formula(f.lo, f.hi)));
+      },
+    };
+  },
+};
+
+export const PREP_SCENES = { features, drop, dropna, fillmean, fillmode, replace, scale: scaleScene };

@@ -1,5 +1,5 @@
 /**
- * 🤖 기계학습 개념 — 학습 방법(지도·비지도·강화) · 강화학습 맛보기 · 학습 목적(분류·예측·군집)
+ * 🤖 기계학습 개념 — 학습 방법(지도·비지도·강화) · 강화학습 맛보기 · 학습 목적(분류·회귀·군집)
  *
  * 미션 신호: ctx.check('algo-map') — 알고리즘 지도에서 "몸무게 예측"에 맞는 알고리즘(선형 회귀)을 골랐을 때
  * (학습 방법·목적 쪽의 문제 상자는 'quiz:answer' 사건을 스스로 올려 보낸다 → 미션 'quiz'·'right:N')
@@ -77,12 +77,12 @@ function learnTypes(root) {
   fill(root, el('div.read.read--wide', {},
     el('div.cards.cards--3', {},
       card('.card--current', '👩‍🏫', '지도학습', '정답(레이블)이 있는 데이터로 배워요', miniScatter('labeled'), [
-        el('span', {}, el('b', {}, '데이터: '), '문제(부리·날개) + 정답(종)'),
+        el('span', {}, el('b', {}, '데이터: '), '문제(부리·날개) + 정답(종 또는 몸무게)'),
         el('span', {}, el('b', {}, '배우는 것: '), '문제 → 정답으로 가는 규칙'),
-        el('span', {}, el('b', {}, '예: '), '펭귄 종 분류, 스팸 메일 거르기, 몸무게 예측'),
+        el('span', {}, el('b', {}, '예: '), '펭귄 종 분류, 스팸 메일 거르기, 몸무게 회귀(숫자 예측)'),
         el('span', {}, el('b', {}, '이 수업: '), 'k-최근접 이웃 · 의사결정 트리 · 선형 회귀')]),
       card('.card--add', '🧭', '비지도학습', '정답 없이 데이터의 구조를 찾아요', miniScatter('cluster'), [
-        el('span', {}, el('b', {}, '데이터: '), '문제(부리·날개)만, 정답 없음'),
+        el('span', {}, el('b', {}, '데이터: '), '문제(부리길이·부리깊이)만, 정답 없음'),
         el('span', {}, el('b', {}, '배우는 것: '), '비슷한 것끼리의 무리(군집)'),
         el('span', {}, el('b', {}, '예: '), '고객 무리 나누기, 비슷한 뉴스 묶기'),
         el('span', {}, el('b', {}, '이 수업: '), 'k-평균')]),
@@ -169,18 +169,18 @@ const rlStep = {
 /* ═════════════ 학습 목적에 따른 구분 ═════════════ */
 
 const PURPOSE_QUIZ = [
-  { q: '내일 기온이 몇 도일지 맞힌다.', options: ['분류', '예측(회귀)', '군집'], answer: 1, why: '답이 숫자(기온)이니 예측(회귀)이에요.' },
-  { q: '메일이 스팸인지 아닌지 정한다.', options: ['분류', '예측(회귀)', '군집'], answer: 0, why: '정해진 무리(스팸/정상) 중 하나를 고르니 분류예요.' },
-  { q: '음악 듣는 취향이 비슷한 사람끼리 무리를 만든다(무리 이름은 정해져 있지 않다).', options: ['분류', '예측(회귀)', '군집'], answer: 2, why: '정답 없이 무리를 만드니 군집이에요.' },
-  { q: '펭귄의 부리·날개를 보고 아델리·턱끈·젠투 중 하나로 정한다.', options: ['분류', '예측(회귀)', '군집'], answer: 0, why: '세 종 중 하나를 고르니 분류예요.' },
-  { q: '날개길이를 보고 펭귄의 몸무게(g)를 어림한다.', options: ['분류', '예측(회귀)', '군집'], answer: 1, why: '답이 숫자(몸무게)이니 예측(회귀) — 선형 회귀가 하는 일이에요.' },
+  { q: '내일 기온이 몇 도일지 맞힌다.', options: ['분류', '회귀', '군집'], answer: 1, why: '답이 숫자(기온)이니 회귀(숫자 예측)예요.' },
+  { q: '메일이 스팸인지 아닌지 정한다.', options: ['분류', '회귀', '군집'], answer: 0, why: '정해진 무리(스팸/정상) 중 하나를 고르니 분류예요.' },
+  { q: '음악 듣는 취향이 비슷한 사람끼리 무리를 만든다(무리 이름은 정해져 있지 않다).', options: ['분류', '회귀', '군집'], answer: 2, why: '정답 없이 무리를 만드니 군집이에요.' },
+  { q: '펭귄의 부리·날개를 보고 아델리·턱끈·젠투 중 하나로 정한다.', options: ['분류', '회귀', '군집'], answer: 0, why: '세 종 중 하나를 고르니 분류예요.' },
+  { q: '날개길이를 보고 펭귄의 몸무게(g)를 어림한다.', options: ['분류', '회귀', '군집'], answer: 1, why: '답이 숫자(몸무게)이니 회귀(숫자 예측) — 선형 회귀가 하는 일이에요.' },
 ];
 
 /** 🗺 이 단원의 알고리즘 지도 — 단원 표지의 핵심 아이디어(bigIdea·note)와 같은 내용 */
 const ALGO_MAP = [
   { name: 'k-최근접 이웃', sub: 'knn', how: '지도학습', purpose: '분류', tag: 'current', idea: '가까운 이웃 k마리의 다수결', task: '341번 펭귄의 종 맞히기' },
-  { name: '의사결정 트리', sub: 'tree', how: '지도학습', purpose: '분류', more: ' (예측도 가능)', tag: 'current', idea: '예/아니오 질문으로 좁혀 가기', task: '283번 펭귄의 종 맞히기' },
-  { name: '선형 회귀', sub: 'linreg', how: '지도학습', purpose: '예측(회귀)', tag: 'result', idea: '점들 사이로 직선 긋기', task: '날개 210mm 펭귄의 몸무게' },
+  { name: '의사결정 트리', sub: 'tree', how: '지도학습', purpose: '분류', more: ' (회귀도 가능)', tag: 'current', idea: '예/아니오 질문으로 좁혀 가기', task: '283번 펭귄의 종 맞히기' },
+  { name: '선형 회귀', sub: 'linreg', how: '지도학습', purpose: '회귀', tag: 'result', idea: '점들 사이로 직선 긋기', task: '날개 210mm 펭귄의 몸무게' },
   { name: 'k-평균', sub: 'kmeans', how: '비지도학습', purpose: '군집', tag: 'add', idea: '중심 정하기 ↔ 배정 되풀이', task: '종을 모르는 18마리를 3묶음으로' },
 ];
 
@@ -191,7 +191,7 @@ function purposes(root, ctx) {
     const ok = a.sub === 'linreg';
     pickNote.className = `callout ${ok ? 'callout--add' : 'callout--warn'}`;
     fill(pickNote, ok
-      ? ['⭕ 맞아요! 몸무게는 숫자라 ', el('b', {}, '예측(회귀)'), ' — 선형 회귀예요. 정답(몸무게)을 알려 주며 배우니 지도학습이에요.']
+      ? ['⭕ 맞아요! 몸무게는 숫자라 ', el('b', {}, '회귀(숫자 예측)'), ' — 선형 회귀예요. 정답(몸무게)을 알려 주며 배우니 지도학습이에요.']
       : ['❌ ', el('b', {}, a.name), `은(는) ${a.purpose}에 쓰여요. 몸무게처럼 `, el('b', {}, '숫자'), '를 내놓는 알고리즘을 찾아보세요.']);
     if (ok) ctx.check('algo-map');
   };
@@ -204,7 +204,7 @@ function purposes(root, ctx) {
   fill(root, el('div.read.read--wide', {},
     el('div.cards.cards--3', {},
       card('.card--current', '🏷 분류 (classification)', '정해진 무리 중 하나를 골라요', miniScatter('classify', { height: H }), ['내놓는 것: ', el('b', {}, '이름표(종)'), ' — "턱끈"']),
-      card('.card--result', '📈 예측 · 회귀 (regression)', '숫자 값을 내놓아요', miniRegression({ height: H }), ['내놓는 것: ', el('b', {}, '숫자'), ' — "4653g"']),
+      card('.card--result', '📈 회귀 (regression)', '숫자를 내놓는 예측이에요', miniRegression({ height: H }), ['내놓는 것: ', el('b', {}, '숫자'), ' — "4653g"']),
       card('.card--add', '🫧 군집 (clustering)', '정답 없이 무리를 만들어요', miniScatter('cluster', { height: H }), ['내놓는 것: ', el('b', {}, '무리 번호'), ' — "묶음 2"'])),
     el('h3', {}, '🗺 이 단원의 알고리즘 지도', el('span.card__meta', {}, ' — 무엇을 맞힐지 정하면, 이 표에서 알고리즘을 골라요')),
     pickNote,
@@ -216,7 +216,7 @@ function purposes(root, ctx) {
         el('td', {}, a.idea), el('td', {}, a.task),
         el('td', {}, el('button.pill.pill--sm', { type: 'button', onclick: () => pick(a) }, '✋ 고르기'), ' ',
           el('button.pill.pill--sm', { type: 'button', onclick: () => ctx.go('ml', null, a.sub) }, '배우러 가기 →')))))),
-    quizBox(PURPOSE_QUIZ, { row: true, title: '✅ 분류·예측·군집 중 무엇일까요?' })));
+    quizBox(PURPOSE_QUIZ, { row: true, title: '✅ 분류·회귀·군집 중 무엇일까요?' })));
   return {};
 }
 

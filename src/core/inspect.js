@@ -3,6 +3,7 @@
  * 판다스의 isnull() · isnull().sum() · 인덱스 찾기 · quantile() 과 같은 값을 낸다.
  */
 import { missingTable, outlierValues } from './data/sets.js';
+import { practiceRecords } from './data/practice.js';
 import { withJosa } from './josa.js';
 import { isMissing, quartiles, sorted, fmt } from './stats.js';
 
@@ -161,7 +162,7 @@ export const QUART_PSEUDO = [
   { code: '    만약 v < 아래 울타리 또는 v > 위 울타리 → 이상치', note: '울타리 밖에 있으면 이상치예요. 잘못 적은 값일 수도, 정말 특이한 펭귄일 수도 있어요.' },
 ];
 export const QUART_PYTHON = [
-  "s = df['몸무게']   # 판다스가 알아서 정렬해 계산해요",
+  "s = df[df['번호'].isin(ids)]['몸무게']   # ids = 사이트의 13마리 · 정렬은 판다스가 알아서",
   's.quantile(0.5)   # Q2',
   'q1 = s.quantile(0.25)',
   'q3 = s.quantile(0.75)',
@@ -169,7 +170,7 @@ export const QUART_PYTHON = [
   'low = q1 - 1.5 * iqr',
   'high = q3 + 1.5 * iqr',
   '',
-  'df[(s < low) | (s > high)]   # 이상치인 행',
+  's[(s < low) | (s > high)]   # 이상치인 값',
 ];
 
 /** n개 값에서 비율 q의 자리(1부터 센 순번) — 13개면 0.25 → 4번째 */
@@ -235,12 +236,21 @@ export const BOX_PSEUDO = [
   { code: '울타리 밖의 값 → 점으로 따로 찍는다', note: '수염 밖에 홀로 찍힌 점이 이상치예요. 상자그림에서는 한눈에 보여요.' },
 ];
 export const BOX_PYTHON = [
-  "s = df['몸무게']",
+  "s = df[df['번호'].isin(ids)]['몸무게']   # ids = 사이트의 13마리 번호",
   'import matplotlib.pyplot as plt',
   '',
-  "plt.boxplot(s.dropna())   # 상자·선·수염·점을 한 번에",
+  'plt.boxplot(s)   # 상자·선·수염·점을 한 번에',
   'plt.show()',
 ];
+
+/**
+ * 345줄 전체 몸무게(빈칸 2개를 뺀 343개)의 상자그림 값 — Colab 02의 "345줄 전체" 셀과 같다.
+ * 사이트 그림(아델리 13마리)과 읽는 법은 같지만 값은 다르다는 것을 보여 줄 때 쓴다.
+ */
+export function allWeightStats() {
+  const values = practiceRecords().map((r) => r.몸무게).filter((v) => !isMissing(v));
+  return { n: values.length, ...quartiles(values) };
+}
 
 export function boxFrames(items = outlierValues()) {
   const values = items.map((it) => it.value);
@@ -259,6 +269,8 @@ export function boxFrames(items = outlierValues()) {
   show.outliers = true;
   snap({ line: 5, icon: '🚨', say: `수염 밖의 ${s.outliers.join(', ')}g은 점으로 따로 찍혀요. 이 점이 이상치예요!` });
   show.dots = false;
-  snap({ line: 5, icon: '🧾', say: '완성된 상자그림이에요. Colab에서 plt.boxplot()을 실행하면 이 모양이 나와요(세로로 서 있을 뿐이에요).' });
+  const all = allWeightStats();
+  snap({ line: 5, icon: '🧾', compare: all,
+    say: `완성된 상자그림이에요. Colab 02의 '13마리' 셀은 이 그림과 값이 똑같아요(세로로 서 있을 뿐이에요). '345줄 전체' 셀은 읽는 법은 같지만 값이 달라요: 상자 ${fmt(all.q1)} ~ ${fmt(all.q3)}, 선 ${fmt(all.q2)}, 수염 ${fmt(all.whiskerLow)} ~ ${fmt(all.whiskerHigh)}.` });
   return frames;
 }

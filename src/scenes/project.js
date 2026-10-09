@@ -3,6 +3,7 @@
  *
  * ✋ 할 일의 act: 낱말 (ctx.check)
  *   wrong-look        6-1 채점표의 ❌ 줄을 눌러 틀린 펭귄의 이웃 살펴보기
+ *   improve           6-1 🔧 고쳐 보고 다시 채점 — 다시 채점해 163번을 맞혔을 때
  *   flow-open · flow-all   6-2 단원 줄을 펼쳐 보기 · 1~6단원을 모두 펼쳐 보기
  *   topic · proj-check     6-4 주제 정하기(예시 고르기·직접 적기) · 체크리스트 체크
  * 6-3은 문제 상자의 사건(quiz · right:N), 6-4의 Colab 단추는 colab 사건으로 저절로 체크된다.
@@ -21,6 +22,7 @@ import { colabUrl, notebookUrl, DATA_CSV_URL } from '../app/links.js';
 import { QUIZ } from '../app/quiz.js';
 import { TABS } from '../app/lessons.js';
 import { unitProgress } from '../app/missions.js';
+import { FINAL_KEY } from '../app/record.js';
 
 const STYLE_ID = 'project-scenes-style';
 const CSS = String.raw`
@@ -40,6 +42,32 @@ const CSS = String.raw`
 .pj-why__tip { color: var(--text-muted); }
 .pj-nbs { display: flex; flex-wrap: wrap; gap: 4px; }
 .pj-nb { border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; background: var(--surface); font-size: var(--fs-xs); white-space: nowrap; }
+.pj-fixgo { align-self: flex-start; margin-top: 2px; border-color: var(--current); color: var(--current); font-weight: 700; }
+/* 🔧 고쳐 보고 다시 채점 */
+.pj-imp { display: flex; flex-direction: column; gap: 6px; }
+.pj-imp__ctl { display: flex; flex-wrap: wrap; gap: 6px var(--sp-2); align-items: center; font-size: var(--fs-sm); }
+.pj-imp__k { display: inline-flex; gap: 4px; align-items: center; font-family: var(--font-code); font-size: var(--fs-xs); font-weight: 700; }
+.pj-imp__tog[aria-pressed="true"] { font-weight: 700; }
+.pj-imp__body { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: stretch; }
+.pj-imp__grid { flex: 1 1 420px; min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.pj-imp__row { display: flex; align-items: center; gap: 4px; min-width: 0; padding: 2px 6px; font: inherit; font-size: var(--fs-xs); color: inherit; text-align: left;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); white-space: nowrap; }
+.pj-imp__row[data-ok="false"] { border-color: var(--warn); background: var(--warn-bg); }
+.pj-imp__row[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--current); }
+.pj-imp__id { font-weight: 700; }
+.pj-imp__mark { margin-left: auto; }
+.pj-imp__chg { border-radius: 999px; padding: 0 6px; font-weight: 700; }
+.pj-imp__chg.is-fix { background: var(--add-bg); color: var(--add); border: 1px solid var(--add); }
+.pj-imp__chg.is-break { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); }
+.pj-imp__score { flex: 0 0 132px; gap: 0 !important; padding: 4px var(--sp-2) !important; }
+.pj-imp__score .evalds__big { font-size: var(--fs-lg); }
+.pj-imp__note { margin: 0; font-size: var(--fs-sm) !important; line-height: 1.4; }
+.pj-imp__note.is-warn { color: var(--warn); font-weight: 700; }
+.pj-imp__note.is-add { color: var(--add); font-weight: 700; }
+.pj-imp__warn { margin: 0; font-size: var(--fs-xs) !important; color: var(--text-muted); }
+.pj-imp__tag:empty { display: none; }
+.pj-imp__tag { font-weight: 700; color: var(--current); }
+@media (max-width: 640px) { .pj-imp__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pj-imp__score { flex: 1 1 100%; } }
 
 /* ── 6-2 전체 흐름 정리 ── */
 .pj-intro { font-size: var(--fs-sm) !important; color: var(--text-muted); margin: 0; }
@@ -121,17 +149,22 @@ const evaluate = {
   stageHint: '테스트 펭귄의 진짜 종은 가린 채 맞혀요',
   dataTitle: '채점표',
   dataHint: '채점한 줄의 단추를 누르면 그 펭귄의 이웃 3마리를 볼 수 있어요',
-  rows: ['1fr', '1fr'],
+  rows: ['1fr', '1.1fr'],
   frames: () => EV.evalFrames(),
-  mount({ stage, data }, ctx) {
+  mount({ stage, data, dataTools }, ctx) {
     ensureProjectStyle();
     stage.classList.add('fit');
     const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 30 }) });
-    fill(stage, speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '테스트 펭귄')]), el('div.fit__grow', {}, sc.svg));
+    const modelTag = el('span.legend__item.pj-imp__tag');
+    fill(stage, speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '테스트 펭귄'), modelTag]), el('div.fit__grow', {}, sc.svg));
 
     let pick = null;      // 학생이 채점표에서 눌러 살펴보는 테스트 펭귄 번호 (장면을 넘기면 풀린다)
     let shown = -1;
     let last = null;
+    // 🔧 고쳐 보고 다시 채점 — 끝 장면에서만 켤 수 있다. null이면 꺼짐(처음 채점표)
+    let improve = null;   // { k, wing, scale }
+    let ipick = EV.TARGET_ID;
+    const base = EV.improveScore();
 
     function look(row) {
       pick = row.id;
@@ -139,25 +172,47 @@ const evaluate = {
       draw(last);
     }
 
-    function draw(v) {
-      const f = v.frame;
-      const graded = new Map(f.rows.map((r) => [r.id, r]));
-      const picked = pick !== null ? graded.get(pick) : null;
-      const focusId = picked ? picked.id : f.focus;
-      const t = f.test.find((x) => x.id === focusId);
-      const nbs = t ? rankNeighbors(f.train, t).slice(0, f.k) : [];
-      const nbIds = new Set(nbs.map((n) => n.id));
+    function setImprove(next) {
+      improve = next;
+      if (improve) {
+        const res = EV.improveScore(improve);
+        if (res.rows.find((r) => r.id === EV.TARGET_ID)?.ok) ctx?.check('improve');
+      }
+      draw(last);
+    }
 
-      // 그림 — 지금 보는 테스트 펭귄과 이웃 k마리를 잇고, 이웃에 번호를 붙인다
+    function drawTools(f) {
+      if (!dataTools) return;
+      if (!f.done) { fill(dataTools); return; }
+      fill(dataTools, el('div.seg', { role: 'group', 'aria-label': '채점표 보기 고르기' },
+        el('button', { type: 'button', 'aria-pressed': String(!improve), onclick: () => setImprove(null) }, '📋 처음 채점표'),
+        el('button', { type: 'button', 'aria-pressed': String(Boolean(improve)), onclick: () => { if (!improve) { ipick = EV.TARGET_ID; setImprove({ k: EV.K, wing: false, scale: false }); } } }, '🔧 고쳐 보고 다시 채점')));
+    }
+
+    /** 그림 — 지금 보는 테스트 펭귄과 이웃 k마리를 잇고, 이웃에 번호를 붙인다 */
+    function drawPlot(f, graded, focusId, nbs) {
+      const t = f.test.find((x) => x.id === focusId);
+      const nbIds = new Set(nbs.map((n) => n.id));
       sc.clear('points', 'links', 'over');
+      const at = (id) => f.train.find((p) => p.id === id);
       for (const n of nbs) {
-        sc.layers.links.append(s('line.link.link--nb', { x1: sc.sx(t.x), y1: sc.sy(t.y), x2: sc.sx(n.x), y2: sc.sy(n.y) }));
+        const p = at(n.id);
+        sc.layers.links.append(s('line.link.link--nb', { x1: sc.sx(t.x), y1: sc.sy(t.y), x2: sc.sx(p.x), y2: sc.sy(p.y) }));
       }
       for (const p of f.train) {
         const si = speciesIndex(p.label);
         sc.layers.points.append(marker(si, sc.sx(p.x), sc.sy(p.y), 5, { class: `pt sp${si}${t && !nbIds.has(p.id) ? ' is-dim' : ''}` }));
       }
-      for (const n of nbs) sc.layers.over.append(s('text.pt-label', { x: sc.sx(n.x) + 7, y: sc.sy(n.y) - 6 }, `${n.id}번`));
+      // 이웃 번호 — 가까이 붙은 이웃끼리 글자가 겹치지 않게 아래로 비켜 쓴다
+      const placed = [];
+      for (const n of nbs) {
+        const p = at(n.id);
+        const x = sc.sx(p.x) + 7;
+        let y = sc.sy(p.y) - 6;
+        while (placed.some((q) => Math.abs(q.x - x) < 36 && Math.abs(q.y - y) < 13)) y += 14;
+        placed.push({ x, y });
+        sc.layers.over.append(s('text.pt-label', { x, y }, `${n.id}번`));
+      }
       for (const q of f.test) {
         sc.layers.over.append(s('g', { transform: `translate(${sc.sx(q.x)},${sc.sy(q.y)})` }, starPath(q.id === focusId ? 12 : 9)));
         const r = graded.get(q.id);
@@ -167,6 +222,19 @@ const evaluate = {
           sc.layers.over.append(s('text.pt-label', { x: sc.sx(q.x) - 14, y: sc.sy(q.y) + 28 }, `${q.id}번`));
         }
       }
+    }
+
+    function draw(v) {
+      const f = v.frame;
+      drawTools(f);
+      if (improve && f.done) { drawImprove(f); return; }
+      modelTag.textContent = '';
+      const graded = new Map(f.rows.map((r) => [r.id, r]));
+      const picked = pick !== null ? graded.get(pick) : null;
+      const focusId = picked ? picked.id : f.focus;
+      const t = f.test.find((x) => x.id === focusId);
+      const nbs = t ? rankNeighbors(f.train, t).slice(0, f.k) : [];
+      drawPlot(f, graded, focusId, nbs);
 
       // 채점표 · 정확도 · 살펴보기
       const pct = f.accuracy !== null ? Math.round(f.accuracy * 100) : null;
@@ -194,6 +262,8 @@ const evaluate = {
         whyBox(f, picked, t, nbs, wrongLeft)));
     }
 
+    const fixBtn = () => el('button.pill.pill--sm.pj-fixgo', { type: 'button', onclick: () => { ipick = EV.TARGET_ID; setImprove({ k: EV.K, wing: false, scale: false }); } }, '🔧 고쳐 보고 다시 채점 →');
+
     function whyBox(f, picked, t, nbs, wrongLeft) {
       if (!picked) {
         return el('div.pj-why', {},
@@ -201,7 +271,7 @@ const evaluate = {
           f.rows.length === 0
             ? el('span', {}, '⏭ 한 단계를 눌러 채점을 시작해요. 채점한 줄은 단추를 눌러 이웃을 볼 수 있어요.')
             : f.done && wrongLeft
-              ? el('span', {}, '👆 채점표의 ', el('b', {}, '❌ 틀림'), ' 단추를 눌러 왜 틀렸는지 살펴보세요. 정확도만 보지 말고 틀린 예를 보는 습관!')
+              ? [el('span', {}, '👆 채점표의 ', el('b', {}, '❌ 틀림'), ' 단추를 눌러 왜 틀렸는지 살펴본 뒤, 고쳐서 다시 채점해 봐요.'), fixBtn()]
               : el('span', {}, '👆 채점한 줄의 단추(⭕/❌ 🔎)를 누르면 그 펭귄의 가까운 이웃 3마리와 투표를 볼 수 있어요.'));
       }
       const votes = {};
@@ -219,12 +289,67 @@ const evaluate = {
             nbs[0]?.label === t.label
               ? el('span.pj-why__tip', {}, `가장 가까운 ${nbs[0].id}번은 ${t.label}지만 ${f.k}마리 다수결에서 졌어요.`)
               : null,
+            f.done ? fixBtn() : null,
           ]);
+    }
+
+    /** 🔧 고쳐 보고 다시 채점 — 같은 훈련 18마리·테스트 6마리로 k·속성·크기 맞추기를 바꿔 다시 채점한다 */
+    function drawImprove(f) {
+      const res = EV.improveScore(improve);
+      const graded = new Map(res.rows.map((r) => [r.id, r]));
+      const was = new Map(base.rows.map((r) => [r.id, r]));
+      const cur = graded.get(ipick) ?? graded.get(EV.TARGET_ID);
+      drawPlot(f, graded, cur.id, cur.neighbors);
+      const aside = [res.wing ? '날개길이는 그림 밖 속성' : '', res.scale ? '그림 눈금은 원래 mm' : ''].filter(Boolean);
+      modelTag.textContent = `🔧 k=${res.k} · ${res.features.join('·')}${res.scale ? ' · 크기 맞춤' : ''}${aside.length ? ` (${aside.join(' · ')})` : ''}`;
+
+      const set = (patch) => setImprove({ ...improve, ...patch });
+      const toggle = (key, label) => el('button.pill.pill--sm.pj-imp__tog', {
+        type: 'button', 'aria-pressed': String(improve[key]), onclick: () => set({ [key]: !improve[key] }),
+      }, `${improve[key] ? '☑' : '☐'} ${label}`);
+      const pct = Math.round(res.accuracy * 100);
+      const basePct = Math.round(base.accuracy * 100);
+      const note = EV.improveNote(res, base);
+      const votes = {};
+      for (const n of cur.neighbors) votes[n.label] = (votes[n.label] ?? 0) + 1;
+
+      fill(data, el('div.pj-imp', {},
+        el('div.pj-imp__ctl', {},
+          el('strong', {}, '🔧 바꿔 보기'),
+          el('span.pj-imp__k', {}, 'k =', el('span.seg', { role: 'group', 'aria-label': '이웃 수 k' },
+            EV.IMPROVE_KS.map((k) => el('button', { type: 'button', 'aria-pressed': String(improve.k === k), onclick: () => set({ k }) }, String(k))))),
+          toggle('wing', '날개길이도 넣기'),
+          toggle('scale', '크기 맞추기(정규화)'),
+          el('button.pill.pill--sm', { type: 'button', onclick: () => setImprove({ k: EV.K, wing: false, scale: false }), title: '처음 모델(k=3 · 부리길이·부리깊이 · 크기 그대로)로' }, '↺ 처음 모델')),
+        el('div.pj-imp__body', {},
+          el('div.pj-imp__grid', {}, res.rows.map((r) => {
+            const si = speciesIndex(r.truth);
+            const b = was.get(r.id);
+            const change = b.ok === r.ok ? null : r.ok ? '고침!' : '새로 틀림';
+            return el('button.pj-imp__row', {
+              type: 'button', 'data-ok': String(r.ok), 'aria-pressed': String(r.id === cur.id),
+              title: `${r.id}번의 이웃 ${res.k}마리를 그림에서 보기`, onclick: () => { ipick = r.id; draw(last); },
+            },
+            el('span.pj-imp__id', {}, `${r.id}번`),
+            el(`span.legend__mark.sp${si}`, {}, SPECIES_SHAPE[si]),
+            el('span', {}, `${r.truth} → ${r.pred}`),
+            el('span.pj-imp__mark', {}, r.ok ? '⭕' : '❌'),
+            change ? el(`span.pj-imp__chg${r.ok ? '.is-fix' : '.is-break'}`, {}, change) : null);
+          })),
+          el('div.evalds__score.pj-imp__score', {},
+            el('div.calcgrid__k', {}, '다시 채점'),
+            el('div.evalds__big', {}, `${res.correct} ÷ ${res.total}`),
+            el('div.evalds__pct', {}, `정확도 ${pct}%`),
+            el('div.calcgrid__k', {}, `처음 ${base.correct} ÷ ${base.total} (${basePct}%)`))),
+        el('p.pj-imp__note', {}, `🔎 ${cur.id}번 이웃 ${res.k}마리: ${cur.neighbors.map((n) => `${n.id}번 ${n.label}`).join(' · ')} → ${Object.entries(votes).sort((a, b) => b[1] - a[1]).map(([k, c]) => `${k} ${c}표`).join(' · ')} → '${cur.pred}' ${cur.ok ? '⭕' : '❌'}`),
+        el(`p.pj-imp__note.is-${note.kind}`, {}, note.text),
+        el('p.pj-imp__warn', {}, `⚠️ 테스트가 ${res.total}마리뿐이라 한 마리만 달라져도 정확도가 약 17%p 바뀌어요. 어느 방법이 정말 나은지는 Colab 09에서 테스트 69줄로 확인해요.`)));
     }
 
     return {
       render(v) {
         if (v.index !== shown) { pick = null; shown = v.index; }
+        if (!v.frame.done) improve = null;
         last = v;
         draw(v);
       },
@@ -240,7 +365,7 @@ const FLOW = {
   inspect: { did: '결측치 20칸(12줄)과 이상치(8200g) 하나, 겹친 행 하나를 찾았어요.', pseudo: '칸마다 비었나? → True 세기 → 위치 모으기 · Q1/Q3/IQR → 울타리 밖', py: 'isnull() · sum() · any(axis=1) · quantile() · boxplot()' },
   prep: { did: '핵심 속성 4개를 고르고, 지우고, 채우고, 글자를 숫자로 바꿨어요.', pseudo: '속성 고르기 · 행/열 지우기 · 평균/최빈값으로 채우기 · 바꿈표로 바꾸기', py: 'drop() · drop_duplicates() · dropna() · fillna() · map()' },
   ready: { did: '표를 합치고, X와 y, 훈련 80%와 테스트 20%로 나눴어요.', pseudo: '아래로 잇기 · 열쇠로 짝 찾기 · 섞기 → 앞 80% / 나머지 20%', py: 'concat() · merge() · train_test_split()' },
-  ml: { did: '분류(k-최근접 이웃·트리), 예측(선형 회귀), 군집(k-평균)을 배웠어요.', pseudo: '거리·다수결 / 질문으로 나누기 / 평균에서 벗어난 정도 / 배정↔이동', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
+  ml: { did: '분류(k-최근접 이웃·트리), 회귀(선형 회귀), 군집(k-평균)을 배웠어요.', pseudo: '거리·다수결 / 질문으로 나누기 / 평균에서 벗어난 정도 / 배정↔이동', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
   project: { did: '처음 보는 테스트 데이터로 정확도를 쟀어요(화면 6마리 중 5마리 83% · Colab 69줄 중 66줄 95.7%).', pseudo: '테스트마다 예측 → 정답과 견주기 → 맞힌수 ÷ 전체', py: 'predict() · accuracy_score() · mean_squared_error()' },
 };
 
@@ -318,7 +443,7 @@ function summary(root, ctx) {
     el('div.cards', {},
       el('div.card.card--current', {}, el('div.card__title', {}, '🔁 데이터가 바뀐 모습'), el('p.card__text', {}, 'HTML 글자 → 345줄 표(빈칸·이상치·겹친 행) → 깨끗한 341줄 표 → X(속성 4개)·y(종) → 훈련 272줄 · 테스트 69줄 → 모델 → 예측')),
       el('div.card.card--result', {}, el('div.card__title', {}, '🧠 자료구조가 한 일'), el('p.card__text', {}, '리스트(행목록·거리목록·위치목록), 사전(세기표·바꿈표), 큐(트리의 할일), 표(데이터프레임)·점수표(Q). 알고리즘은 결국 자료구조를 바꿔 가는 절차예요.')),
-      el('div.card.card--add', {}, el('div.card__title', {}, '✅ 기억할 것 세 가지'), el('p.card__text', {}, '① 데이터가 나쁘면 결과도 나쁘다. ② 테스트 데이터는 학습에 쓰지 않는다. ③ 알고리즘은 목적(분류·예측·군집)에 맞춰 고른다.')))));
+      el('div.card.card--add', {}, el('div.card__title', {}, '✅ 기억할 것 세 가지'), el('p.card__text', {}, '① 데이터가 나쁘면 결과도 나쁘다. ② 테스트 데이터는 학습에 쓰지 않는다. ③ 알고리즘은 목적(분류·회귀·군집)에 맞춰 고른다.')))));
   draw();
   const unsub = ctx.progress.subscribe(() => draw());
   return { destroy: unsub };
@@ -326,7 +451,7 @@ function summary(root, ctx) {
 
 /* ═════════════ 6-3 이해 확인 ═════════════ */
 
-const QUIZ_KEY = 'final';
+const QUIZ_KEY = FINAL_KEY;
 
 function quiz(root, ctx) {
   ensureProjectStyle();
@@ -357,6 +482,7 @@ function quiz(root, ctx) {
     fill(box, quizBox(questions, {
       title: '📝 수업 전체 이해 확인',
       saved: ctx.progress.answers(QUIZ_KEY),
+      firsts: ctx.progress.firsts(QUIZ_KEY),
       onPick: (qi, oi) => { ctx.progress.answer(QUIZ_KEY, qi, oi); drawTally(); },
       onReview: (ref) => ctx.go(ref.tab, ref.page, ref.sub),
     }));
@@ -370,7 +496,7 @@ function quiz(root, ctx) {
 
   fill(root, el('div.read.pj-final', {},
     el('div.pj-quizhead', {},
-      el('p', {}, '1~5단원에서 1~3문제씩 골랐어요. 틀리면 ', el('b', {}, '[📖 그 쪽 다시 보기 →]'), '로 그 개념을 배운 쪽에 다녀와서 다시 골라 보세요. 고른 답은 이 브라우저에 저장돼요.'),
+      el('p', {}, '1~5단원에서 2문제씩 골랐어요. 처음 고른 답이 기록되니(처음에 맞힘) 찍지 말고 생각해서 골라요. 틀리면 ', el('b', {}, '[📖 그 쪽 다시 보기 →]'), '로 그 개념을 배운 쪽에 다녀와서 다시 골라 보세요. 고른 답은 이 브라우저에 저장돼요.'),
       el('button.pill.pill--sm', { type: 'button', onclick: reset }, '🔄 처음부터 다시 풀기')),
     tally,
     box));
@@ -383,13 +509,13 @@ function quiz(root, ctx) {
 
 /** go: [탭, 쪽, 하위탭] — "다시 보기" 단추가 데려갈 곳 */
 const STEPS = [
-  { id: 'problem', icon: '🎯', name: '문제 정하기', todo: '무엇을 맞힐까(정답 y)? 분류·예측·군집 중 무엇인가? 모둠이면 역할(데이터·코드·발표)도 나눠요.', py: '', go: ['ml', 'purpose', 'concept'] },
+  { id: 'problem', icon: '🎯', name: '문제 정하기', todo: '무엇을 맞힐까(정답 y)? 분류·회귀·군집 중 무엇인가? 모둠이면 역할(데이터·코드·발표)도 나눠요.', py: '', go: ['ml', 'purpose', 'concept'] },
   { id: 'collect', icon: '🕸', name: '데이터 모으기', todo: '공개 데이터를 내려받거나 크롤링해요. 출처와 이용 조건을 적어 둬요.', py: 'pd.read_csv · requests · BeautifulSoup', go: ['collect'] },
   { id: 'inspect', icon: '🔍', name: '데이터 살펴보기', todo: '행·열 수, 결측치, 이상치, 겹친 행을 확인해요. 그래프로 그려 봐요.', py: 'shape · isnull().sum() · duplicated() · describe() · boxplot', go: ['inspect'] },
   { id: 'prep', icon: '🧹', name: '전처리', todo: '핵심 속성 고르기, 지우기·채우기, 글자를 숫자로.', py: 'drop_duplicates · dropna · fillna · map', go: ['prep'] },
   { id: 'split', icon: '🧩', name: '나누기', todo: 'X와 y, 훈련과 테스트로 나눠요.', py: 'train_test_split', go: ['ready'] },
   { id: 'train', icon: '🤖', name: '모델 학습', todo: '목적에 맞는 알고리즘을 골라 fit() 해요. 두 가지 이상 견줘 보면 더 좋아요.', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans', go: ['ml'] },
-  { id: 'eval', icon: '📊', name: '평가와 개선', todo: '테스트 데이터로 정확도(분류)·오차(예측)를 재고, 틀린 예를 살펴 고쳐 봐요.', py: 'accuracy_score · mean_squared_error', go: ['project', 'eval'] },
+  { id: 'eval', icon: '📊', name: '평가와 개선', todo: '테스트 데이터로 정확도(분류)·오차(회귀)를 재고, 틀린 예를 살펴 고쳐 봐요.', py: 'accuracy_score · mean_squared_error', go: ['project', 'eval'] },
   { id: 'impact', icon: '⚖️', name: '사회적 영향 점검', todo: '개인정보가 들어 있지 않나? 데이터가 한쪽으로 치우치지(편향) 않았나? 틀린 예측으로 피해를 보는 사람은 없나?', py: '', go: ['collect', 'manners'] },
   { id: 'present', icon: '🎤', name: '발표', todo: '문제 → 데이터 → 전처리 근거 → 모델 선택 이유 → 결과 → 한계와 개선점 순서로.', py: '', go: null },
 ];
@@ -398,15 +524,15 @@ const OLD_ORDER = ['problem', 'collect', 'inspect', 'prep', 'split', 'train', 'e
 
 const KINDS = {
   분류: { what: '정해진 무리 중 하나를 골라요(종·품종)', algo: 'k-최근접 이웃 · 의사결정 트리', py: 'KNeighborsClassifier · DecisionTreeClassifier', go: ['ml', 'idea', 'knn'] },
-  예측: { what: '숫자를 맞혀요(몸무게·기온)', algo: '선형 회귀', py: 'LinearRegression', go: ['ml', 'idea', 'linreg'] },
+  회귀: { what: '숫자를 내놓는 예측이에요(몸무게·기온)', algo: '선형 회귀', py: 'LinearRegression', go: ['ml', 'idea', 'linreg'] },
   군집: { what: '정답 없이 비슷한 것끼리 묶어요', algo: 'k-평균', py: 'KMeans', go: ['ml', 'idea', 'kmeans'] },
 };
 
 const TOPICS = [
   { icon: '🌸', title: '붓꽃 품종 분류', kind: '분류', data: 'scikit-learn 내장 데이터 load_iris()', algo: 'k-최근접 이웃 · 의사결정 트리' },
   { icon: '🍷', title: '와인 종류 분류', kind: '분류', data: 'scikit-learn 내장 데이터 load_wine()', algo: '의사결정 트리 · k-최근접 이웃' },
-  { icon: '🌡', title: '우리 동네 기온 예측', kind: '예측', data: '기상자료개방포털(data.kma.go.kr)의 일별 기온 CSV', algo: '선형 회귀' },
-  { icon: '🚲', title: '공공자전거 대여량 예측', kind: '예측', data: '서울 열린데이터광장(data.seoul.go.kr)·공공데이터포털(data.go.kr)', algo: '선형 회귀 · 의사결정 트리' },
+  { icon: '🌡', title: '우리 동네 기온 예측', kind: '회귀', data: '기상자료개방포털(data.kma.go.kr)의 일별 기온 CSV', algo: '선형 회귀' },
+  { icon: '🚲', title: '공공자전거 대여량 예측', kind: '회귀', data: '서울 열린데이터광장(data.seoul.go.kr)·공공데이터포털(data.go.kr)', algo: '선형 회귀 · 의사결정 트리' },
   { icon: '🛒', title: '매점 판매 기록으로 상품 묶기', kind: '군집', data: '학교 매점·학급 설문 데이터(개인정보 없이)', algo: 'k-평균' },
   { icon: '🐧', title: '펭귄 성별 맞히기', kind: '분류', data: '이 수업의 펭귄 데이터 (정답: 성별)', algo: 'k-최근접 이웃 · 의사결정 트리' },
 ];
@@ -426,6 +552,7 @@ function project(root, ctx) {
   const checked = {};
   for (const [k, v] of Object.entries(readJSON(CHECK_KEY))) checked[/^\d+$/.test(k) ? OLD_ORDER[Number(k)] : k] = Boolean(v);
   const plan = { topic: '', kind: null, ...readJSON(PLAN_KEY) };
+  if (plan.kind === '예측') plan.kind = '회귀';   // 예전 판은 회귀를 '예측'이라 불렀다
   const saveChecks = () => writeJSON(CHECK_KEY, checked);
   const savePlan = () => writeJSON(PLAN_KEY, plan);
   const goBtn = (go, label) => el('button.pill.pill--sm.projstep__go', { type: 'button', onclick: () => ctx.go(...go) }, label);
@@ -471,7 +598,7 @@ function project(root, ctx) {
         drawTopics();
       },
     },
-    el('span.card__title', {}, `${t.icon} ${t.title}`, ' ', el(`span.tag${t.kind === '분류' ? '.tag--current' : t.kind === '예측' ? '.tag--result' : '.tag--add'}`, {}, t.kind)),
+    el('span.card__title', {}, `${t.icon} ${t.title}`, ' ', el(`span.tag${t.kind === '분류' ? '.tag--current' : t.kind === '회귀' ? '.tag--result' : '.tag--add'}`, {}, t.kind)),
     el('span.card__text', {}, '📂 ', t.data), el('span.card__meta', {}, `🤖 ${t.algo}`))));
   }
 

@@ -5,7 +5,7 @@
  *   data/*.csv       수업용 데이터 4개 (연습 원본 · 전처리 끝난 것 · 측정표 · 판정표)
  *   notebooks/*.ipynb Colab 실습 노트북 9개 (src/app/notebooks.js가 원본)
  *   docs/OBJECTIVES.md 교사용 학습 목표표 (src/app/course/*.js가 원본)
- *   docs/TEACHER.md   차시표 부분만 (src/app/plan.js가 원본 — 표시 주석 사이를 바꾼다)
+ *   docs/TEACHER.md   차시표·Colab 점검표 부분만 (src/app/plan.js · notebooks.js가 원본 — 표시 주석 사이를 바꾼다)
  *
  * 원본(src/core/data, src/app/notebooks.js)을 고치면 이 스크립트를 다시 돌려 파일을 맞춘다.
  * test/build.test.js가 디스크의 파일과 지금 원본으로 만든 결과가 같은지 확인한다.
@@ -19,7 +19,7 @@ import { shuffle } from '../src/core/random.js';
 import { NOTEBOOKS } from '../src/app/notebooks.js';
 import { cleanRecords } from '../src/core/data/clean.js';
 import { SITE_URL, REPO_URL } from '../src/app/links.js';
-import { objectivesMarkdown, planMarkdown } from './objectives.mjs';
+import { objectivesMarkdown, planMarkdown, colabChecksMarkdown } from './objectives.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -212,14 +212,20 @@ export function notebookFiles() {
   return Object.fromEntries(NOTEBOOKS.map((nb) => [`notebooks/${nb.id}.ipynb`, notebookJson(nb)]));
 }
 
-const PLAN_START = '<!-- 차시표: npm run build가 src/app/plan.js에서 만든다 -->';
-const PLAN_END = '<!-- 차시표 끝 -->';
+/** docs/TEACHER.md에서 표시 주석 두 개 사이를 만든 글로 바꾼다 */
+const BLOCKS = [
+  ['<!-- 차시표: npm run build가 src/app/plan.js에서 만든다 -->', '<!-- 차시표 끝 -->', planMarkdown],
+  ['<!-- Colab 점검표: npm run build가 src/app/notebooks.js의 check에서 만든다 -->', '<!-- Colab 점검표 끝 -->', colabChecksMarkdown],
+];
 export function teacherDoc() {
-  const doc = readFileSync(join(ROOT, 'docs/TEACHER.md'), 'utf8');
-  const a = doc.indexOf(PLAN_START);
-  const b = doc.indexOf(PLAN_END);
-  if (a < 0 || b < a) throw new Error('docs/TEACHER.md에 차시표 표시 주석이 없어요');
-  return `${doc.slice(0, a + PLAN_START.length)}\n${planMarkdown()}\n${doc.slice(b)}`;
+  let doc = readFileSync(join(ROOT, 'docs/TEACHER.md'), 'utf8');
+  for (const [start, end, make] of BLOCKS) {
+    const a = doc.indexOf(start);
+    const b = doc.indexOf(end);
+    if (a < 0 || b < a) throw new Error(`docs/TEACHER.md에 표시 주석이 없어요: ${start}`);
+    doc = `${doc.slice(0, a + start.length)}\n${make()}\n${doc.slice(b)}`;
+  }
+  return doc;
 }
 
 export function allFiles() {

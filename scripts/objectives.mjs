@@ -3,7 +3,8 @@
  * `npm run build`가 함께 만들고, 테스트가 디스크의 파일이 지금 내용과 같은지 확인한다.
  */
 import { TABS, unitPages } from '../src/app/lessons.js';
-import { periodRows, pageRange } from '../src/app/plan.js';
+import { periodRows, pageRange, coursePages } from '../src/app/plan.js';
+import { NOTEBOOKS } from '../src/app/notebooks.js';
 
 const cell = (t) => String(t ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
@@ -15,6 +16,7 @@ function unitSection(tab) {
     head,
     '',
     `- **생각 열기**: ${u.question}`,
+    ...(u.hook ? [`- **표지의 생각 고르기**: ${u.hook.q} — 정답: **${u.hook.options[u.hook.answer]}** (${u.hook.reveal})`] : []),
     `- **핵심 아이디어**: ${u.bigIdea}`,
     `- **데이터**: ${u.before} → ${u.after}`,
     `- **시간**: 약 ${u.minutes}분 · ${pages.length}쪽`,
@@ -29,7 +31,7 @@ function unitSection(tab) {
     ...pages.map((it) => {
       const p = it.page;
       const sub = it.sub && it.sub.id !== 'review' && !p.auto ? `[${it.sub.name}] ` : '';
-      const ms = (p.missions ?? []).map((m) => (m.check === 'ask' && p.ask ? `❓ ${p.ask.q}` : m.text));
+      const ms = (p.missions ?? []).map((m) => (m.check === 'ask' && p.ask ? `❓ ${p.ask.q} → **${p.ask.options[p.ask.answer]}**` : m.text));
       return `| ${it.label} | ${cell(sub + p.title)}${p.level === 'challenge' ? ' 🔥' : ''}${p.level === 'optional' ? ' ➕' : ''} | ${cell(p.objective)} | ${cell((p.terms ?? []).join(', '))} | ${ms.map(cell).join('<br>')} | ${p.minutes ?? ''}분 |`;
     }),
     '',
@@ -59,6 +61,18 @@ export function planMarkdown() {
   ].join('\n');
 }
 
+/** Colab 점검표 — 노트북마다 선생님께 보여 줄 결과(notebooks.js의 check). docs/TEACHER.md 4장에 들어간다 */
+export function colabChecksMarkdown() {
+  const pages = coursePages();
+  const where = (id) => pages.find((it) => it.page.scene === `python:${id}`)?.key
+    ?? pages.find((it) => it.tab.id === 'project' && it.page.id === 'guide')?.key ?? '';
+  return [
+    '| 노트북 | 쪽 | 선생님께 보여 줄 결과 (점검표 세 번째 줄) |',
+    '|---|---|---|',
+    ...NOTEBOOKS.map((nb) => `| ${nb.id.slice(0, 2)} ${cell(nb.title)} | ${where(nb.id)} | ${cell(nb.check)} |`),
+  ].join('\n');
+}
+
 export function objectivesMarkdown() {
   return [
     '# 학습 목표표 (교사용)',
@@ -67,7 +81,7 @@ export function objectivesMarkdown() {
     '>',
     '> 쪽마다 🎯 학습 목표(~할 수 있다)·학습 요소·✋ 할 일이 있고, 학생이 할 일을 실제로 하면 화면에서 저절로 ✅가 됩니다.',
     '> 단원마다 맨 앞에 🧭 표지(생각 열기·할 수 있어요·쪽 목록), 맨 뒤에 📝 정리(1분 요약·스스로 점검·확인 문제)가 붙습니다.',
-    '> 🔥 = 도전(수학이 많은 쪽), ➕ = 더 알아보기(선택).',
+    '> 🔥 = 도전(수학이 많은 쪽), ➕ = 더 알아보기(선택). ❓ 확인 문제 뒤의 **굵은 글씨**가 정답입니다(수업 중 확인용).',
     '',
     '| 단원 | 동사 | 생각 열기 | 쪽 | 시간 |',
     '|---|---|---|---|---|',
