@@ -90,7 +90,7 @@ function pager(p, n) {
 
 const FOOT = `<footer>
   <p>데이터 출처: palmerpenguins (Horst, Hill &amp; Gorman, 2020) · Palmer Station LTER, Dr. Kristen Gorman · 라이선스 CC0.<br>
-  이 사이트는 <a href="../">「펭귄 데이터로 배우는 인공지능」</a> 수업에서 크롤링을 연습하려고 만든 곳이에요. 수업에 쓰려고 일부 값을 일부러 바꿔 두었어요(<a href="index.html#traps">자세히</a>).</p>
+  이 사이트는 <a href="../">「펭귄 데이터로 배우는 인공지능」</a> 수업의 크롤링 연습용으로 만든 곳이에요. 수업에서 쓸 수 있게 몇몇 값은 일부러 바꿔 두었어요(<a href="index.html#traps">자세히</a>).</p>
 </footer>`;
 
 function page(p, rows, n) {
@@ -143,7 +143,7 @@ function practiceIndex(pages) {
 <body>
 <header>
   <h1>🐧 남극 펭귄 관측소</h1>
-  <p>웹 크롤링을 연습하려고 만든 사이트예요. 마음껏 긁어 가도 괜찮지만, 요청은 천천히 보내 주세요!</p>
+  <p>웹 크롤링을 연습하려고 만든 사이트예요. 마음껏 모아 가도 괜찮지만, 요청은 천천히 보내 주세요!</p>
 </header>
 <main>
   <p class="note">펭귄 관측 기록 <b>모두 ${total}줄</b>이 <b>${pages.length}쪽</b>에 나뉘어 실려 있어요. 쪽마다 <code>&lt;table id="penguins"&gt;</code> 표가 하나씩 있어요.<br>

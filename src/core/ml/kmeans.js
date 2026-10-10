@@ -11,9 +11,9 @@ import { distance, mean, round, fmt } from '../stats.js';
 export const PSEUDO = [
   { code: '중심 k개 ← 데이터에서 아무 점 k개', note: '처음 중심은 아무렇게나 골라요. 어디서 시작하느냐에 따라 결과가 달라질 수 있어요.' },
   { code: '반복:', note: '중심이 자리를 잡을 때까지 두 단계를 되풀이해요.' },
-  { code: '    각 점을 가장 가까운 중심의 묶음에 넣는다', note: '① 배정 — 점마다 k개 중심과의 거리를 재고 가장 가까운 쪽으로.' },
-  { code: '    각 중심을 그 묶음 점들의 평균 위치로 옮긴다', note: '② 이동 — 묶음의 한가운데(평균)로 중심을 옮겨요.' },
-  { code: '    만약 중심이 움직이지 않았으면 → 멈춘다', note: '배정도 중심도 더 바뀌지 않으면 끝! 묶음이 완성돼요.' },
+  { code: '    각 점을 가장 가까운 중심의 묶음에 넣는다', note: '① 배정: 점마다 중심 k개까지의 거리를 재고, 가장 가까운 중심의 묶음에 넣어요.' },
+  { code: '    각 중심을 그 묶음 점들의 평균 위치로 옮긴다', note: '② 이동: 중심을 묶음의 한가운데(평균)로 옮겨요.' },
+  { code: '    만약 중심이 움직이지 않았으면 → 멈춘다', note: '배정도 중심도 더는 바뀌지 않으면 끝나요. 묶음이 완성된 거예요.' },
 ];
 
 export const PYTHON = [
@@ -80,7 +80,7 @@ export function kmeansFrames({ points = kmeansPoints(), initIds = KMEANS_INIT_ID
         const { j, d } = nearest(p, centers);
         assign[i] = j;
         snap({ line: 3, icon: '📌', iter, focus: p.id,
-          say: `${p.id}번 점 → 가장 가까운 중심은 묶음 ${j + 1} (거리 ${fmt(d)})` });
+          say: `${p.id}번 점은 묶음 ${j + 1}의 중심과 가장 가까워요(거리 ${fmt(d)}).` });
       });
     } else {
       points.forEach((p, i) => {
@@ -105,7 +105,7 @@ export function kmeansFrames({ points = kmeansPoints(), initIds = KMEANS_INIT_ID
       say: `중심을 묶음의 평균 위치로 옮겼어요: ${centers.map((c, j) => `묶음 ${j + 1}(${counts[j]}마리) → (${fmt(c.x)}, ${fmt(c.y)})`).join(' · ')}` });
     if (!moved) {
       snap({ line: 5, icon: '🏁', iter, done: true,
-        say: `중심이 더 이상 움직이지 않아요 → ${iter}번 만에 멈췄어요. 정답 없이도 펭귄이 세 묶음으로 나뉘었어요!` });
+        say: `중심이 더는 움직이지 않으니 ${iter}번 만에 멈춰요. 정답을 보지 않고도 펭귄이 세 묶음으로 나뉘었어요.` });
       break;
     }
     snap({ line: 5, icon: '↩️', iter, say: '중심이 움직였으니 한 번 더 되풀이해요.' });

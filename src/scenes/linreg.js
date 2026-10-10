@@ -117,14 +117,14 @@ function linregExplore(root, ctx) {
         el('label.lrx__slider', { title: '절편 b는 날개 0mm일 때의 높이라 그래프 밖에 있어요. 그래서 날개 200mm일 때의 높이로 b를 조절해요.' }, '절편 b ', lb, inH, lh),
         speciesLegend()),
       el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '빨간 세로선 = 오차(실제 몸무게 − 직선의 예측). 오차를 제곱해 평균 낸 오차 점수(MSE)가 작을수록 좋은 직선이에요. 절편 b는 날개 0mm일 때의 높이라 그래프 밖에 있어서, 손잡이는 날개 200mm일 때의 높이로 b를 바꿔요.')),
+      el('p.panel__hint', {}, '빨간 세로선은 오차(실제 몸무게 − 직선의 예측)예요. 오차를 제곱해 평균 낸 오차 점수(MSE)가 작을수록 좋은 직선이지요. 절편 b는 날개가 0mm일 때의 높이라서 그래프 밖에 있어요. 그래서 손잡이로는 날개 200mm일 때의 높이를 움직여 b를 바꿔요.')),
     el('div.knnx__side', {},
       readout,
       el('div.lrx__btns', {}, goBtn,
         el('button.pill', { type: 'button', onclick: () => { stop(); w = best.w; h = best.w * PIVOT + best.b; draw(true); ctx?.check('lr-best'); } }, label('📐 가장 좋은 직선 보기', '최소제곱법')),
         el('button.pill', { type: 'button', onclick: () => { stop(); w = 20; h = 3600; history.length = 0; draw(true); } }, '↺ 처음으로')),
       spark,
-      el('div.callout', {}, '💡 "학습" = 데이터를 보고 w와 b를 정하는 일이에요. 컴퓨터는 오차 점수가 줄어드는 쪽으로 w, b를 조금씩 고치며(경사 하강법) 가장 좋은 직선에 다가가요. 가장 좋은 직선은 공식 한 번으로도 구할 수 있어요(최소제곱법 — 다음 쪽).'))));
+      el('div.callout', {}, '💡 여기서 "학습"은 데이터를 보고 w와 b를 정하는 일이에요. 컴퓨터는 오차 점수가 줄어드는 쪽으로 w와 b를 조금씩 고쳐 가며(경사 하강법) 가장 좋은 직선에 다가가요. 가장 좋은 직선은 공식 한 번으로 구할 수도 있는데, 이 방법(최소제곱법)은 다음 쪽에서 배워요.'))));
   draw(true);
   return { destroy: stop };
 }

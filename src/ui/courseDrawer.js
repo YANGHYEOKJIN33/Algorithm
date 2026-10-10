@@ -75,11 +75,11 @@ export function createCourseDrawer(store, progress, { onReset } = {}) {
       recordButton(progress),
       el('button.pill.pill--sm', {
         type: 'button', title: '이 브라우저에 저장된 진도(✅)를 모두 지워요',
-        onclick: () => { if (confirm('📋 내 학습 기록은 먼저 복사해 두었나요?\n진도(✅ 표시)와 문제 답은 물론, 처음 고른 답 기록까지 모두 지워지고 되돌릴 수 없어요.')) { progress.reset(); onReset?.(); render(); } },
+        onclick: () => { if (confirm('📋 내 학습 기록은 먼저 복사해 두었나요?\n진도(✅ 표시)와 문제 답, 처음 고른 답 기록까지 모두 지워져요. 한번 지우면 되돌릴 수 없어요.')) { progress.reset(); onReset?.(); render(); } },
       }, '↺ 진도 초기화'),
       closeBtn),
     el('div.modal__scroll', {}, list),
-    el('p.modal__note', {}, '진도는 지금 쓰는 컴퓨터의 이 브라우저에만 저장돼요. 한 쪽의 ✋ 할 일을 모두 하면 그 쪽에 ✓가 붙어요. "처음에 맞힘"은 답을 다시 고르기 전, 처음 고른 답만으로 센 개수예요.'));
+    el('p.modal__note', {}, '진도는 지금 쓰는 컴퓨터의 이 브라우저에만 저장돼요. 어떤 쪽의 ✋ 할 일을 모두 하면 그 쪽에 ✓가 붙어요. "처음에 맞힘"은 답을 고쳐 고르기 전, 맨 처음 고른 답으로만 센 개수예요.'));
   document.body.append(backdrop);
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
   document.addEventListener('keydown', (e) => { if (!backdrop.hidden && e.key === 'Escape') close(); });

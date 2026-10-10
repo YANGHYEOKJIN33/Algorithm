@@ -12,11 +12,11 @@ import { mean, fmt } from '../stats.js';
 export const PSEUDO = [
   { code: 'x̄ ← 날개길이의 평균,  ȳ ← 몸무게의 평균', note: '먼저 가운데(평균) 점을 찾아요. 가장 좋은 직선은 반드시 이 점을 지나요.' },
   { code: '반복: 각 펭귄 i', note: '펭귄마다 평균에서 얼마나 떨어져 있는지 재요.' },
-  { code: '    dx ← xᵢ − x̄,   dy ← yᵢ − ȳ', note: '가로(날개)로 얼마나, 세로(몸무게)로 얼마나 벗어났나. 같은 방향이면 dx·dy가 양수예요.' },
-  { code: '    위합 ← 위합 + dx×dy,   아래합 ← 아래합 + dx×dx', note: '날개가 길수록 무거운 경향이 강하면 위합이 크게 쌓여요.' },
-  { code: '기울기 w ← 위합 ÷ 아래합', note: '날개가 1mm 길어질 때 몸무게가 평균 몇 g 늘어나는지예요.' },
+  { code: '    dx ← xᵢ − x̄,   dy ← yᵢ − ȳ', note: '평균에서 가로(날개)와 세로(몸무게)로 얼마나 벗어났는지 재요. dx와 dy의 부호가 같으면 dx·dy가 양수예요.' },
+  { code: '    위합 ← 위합 + dx×dy,   아래합 ← 아래합 + dx×dx', note: '"날개가 길면 무겁다"는 경향이 강할수록 위합이 크게 쌓여요.' },
+  { code: '기울기 w ← 위합 ÷ 아래합', note: '날개가 1mm 길어질 때 몸무게가 평균 몇 g 늘어나는지를 나타내요.' },
   { code: '절편 b ← ȳ − w × x̄', note: '직선이 평균 점(x̄, ȳ)을 지나도록 높이를 맞춰요.' },
-  { code: '예측: 몸무게 = w × 날개길이 + b', note: '학습 끝! 이제 날개길이만 재면 몸무게를 어림할 수 있어요.' },
+  { code: '예측: 몸무게 = w × 날개길이 + b', note: '학습이 끝났어요. 이제 날개길이만 재면 몸무게를 어림할 수 있어요.' },
 ];
 
 export const PYTHON = [
@@ -82,7 +82,7 @@ export function linregFrames({ points = linregData(), qx = LINREG_QUERY_X } = {}
     points, rows: rows.map((r) => ({ ...r })), num, den, w, b, xb: null, yb: null, focus: null, line: null, pred: null, ...extra,
   });
 
-  snap({ line: 1, icon: '📍', say: `펭귄 ${points.length}마리의 날개길이(가로)와 몸무게(세로)예요. 오른쪽 위로 갈수록 무거워 보여요.`, xb: null });
+  snap({ line: 1, icon: '📍', say: `펭귄 ${points.length}마리의 날개길이를 가로에, 몸무게를 세로에 찍었어요. 오른쪽 위로 갈수록 무거워 보이지요.`, xb: null });
   snap({ line: 1, icon: '➕', xb, yb, say: `평균 점을 찾았어요: x̄ = ${fmt(xb)}mm, ȳ = ${fmt(yb)}g. 십자선이 만나는 곳이에요.` });
   for (const p of points) {
     const dx = p.x - xb;
@@ -93,14 +93,14 @@ export function linregFrames({ points = linregData(), qx = LINREG_QUERY_X } = {}
     den += dx * dx;
     rows.push({ id: p.id, x: p.x, y: p.y, dx, dy, dxdy: dx * dy, dx2: dx * dx });
     snap({ line: 4, icon: '🧮', xb, yb, focus: p.id,
-      say: `dx×dy = ${fmt(dx * dy)} ${dx * dy >= 0 ? '(같은 방향 → 양수)' : '(반대 방향 → 음수)'} — 위합 ${fmt(num)}, 아래합 ${fmt(den)}` });
+      say: `dx×dy = ${fmt(dx * dy)} ${dx * dy >= 0 ? '(같은 방향이라 양수)' : '(반대 방향이라 음수)'}. 위합 ${fmt(num)}, 아래합 ${fmt(den)}까지 쌓였어요.` });
   }
   w = num / den;
-  snap({ line: 5, icon: '📐', xb, yb, say: `기울기 w = ${fmt(num)} ÷ ${fmt(den)} = ${fmt(w)} → 날개가 1mm 길면 몸무게가 약 ${fmt(w, 1)}g 늘어요.` });
+  snap({ line: 5, icon: '📐', xb, yb, say: `기울기 w = ${fmt(num)} ÷ ${fmt(den)} = ${fmt(w)}. 날개가 1mm 길어지면 몸무게가 약 ${fmt(w, 1)}g 늘어난다는 뜻이에요.` });
   b = yb - w * xb;
-  snap({ line: 6, icon: '📏', xb, yb, say: `절편 b = ${fmt(yb)} − ${fmt(w)} × ${fmt(xb)} = ${fmt(b)}. 직선이 평균 점을 지나요.` });
+  snap({ line: 6, icon: '📏', xb, yb, say: `절편 b = ${fmt(yb)} − ${fmt(w)} × ${fmt(xb)} = ${fmt(b)}. 이렇게 하면 직선이 평균 점을 지나요.` });
   const pred = w * qx + b;
   snap({ line: 7, icon: '🎯', xb, yb, pred: { x: qx, y: pred }, done: true,
-    say: `완성: 몸무게 = ${fmt(w)} × 날개길이 ${b < 0 ? '−' : '+'} ${fmt(Math.abs(b))}. 날개길이 ${qx}mm인 펭귄은 약 ${Math.round(pred)}g으로 예측해요.` });
+    say: `직선이 완성됐어요: 몸무게 = ${fmt(w)} × 날개길이 ${b < 0 ? '−' : '+'} ${fmt(Math.abs(b))}. 날개길이가 ${qx}mm인 펭귄은 약 ${Math.round(pred)}g으로 예측해요.` });
   return frames;
 }

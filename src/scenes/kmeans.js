@@ -131,14 +131,14 @@ function kmeansExplore(root, ctx) {
         el('tbody', {}, [0, 1, 2].map((j) => el('tr', {},
           el('td', {}, el(`span.legend__mark.cl${j}`, {}, '●'), ` ${CL_NAME[j]}`), el('td', {}, String(counts[j])),
           el('td', {}, SPECIES.map((sp, si) => (mix[j][si] ? `${SPECIES_SHAPE[si]}${sp} ${mix[j][si]} ` : '')).join('')))))) : null,
-      el('div.callout', {}, '💡 k-평균은 정답(종)을 전혀 보지 않아요. 그런데도 가까운 것끼리 묶으면 실제 종과 꽤 비슷하게 나뉘어요. 단, 처음 중심을 잘못 고르면 엉뚱하게 묶이기도 해서, 실제로는 여러 번 다르게 시작해 가장 좋은 결과를 골라요(n_init).'));
+      el('div.callout', {}, '💡 k-평균은 정답(종)을 전혀 보지 않아요. 그런데도 가까운 것끼리 묶으면 실제 종과 꽤 비슷하게 나뉘어요. 다만 처음 중심을 잘못 고르면 엉뚱하게 묶이기도 해요. 그래서 실제로는 출발점을 바꿔 가며 여러 번 돌려 보고 가장 좋은 결과를 골라요(n_init).'));
   }
 
   fill(root, el('div.knnx', {},
     el('div.knnx__main', {},
       el('div.knnx__tools', {}, clusterLegend()),
       el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '👆 점을 누르면 처음 중심으로 골라요(3개). 이미 고른 점을 다시 누르면 취소돼요.')),
+      el('p.panel__hint', {}, '👆 점을 눌러 처음 중심 3개를 골라요. 이미 고른 점을 다시 누르면 취소돼요.')),
     side));
   draw();
   return {};

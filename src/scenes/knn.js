@@ -131,7 +131,7 @@ function knnExplore(root, ctx) {
           el('td', {}, el(`span.legend__mark.sp${speciesIndex(n.label)}`, {}, SPECIES_SHAPE[speciesIndex(n.label)]), ` ${n.label}`), el('td', {}, fmt(n.d)))))),
       voteBars(counts, pred, k),
       el('div.knnx__pred', {}, '예측: ', el('strong', {}, `${pred}펭귄`)),
-      el('p.panel__hint', {}, `점선 원 = k번째(${k}번째) 이웃까지의 거리. 이 안에 든 펭귄들이 투표해요.`));
+      el('p.panel__hint', {}, `점선 원은 k번째(${k}번째) 이웃까지의 거리예요. 이 안에 든 펭귄들이 투표해요.`));
   }
 
   fill(root, el('div.knnx', {},
@@ -140,7 +140,7 @@ function knnExplore(root, ctx) {
         el('button.pill', { type: 'button', onclick: () => { q = { x: KNN_QUERY.x, y: KNN_QUERY.y }; draw(); } }, '↺ 341번 펭귄으로'),
         speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄')])),
       el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '👆 그래프의 빈 곳을 누르면 새 펭귄(★)이 그 자리로 옮겨 가요. 훈련 데이터 18마리(종마다 6마리)예요. 341번은 펭귄의 원래 번호예요 — 341마리와는 상관없어요.')),
+      el('p.panel__hint', {}, '👆 그래프의 빈 곳을 누르면 새 펭귄(★)이 그 자리로 옮겨 가요. 훈련 데이터는 18마리(종마다 6마리)예요. 341번은 이 펭귄의 원래 번호일 뿐, 341마리와는 상관없어요.')),
     side));
   draw();
   return {};

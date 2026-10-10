@@ -15,10 +15,10 @@ export function recordButton(progress, { label = '📋 내 학습 기록 복사'
       box.value = text;
       try {
         await navigator.clipboard.writeText(text);
-        btn.textContent = '✅ 복사했어요. 이제 붙여 넣으세요';
+        btn.textContent = '✅ 복사했어요. 이제 붙여 넣기만 하면 돼요';
         box.hidden = true;
       } catch {
-        btn.textContent = '아래 글을 직접 골라 복사하세요';
+        btn.textContent = '아래 글을 직접 선택해서 복사해 주세요';
         box.hidden = false;
         box.focus();
         box.select();

@@ -139,7 +139,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
       })),
       picked !== undefined
         ? el(`p.callout${picked === ask.answer ? '.callout--add' : '.callout--warn'}`, {},
-          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why, first !== undefined && first !== ask.answer ? ' (처음 고른 답은 틀렸으니 설명을 한 번 더 읽어 봐요.)' : '']
+          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why, first !== undefined && first !== ask.answer ? ' (처음 고른 답은 틀렸으니까 설명을 한 번 더 읽어 봐요.)' : '']
             : `❌ 아직이에요. ${getScene(page.scene).kind === 'step' ? '의사코드와 그림을 다시 한번 따라가 보고' : '화면을 다시 한번 살펴보고'} 다른 답을 골라 보세요.`)
         : null);
   }

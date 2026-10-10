@@ -59,7 +59,7 @@ function unitCover(root, ctx) {
         onclick: () => { ctx.progress.setHook(tab.id, i); ctx.check('hook'); drawHook(); },
       }, op))),
       el('p.hook__note', {}, mine === null
-        ? '정답을 맞히려는 게 아니에요. 배우기 전에 내 생각을 먼저 정해 보는 거예요.'
+        ? '정답을 맞히려는 게 아니에요. 배우기 전에 내 생각부터 정해 두려는 거예요.'
         : `내 생각: "${u.hook.options[mine]}". 정답은 단원 정리에서 확인해요. 🔒`));
   }
 
@@ -144,7 +144,7 @@ function unitReview(root, ctx) {
   const askLine = el('p.card__meta.selfcheck__asks');
   function drawAsks() {
     const a = askScore(ctx.progress, tab);
-    askLine.textContent = a.total ? `❓ 이 단원 각 쪽의 확인 문제: ${scoreText(a)} · 처음 고른 답으로 센 결과예요. 틀렸던 쪽은 한 번 더 보고 오면 좋아요.` : '';
+    askLine.textContent = a.total ? `❓ 이 단원 쪽마다 있는 확인 문제: ${scoreText(a)} · 처음 고른 답으로 센 결과예요. 틀렸던 쪽은 한 번 더 보고 오면 좋아요.` : '';
   }
 
   const allTerms = [...new Set(unitPages(tab).flatMap((it) => it.page.terms ?? []))];
@@ -239,7 +239,7 @@ function finale(ctx) {
     el('h3', {}, '🎓 수업을 마쳤어요!'),
     el('p', {}, `전체 ${done} / ${total}쪽을 마쳤어요. `, left.length ? `아직 남은 쪽이 있는 단원: ${left.join(' · ')}` : '모든 쪽의 할 일을 다 했어요. 👏'),
     el('p', {}, '이제 내 주제를 하나 정해서, 배운 순서(수집 → 가공 → 전처리 → 학습 준비 → 기계학습 → 평가)대로 직접 해 볼 차례예요.'),
-    el('p.card__meta', {}, '선생님이 기록을 걷을 때는 [📋 내 학습 기록 복사]를 눌러 복사한 뒤 붙여 넣으세요. 단원별 진도와 처음에 맞힌 문제 수가 함께 담겨 있어요.'),
+    el('p.card__meta', {}, '선생님이 기록을 걷으면 [📋 내 학습 기록 복사]를 눌러 복사한 뒤 붙여 넣으세요. 단원별 진도와 처음에 맞힌 문제 수가 함께 들어 있어요.'),
     el('div.unit__go', {},
       recordButton(ctx.progress),
       el('button.pill', { type: 'button', onclick: () => document.querySelector('[title^="모든 단원"]')?.click() }, '📚 목차에서 못 한 쪽 찾기'),

@@ -163,13 +163,13 @@ function treeExplore(root, ctx) {
         el('label', {}, '부리길이 ', lb, inB),
         el('button.pill', { type: 'button', onclick: () => { q = { 날개길이: TREE_QUERY.날개길이, 부리길이: TREE_QUERY.부리길이 }; draw(); } }, '↺ 283번 펭귄으로')),
       // 지니 불순도가 노드마다 보이므로, 그림 바로 위에 한 줄로 뜻을 먼저 알려 준다
-      el('p.panel__hint', {}, '📏 ', infoTerm('지니 불순도', { strong: true }), ' = 한 노드에 여러 종이 섞인 정도. ',
-        el('b', {}, '0이면 한 종만'), ' 있어요(잎). 뿌리 0.664 = 세 종이 섞여 있음'),
+      el('p.panel__hint', {}, '📏 ', infoTerm('지니 불순도', { strong: true }), '는 한 노드에 여러 종이 섞인 정도예요. ',
+        el('b', {}, '0이면 한 종만'), ' 있다는 뜻이에요(잎). 뿌리는 세 종이 섞여 있어서 0.664예요.'),
       treeBox, result),
     el('div.treex__right', {},
       speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄')]),
       el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '점선 = 트리의 질문(나눔 선). 색칠한 칸 = 그 칸에 들어오면 트리가 내놓는 답. 그래프를 눌러도 새 펭귄이 옮겨 가요.'))));
+      el('p.panel__hint', {}, '점선은 트리의 질문(나눔 선)이고, 칸의 색은 그 칸에 들어온 펭귄에게 트리가 내놓는 답이에요. 그래프를 눌러도 새 펭귄을 옮길 수 있어요.'))));
   draw();
   return {};
 }
@@ -209,7 +209,7 @@ const treeStep = {
         const top = cands.slice(0, 3);   // 1등과 그다음 둘 — 자료구조 칸에 잘리지 않고 들어가게
         fill(data, el('div.treeds', {},
           el('div.treeds__cands', {},
-            el('div.webx__cap', {}, f.cands ? `질문 후보 ${f.cands.length}개 중 불순도가 가장 낮은 3개 (낮을수록 좋음)` : '질문 후보'),
+            el('div.webx__cap', {}, f.cands ? `질문 후보 ${f.cands.length}개 가운데 불순도가 가장 낮은 3개 (낮을수록 좋아요)` : '질문 후보'),
             f.cands ? el('table.mini', {},
               el('thead', {}, el('tr', {}, el('th', {}, '질문'), el('th', {}, '예 쪽 ●▲■'), el('th', {}, '아니오 쪽 ●▲■'), el('th', {}, '나눈 뒤 불순도(평균)'))),
               el('tbody', {}, top.map((c) => el(`tr${f.best && c.feature === f.best.feature && c.threshold === f.best.threshold ? '.is-best' : ''}`, {},
