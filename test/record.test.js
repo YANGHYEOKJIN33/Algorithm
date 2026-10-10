@@ -43,7 +43,7 @@ test('학습 기록 — 단원 확인 문제와 쪽 확인 문제를 처음 답�
   assert.match(text, /2026-10-09 10:05/);
   assert.match(text, new RegExp(`2단원 🔍 가공 \\| 쪽 0/\\d+ \\| 쪽❓ 1/\\d+\\(푼 1\\) \\| 단원❓ 1/${quiz.length}\\(푼 2\\)`));
   for (const t of TABS) assert.ok(text.includes(`${t.unit.no}단원 ${t.icon} ${t.label} |`), t.id);
-  // 스스로 "아직"이라고 고른 목표는 아래 "더 볼 목표"에 나온다
+  // 스스로 "아직"이라고 고른 목표는 아래 "다시 볼 목표"에 나온다
   p.setSelf('inspect', 0, 'no');
   assert.match(recordText(p), new RegExp(`- 2단원: ${tab.unit.canDo[0].text.slice(0, 10)}`));
   assert.ok(recordText(p).split('\n').length < 20, '설문 칸 하나에 들어가게 짧게');

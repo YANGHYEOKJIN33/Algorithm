@@ -16,12 +16,12 @@ const cloneTable = (t) => ({ columns: [...t.columns], rows: t.rows.map((r) => ({
 /* ═════════════════ ① 핵심 속성 추출 ═════════════════ */
 
 export const FEATURE_PSEUDO = [
-  { code: '목표 ← "펭귄의 종을 알아맞히기"', note: '무엇을 맞힐지 먼저 정해야 어떤 속성이 쓸모 있는지 판단할 수 있어요.' },
-  { code: '반복: 표의 각 속성(열)', note: '열을 하나씩 꺼내 목표와 관계있는지 따져 봐요.' },
+  { code: '목표 ← "펭귄의 종을 알아맞히기"', note: '무엇을 맞힐지 먼저 정해야 어떤 속성이 쓸모 있는지 가릴 수 있어요.' },
+  { code: '반복: 표의 각 속성(열)', note: '열을 하나씩 꺼내 목표와 관계가 있는지 따져요.' },
   { code: '    종마다 값이 다르게 퍼져 있는지 본다', note: '색(종)마다 점이 따로 모여 있으면 그 속성으로 종을 가를 수 있어요.' },
-  { code: '    만약 종을 가르는 데 도움이 되면 → 핵심 속성에 넣는다', note: '목표와 관계있는 속성만 남기면 모델이 헷갈리지 않고 빨라져요.' },
-  { code: '    아니면 → 뺀다', note: '관계없는 속성, 그리고 번호처럼 기록한 순서일 뿐이라 새 펭귄에게 쓸 수 없는 속성은 빼요.' },
-  { code: 'X ← 핵심 속성 열만 뽑은 표,  y ← 정답(종) 열', note: 'X는 입력(독립변수), y는 맞힐 정답(종속변수)이에요. 나눠 두면 4단원(학습 준비)으로 바로 이어져요.' },
+  { code: '    만약 종을 가르는 데 도움이 되면 → 핵심 속성에 넣는다', note: '목표와 관계있는 속성만 남기면 모델이 덜 헷갈리고 계산도 빨라져요.' },
+  { code: '    아니면 → 뺀다', note: '관계없는 속성은 빼요. 번호처럼 기록한 순서일 뿐이라 새 펭귄에게 쓸 수 없는 속성도 빼요.' },
+  { code: 'X ← 핵심 속성 열만 뽑은 표,  y ← 정답(종) 열', note: 'X는 입력(독립변수), y는 맞힐 정답(종속변수)이에요. 이렇게 나눠 두면 4단원(학습 준비)에서 바로 이어 쓸 수 있어요.' },
 ];
 export const FEATURE_PYTHON = [
   "# 목표: '종' 맞히기",
@@ -34,14 +34,14 @@ export const FEATURE_PYTHON = [
 
 /** 속성마다 판단과 이유 — 화면과 테스트가 함께 쓴다 */
 export const FEATURE_VERDICTS = [
-  { col: '번호', keep: false, kind: 'id', why: '함정이에요! 표를 종별로 모아 1번부터 번호를 매겨서 따로 모여 보일 뿐이에요. 새로 만난 펭귄의 번호로는 종을 알 수 없어요.' },
-  { col: '섬', keep: false, kind: 'cat', why: '종과 관계는 있지만(젠투는 비스코섬에만) 펭귄의 몸 특징이 아니라 "어디서 봤나"예요. 다른 섬에서 만난 펭귄에는 쓸 수 없어 이번에는 빼요.' },
+  { col: '번호', keep: false, kind: 'id', why: '함정이에요! 표를 종별로 모아 놓고 1번부터 번호를 매겼기 때문에 따로 모여 보일 뿐이에요. 새로 만난 펭귄은 번호만 봐서는 종을 알 수 없어요.' },
+  { col: '섬', keep: false, kind: 'cat', why: '종과 관계는 있어요(젠투는 비스코섬에만 있어요). 하지만 몸의 특징이 아니라 "어디서 봤는지"일 뿐이에요. 다른 섬에서 만난 펭귄에게는 쓸 수 없으니 이번에는 빼요.' },
   { col: '부리길이', keep: true, kind: 'num', why: '아델리는 부리가 짧고, 턱끈·젠투는 길어요. 종마다 다른 곳에 모여 있어요.' },
-  { col: '부리깊이', keep: true, kind: 'num', why: '젠투는 부리가 얇아(깊이가 작아) 다른 두 종과 확실히 갈려요.' },
-  { col: '날개길이', keep: true, kind: 'num', why: '젠투의 날개가 눈에 띄게 길어요. 젠투를 가려내는 데 좋아요.' },
-  { col: '몸무게', keep: true, kind: 'num', why: '젠투가 훨씬 무거워요. 아델리·턱끈은 비슷하지만 다른 속성과 함께 쓰면 도움이 돼요.' },
+  { col: '부리깊이', keep: true, kind: 'num', why: '젠투는 부리가 얇아서(깊이가 작아서) 다른 두 종과 확실히 갈려요.' },
+  { col: '날개길이', keep: true, kind: 'num', why: '젠투는 날개가 눈에 띄게 길어서, 젠투를 가려내기에 좋아요.' },
+  { col: '몸무게', keep: true, kind: 'num', why: '젠투가 훨씬 무거워요. 아델리와 턱끈은 비슷하지만, 다른 속성과 함께 쓰면 도움이 돼요.' },
   { col: '성별', keep: false, kind: 'cat', why: '어느 종이든 수컷·암컷이 거의 반반이라 종을 가르지 못해요.' },
-  { col: '연도', keep: false, kind: 'cat', why: '관측한 해일 뿐, 어느 해든 세 종이 고루 관측되어 종과 관계없어요.' },
+  { col: '연도', keep: false, kind: 'cat', why: '관측한 해일 뿐이에요. 어느 해에나 세 종이 고루 관측되어서 종과는 관계가 없어요.' },
 ];
 
 /** 속성 하나의 종별 분포 — 숫자 열은 점 목록, 글자 열은 종×값 개수표 */
@@ -64,28 +64,28 @@ export function featureFrames() {
   const dropped = [];
   const snap = (extra) => frames.push({ kept: [...kept], dropped: [...dropped], col: null, profile: null, verdict: null, ...extra });
 
-  snap({ line: 1, icon: '🎯', say: '목표는 "이 펭귄이 어떤 종인가?" 맞히기예요. 정답 열은 \'종\'이에요.' });
+  snap({ line: 1, icon: '🎯', say: '목표는 "이 펭귄은 어떤 종일까?"를 맞히는 거예요. 정답 열은 \'종\'이에요.' });
   for (const v of FEATURE_VERDICTS) {
     const profile = featureProfile(v.col);
-    snap({ line: 3, icon: '👀', col: v.col, profile, say: `'${v.col}' — 색(종)마다 값이 따로 모여 있나요? 넣을지 뺄지 먼저 예상해 봐요.` });
+    snap({ line: 3, icon: '👀', col: v.col, profile, say: `'${v.col}' 열이에요. 색(종)마다 값이 따로 모여 있나요? 넣을지 뺄지 먼저 예상해 봐요.` });
     if (v.keep) kept.push(v.col); else dropped.push(v.col);
     snap({ line: v.keep ? 4 : 5, icon: v.keep ? '✅' : v.kind === 'id' ? '⚠️' : '✖️', col: v.col, profile, verdict: v,
-      say: `${v.keep ? '넣어요' : '빼요'} — ${v.why}` });
+      say: `${v.keep ? '넣어요.' : '빼요.'} ${v.why}` });
   }
   snap({ line: 6, icon: '🧾', done: true,
-    say: `핵심 속성 ${kept.length}개(${kept.join(', ')})는 입력 X(독립변수), 정답 '종'은 y(종속변수)예요. 뺀 속성(${dropped.join(', ')})은 X에 안 넣을 뿐, 표에서 지울지는 다음 쪽에서 정해요.` });
+    say: `핵심 속성 ${kept.length}개(${kept.join(', ')})가 입력 X(독립변수), 정답 '종'이 y(종속변수)예요. 뺀 속성(${dropped.join(', ')})은 X에 넣지 않을 뿐이에요. 표에서 지울지는 다음 쪽에서 정해요.` });
   return frames;
 }
 
 /* ═════════════════ ② 데이터 삭제 (열·겹친 행·잘못된 행) ═════════════════ */
 
 export const DROP_PSEUDO = [
-  { code: "지울 열 ← '연도'", note: '연도는 X에서 뺐고 뒤에서도 안 써서 열째로 지워요. X에서 뺀 번호·섬·성별은 뒤에서 쓸 수 있어 남겨요.' },
+  { code: "지울 열 ← '연도'", note: '연도는 X에서 뺐고 뒤에서도 쓰지 않으니 열을 통째로 지워요. 번호·섬·성별은 X에서 뺐어도 뒤에서 쓸 수 있어서 남겨요.' },
   { code: '표에서 지울 열을 지운다', note: '열을 지우면 모든 행에서 그 칸이 함께 사라져요.' },
-  { code: '겹친 행을 찾는다 (모든 값이 같은 행)', note: '크롤링할 때 쪽이 넘어가며 같은 줄이 두 번 실리는 일이 흔해요.' },
+  { code: '겹친 행을 찾는다 (모든 값이 같은 행)', note: '크롤링하다 보면 쪽이 넘어가면서 같은 줄이 두 번 실리는 일이 흔해요.' },
   { code: '표에서 겹친 행을 지운다 (처음 것은 남긴다)', note: '같은 펭귄을 두 번 세면 그 펭귄만 더 중요하게 배워 버려요.' },
-  { code: '잘못된 행을 찾는다 (이상치: 몸무게 8200)', note: '2단원(가공)에서 찾은 이상치예요. 잘못 적은 값이고 바른 값을 모르면 지워요.' },
-  { code: '표에서 그 행을 지운다', note: '행이 지워져도 남은 행의 인덱스는 그대로예요(빈 번호가 생겨요).' },
+  { code: '잘못된 행을 찾는다 (이상치: 몸무게 8200)', note: '2단원(가공)에서 찾은 이상치예요. 잘못 적은 값인데 바른 값을 알 수 없으면 지워요.' },
+  { code: '표에서 그 행을 지운다', note: '행을 지워도 남은 행의 인덱스는 그대로라서 중간에 빈 번호가 생겨요.' },
 ];
 export const DROP_PYTHON = [
   '',
@@ -103,10 +103,10 @@ export function dropFrames() {
   const frames = [];
   const snap = (extra) => frames.push({ table: cloneTable(table), markCol: null, markRows: [], ...extra });
 
-  snap({ line: 1, icon: '📋', markCol: '연도', say: "표에 7행이 있어요(겹친 행·이상치 포함). 앞 쪽에서 X에서 뺀 열 가운데 '연도'는 어디에도 안 써서 열째로 지울 거예요." });
+  snap({ line: 1, icon: '📋', markCol: '연도', say: "겹친 행과 이상치까지 모두 7행인 표예요. 앞 쪽에서 X에서 뺀 열 가운데 '연도'는 어디에도 쓰지 않으니 열을 통째로 지울 거예요." });
   table.columns = table.columns.filter((c) => c !== '연도');
   table.rows.forEach((r) => { delete r.연도; });
-  snap({ line: 2, icon: '✂️', say: "'연도' 열을 지웠어요. 모든 행에서 그 칸이 사라졌어요. 번호·섬은 뒤에서 쓸 수 있어 남겨 둬요." });
+  snap({ line: 2, icon: '✂️', say: "'연도' 열을 지웠더니 모든 행에서 그 칸이 사라졌어요. 번호·섬은 뒤에서 쓸 수 있으니 남겨 둬요." });
 
   const sig = (r) => table.columns.map((c) => r[c]).join('|');
   const seen = new Set();
@@ -118,10 +118,10 @@ export function dropFrames() {
 
   const bad = table.rows.filter((r) => r.몸무게 > 6000).map((r) => r._k);
   const badIdx = table.rows.filter((r) => bad.includes(r._k)).map((r) => r._i);
-  snap({ line: 5, icon: '🔎', markRows: bad, say: `몸무게 8200g인 행(인덱스 ${badIdx.join(', ')}, 펭귄 13번)은 잘못 적은 값이에요.` });
+  snap({ line: 5, icon: '🔎', markRows: bad, say: `인덱스 ${badIdx.join(', ')}행(펭귄 13번)의 몸무게 8200g은 잘못 적은 값이에요.` });
   table.rows = table.rows.filter((r) => !bad.includes(r._k));
   const gone = t.rows.filter((r) => !table.rows.some((x) => x._k === r._k)).map((r) => r._i);
-  snap({ line: 6, icon: '🗑️', say: `그 행을 지웠어요. 남은 ${table.rows.length}행의 인덱스를 보세요 — 지운 자리(${gone.join(', ')})가 비어 있어요.` });
+  snap({ line: 6, icon: '🗑️', say: `그 행을 지웠어요. 남은 ${table.rows.length}행의 인덱스를 보면, 지운 자리(${gone.join(', ')})가 비어 있어요.` });
   return frames;
 }
 
@@ -129,9 +129,9 @@ export function dropFrames() {
 
 export const DROPNA_PSEUDO = [
   { code: '반복: 표의 각 행', note: '행을 위에서부터 하나씩 봐요.' },
-  { code: '    만약 그 행에 빈칸이 하나라도 있으면', note: '어느 열이든 하나만 비어도 해당돼요.' },
+  { code: '    만약 그 행에 빈칸이 하나라도 있으면', note: '어느 열이든 한 칸만 비어 있으면 여기에 걸려요.' },
   { code: '        그 행을 지운다', note: '빈칸 한 개 때문에 그 행의 멀쩡한 값까지 모두 사라져요.' },
-  { code: '남은 행으로 새 표를 만든다', note: '가장 간단하지만, 데이터가 줄어들어요. 얼마나 잃었는지 꼭 확인해요.' },
+  { code: '남은 행으로 새 표를 만든다', note: '가장 간단하지만 데이터가 줄어들어요. 얼마나 잃었는지 꼭 확인해요.' },
 ];
 export const DROPNA_PYTHON = [
   '# 반복과 조건을 판다스가 대신해요',
@@ -160,25 +160,25 @@ export function dropnaFrames(source = missingTable()) {
       if (onlySex) sexOnly.push(r.번호);
       snap({ line: 2, icon: '🔎', focus: r._k, say: onlySex
         ? `인덱스 ${r._i}행(펭귄 ${r.번호}번)은 성별 한 칸만 비었어요. 성별은 입력 X에 쓰지도 않는 열이지만…`
-        : `인덱스 ${r._i}행(펭귄 ${r.번호}번)에 빈칸이 있어요: ${miss.join(', ')}` });
+        : `인덱스 ${r._i}행(펭귄 ${r.번호}번)은 ${withJosa(miss.join(', '), '이/가')} 비어 있어요.` });
       removed.push(r._k);
       snap({ line: 3, icon: '🗑️', say: onlySex
         ? `인덱스 ${r._i}행을 통째로 지웠어요. 성별 한 칸 때문에 멀쩡한 ${FILL_COLUMNS.filter((c) => !isMissing(r[c])).join('·')}까지 사라졌어요.`
         : `인덱스 ${r._i}행을 통째로 지웠어요. 멀쩡하던 다른 칸도 함께 사라졌어요.` });
     } else {
-      snap({ line: 1, icon: '✅', focus: r._k, say: `인덱스 ${r._i}행은 빈칸이 없어요. 그대로 둬요.` });
+      snap({ line: 1, icon: '✅', focus: r._k, say: `인덱스 ${r._i}행은 빈칸이 없으니 그대로 둬요.` });
     }
   }
   const left = total - removed.length;
   snap({ line: 4, icon: '🧾', done: true, sexOnly: [...sexOnly],
-    say: `${total}행 중 ${removed.length}행을 지워 ${left}행이 남았어요(${Math.round((removed.length / total) * 100)}%를 잃음). 그중 ${sexOnly.map((n) => `${n}번`).join('·')}은 입력에 쓰지도 않는 성별 한 칸 때문에 사라졌어요.` });
+    say: `${total}행 가운데 ${removed.length}행을 지워서 ${left}행이 남았어요. ${Math.round((removed.length / total) * 100)}%를 잃은 셈이에요. 그중 ${sexOnly.map((n) => `${n}번`).join('·')}은 입력에 쓰지도 않는 성별 한 칸 때문에 사라졌어요.` });
   return frames;
 }
 
 /* ═════════════════ ④ 평균값 대체 — fillna(mean) ═════════════════ */
 
 export const FILLMEAN_PSEUDO = [
-  { code: '반복: 숫자로 된 각 열 (부리길이, 날개길이, 몸무게)', note: '평균은 숫자에서만 구할 수 있어요. 글자 열(종·성별)은 다음 쪽에서 다뤄요.' },
+  { code: '반복: 숫자로 된 각 열 (부리길이, 날개길이, 몸무게)', note: '평균은 숫자로만 구할 수 있어요. 글자 열(종·성별)은 다음 쪽에서 다뤄요.' },
   { code: '    평균 ← 빈칸이 아닌 값들의 합 ÷ 개수', note: '빈칸은 빼고 계산해요. 판다스의 mean()도 빈칸을 건너뛰어요.' },
   { code: '    그 열의 빈칸을 평균으로 채운다', note: '행을 지우지 않으니 데이터가 그대로 남아요. 대신 채운 값은 "진짜 값"이 아니라 어림값이에요.' },
 ];
@@ -197,12 +197,12 @@ export function fillMeanFrames(source = missingTable()) {
   const frames = [];
   const snap = (extra) => frames.push({ table: cloneTable(table), filled: { ...filled }, means: { ...means }, col: null, calc: null, ...extra });
 
-  snap({ line: 1, icon: '📋', say: `방법 B · 채우기 — 앞 쪽과 같은 ${table.rows.length}행 표예요(지웠던 행도 그대로). 이번엔 지우지 않고 숫자 빈칸을 평균으로 채워요.` });
+  snap({ line: 1, icon: '📋', say: `방법 B · 채우기 — 앞 쪽과 같은 ${table.rows.length}행 표라서 지웠던 행도 그대로 있어요. 이번에는 지우지 않고 숫자 빈칸을 평균으로 채워요.` });
   for (const col of FILL_COLUMNS) {
     const vals = table.rows.map((r) => r[col]);
     const xs = present(vals);
     const holes = table.rows.filter((r) => isMissing(r[col]));
-    snap({ line: 1, icon: '📍', col, say: `'${col}' 열 — 빈칸 ${holes.length}개.` });
+    snap({ line: 1, icon: '📍', col, say: `'${col}' 열에는 빈칸이 ${holes.length}개 있어요.` });
     const m = mean(vals);
     means[col] = m;
     const calc = { col, values: xs, sum: sum(xs), count: xs.length, mean: m };
@@ -213,18 +213,18 @@ export function fillMeanFrames(source = missingTable()) {
   // 측정값이 모두 빈칸이었던 행 — 채운 값이 전부 어림값이다
   const allGuess = table.rows.filter((r) => FILL_COLUMNS.every((c) => filled[`${r._k}|${c}`]));
   snap({ line: 3, icon: '🧾', done: true, allGuess: allGuess.map((r) => r._k),
-    say: `숫자 빈칸 ${Object.keys(filled).length}칸을 채우고 ${table.rows.length}행이 모두 남았어요. ${allGuess.map((r) => `⚠️ 인덱스 ${r._i}행(펭귄 ${r.번호}번)은 측정값 ${FILL_COLUMNS.length}칸이 모두 어림값이에요. `).join('')}성별은 글자라 아직 비어 있어요 → 다음 쪽(최빈값).` });
+    say: `숫자 빈칸 ${Object.keys(filled).length}칸을 채웠고, ${table.rows.length}행이 모두 남았어요. ${allGuess.map((r) => `⚠️ 인덱스 ${r._i}행(펭귄 ${r.번호}번)은 측정값 ${FILL_COLUMNS.length}칸이 모두 어림값이에요. `).join('')}성별은 글자라서 아직 비어 있어요. 다음 쪽에서 최빈값으로 채워요.` });
   return frames;
 }
 
 /* ═════════════════ ⑤ 최빈값 대체 — fillna(mode) ═════════════════ */
 
 export const FILLMODE_PSEUDO = [
-  { code: '세기표 ← 빈 사전 { }', note: '값마다 몇 번 나왔는지 적을 사전(딕셔너리)이에요. 열쇠(값) → 개수.' },
+  { code: '세기표 ← 빈 사전 { }', note: '값마다 몇 번 나왔는지 적어 둘 사전(딕셔너리)이에요. 열쇠에는 값을, 값에는 개수를 적어요.' },
   { code: '반복: 성별 열의 각 값 (빈칸은 건너뜀)', note: '위에서부터 값을 하나씩 읽어요.' },
-  { code: '    세기표[값] ← 세기표[값] + 1', note: '처음 보는 값이면 1로, 본 적 있으면 1을 더해요.' },
+  { code: '    세기표[값] ← 세기표[값] + 1', note: '처음 보는 값이면 1을 적고, 본 적 있는 값이면 1을 더해요.' },
   { code: '최빈값 ← 세기표에서 개수가 가장 큰 값', note: '가장 자주 나온 값이 최빈값이에요. 글자 열은 평균 대신 이 값을 써요.' },
-  { code: '성별 열의 빈칸을 최빈값으로 채운다', note: '간단하지만, 실제로는 수컷인 펭귄이 암컷으로 채워질 수도 있어요(어림값!).' },
+  { code: '성별 열의 빈칸을 최빈값으로 채운다', note: '간단하지만, 실제로는 수컷인 펭귄을 암컷으로 채울 수도 있어요. 채운 값은 어디까지나 어림값이에요.' },
 ];
 export const FILLMODE_PYTHON = [
   '# 판다스가 세어 줘요',
@@ -254,7 +254,7 @@ export function fillModeFrames(source = afterMeanFill(), raw = missingTable()) {
   const frames = [];
   const snap = (extra) => frames.push({ table: cloneTable(table), counts: counts.map((c) => [...c]), filled: { ...filled }, focus: null, mode: null, ...extra });
 
-  snap({ line: 1, icon: '📒', say: "방법 B ② — 숫자 빈칸을 채운 표에 이어서 '성별'을 채워요. 먼저 빈 세기표(사전)를 만들어 값을 세요." });
+  snap({ line: 1, icon: '📒', say: "방법 B ② — 숫자 빈칸을 채운 표를 이어받아 '성별'을 채워요. 먼저 빈 세기표(사전)를 만들고, 값을 하나씩 세어요." });
   for (const r of table.rows) {
     const v = r[col];
     if (isMissing(v)) {
@@ -266,10 +266,10 @@ export function fillModeFrames(source = afterMeanFill(), raw = missingTable()) {
     snap({ line: 3, icon: '➕', focus: r._k, key: v, say: `'${v}' 하나 더 → 세기표 { ${counts.map(([k, n]) => `'${k}': ${n}`).join(', ')} }` });
   }
   const m = mode(table.rows.map((r) => r[col]));
-  snap({ line: 4, icon: '🏆', mode: m, say: `'${m}'이 ${counts.find((c) => c[0] === m)[1]}번으로 가장 많이 나왔어요 → 최빈값.` });
+  snap({ line: 4, icon: '🏆', mode: m, say: `'${m}'${josa(m, '이/가')} ${counts.find((c) => c[0] === m)[1]}번으로 가장 많이 나왔으니 최빈값이에요.` });
   const holes = table.rows.filter((r) => isMissing(r[col]));
   for (const r of holes) { r[col] = m; filled[`${r._k}|${col}`] = true; }
-  snap({ line: 5, icon: '🖊️', mode: m, done: true, say: `빈칸 ${holes.length}개를 '${m}'${josa(m, '으로/로')} 채웠어요. 방법 A와 달리 ${table.rows.length}행이 모두 남은 채 빈칸이 0개예요.` });
+  snap({ line: 5, icon: '🖊️', mode: m, done: true, say: `빈칸 ${holes.length}개를 '${m}'${josa(m, '으로/로')} 채웠어요. 방법 A와 달리 ${table.rows.length}행이 모두 남았는데도 빈칸이 0개예요.` });
 
   // 🤔 그럼 어떻게 고를까? — 측정값이 모두 빈 행은 지우고, 한두 칸만 빈 행은 채운다
   const choose = { drop: [], fill: [] };
@@ -283,7 +283,7 @@ export function fillModeFrames(source = afterMeanFill(), raw = missingTable()) {
   });
   const ids = (list) => list.map((x) => `${x.id}번`).join('·');
   snap({ line: 0, icon: '🤔', mode: m, done: true, choose,
-    say: `그럼 어떻게 고를까요? ${ids(choose.drop)}처럼 측정값이 모두 빈 행은 채워도 전부 어림값이라 지우고, ${ids(choose.fill)}처럼 한 칸만 빈 행은 채워서 살려요.` });
+    say: `그럼 어떻게 골라야 할까요? ${ids(choose.drop)}처럼 측정값이 모두 빈 행은 채워도 전부 어림값이니 지워요. ${ids(choose.fill)}처럼 한 칸만 빈 행은 채워서 살려요.` });
   return frames;
 }
 
@@ -303,10 +303,10 @@ export const SPECIES_CODE = Object.fromEntries(SPECIES.map((s, i) => [s, i]));
 export const REPLACE_PSEUDO = [
   { code: "바꿈표 ← { '수컷': 0, '암컷': 1 }", note: '모델은 숫자로만 계산해요. 글자마다 바꿀 숫자를 사전으로 정해요.' },
   { code: '반복: 성별 열의 각 칸', note: '칸을 위에서부터 하나씩 봐요.' },
-  { code: '    칸의 글자를 바꿈표에서 찾은 숫자로 바꾼다', note: '바꿈표에서 열쇠(글자)를 찾아 값(숫자)을 꺼내 칸에 적어요.' },
-  { code: "바꿈표 ← { '아델리': 0, '턱끈': 1, '젠투': 2 }", note: '종처럼 값이 셋 이상이어도 같은 방법이에요. 숫자의 크기에는 뜻이 없어요(이름표일 뿐).' },
+  { code: '    칸의 글자를 바꿈표에서 찾은 숫자로 바꾼다', note: '글자를 열쇠 삼아 바꿈표에서 숫자를 꺼내고, 그 숫자를 칸에 적어요.' },
+  { code: "바꿈표 ← { '아델리': 0, '턱끈': 1, '젠투': 2 }", note: '종처럼 값이 셋 이상이어도 방법은 같아요. 숫자는 이름표일 뿐이라 크기에는 뜻이 없어요.' },
   { code: '반복: 종 열의 각 칸', note: '같은 일을 종 열에서 되풀이해요.' },
-  { code: '    칸의 글자를 바꿈표에서 찾은 숫자로 바꾼다', note: '이제 표의 모든 값이 숫자예요 — 기계학습을 할 준비가 됐어요.' },
+  { code: '    칸의 글자를 바꿈표에서 찾은 숫자로 바꾼다', note: '이제 표의 모든 값이 숫자예요. 기계학습을 할 준비가 끝났어요.' },
 ];
 export const REPLACE_PYTHON = [
   "sex_map = {'수컷': 0, '암컷': 1}",
@@ -338,8 +338,8 @@ export function replaceFrames(source = afterAllFill()) {
   };
   snap({ line: 1, icon: '📋', say: '방법 B로 빈칸을 모두 채운 표예요. 글자로 된 열(종·성별)을 숫자로 바꿔 볼게요.' });
   run('성별', SEX_CODE, 1, 3);
-  run('종', SPECIES_CODE, 4, 6, '0·1·2는 이름표일 뿐 — 젠투(2)가 턱끈(1)의 2배라는 뜻이 아니에요.');
-  snap({ line: 6, icon: '🧾', done: true, say: '모든 칸이 숫자가 되었어요. 기계학습 모델에 넣을 수 있는 표예요!' });
+  run('종', SPECIES_CODE, 4, 6, '0·1·2는 이름표일 뿐이에요. 젠투(2)가 턱끈(1)의 2배라는 뜻이 아니에요.');
+  snap({ line: 6, icon: '🧾', done: true, say: '모든 칸이 숫자로 바뀌었어요. 이제 기계학습 모델에 바로 넣을 수 있어요!' });
   return frames;
 }
 
@@ -353,11 +353,11 @@ export const SCALE_COLUMNS = FILL_COLUMNS;
 export const SCALE_PAIR = [1, 153];
 
 export const SCALE_PSEUDO = [
-  { code: '거리 ← √(부리길이 차² + 날개길이 차² + 몸무게 차²)', note: '두 펭귄이 얼마나 다른지 재는 거리예요(피타고라스). 열마다 차이를 제곱해 그대로 더하니, 숫자가 큰 열의 차이가 거리를 정해 버려요.' },
+  { code: '거리 ← √(부리길이 차² + 날개길이 차² + 몸무게 차²)', note: '두 펭귄이 얼마나 다른지를 재는 거리예요(피타고라스 정리). 열마다 차이를 제곱해 그대로 더하기 때문에, 숫자가 큰 열의 차이가 거리를 정해 버려요.' },
   { code: '반복: 숫자로 된 각 열 (부리길이, 날개길이, 몸무게)', note: '열마다 따로 크기를 맞춰요. 번호와 글자 열(종·성별)은 그대로 둬요.' },
-  { code: '    작은값 ← 그 열의 가장 작은 값,  큰값 ← 가장 큰 값', note: '작은값은 0, 큰값은 1이 될 기준이에요. 큰값 − 작은값이 그 열의 폭이에요.' },
+  { code: '    작은값 ← 그 열의 가장 작은 값,  큰값 ← 가장 큰 값', note: '작은값은 0, 큰값은 1이 되는 기준이에요. 큰값에서 작은값을 뺀 것이 그 열의 폭이에요.' },
   { code: '    각 칸 ← (값 − 작은값) ÷ (큰값 − 작은값)', note: '가장 작은 값은 0, 가장 큰 값은 1, 나머지는 그 사이가 돼요. 단위(mm·g)는 사라지고 "그 열에서 어디쯤인지"만 남아요.' },
-  { code: '거리를 다시 잰다', note: '이제 세 열이 모두 0~1이라, 어느 한 열이 거리를 혼자 정하지 못해요.' },
+  { code: '거리를 다시 잰다', note: '이제 세 열이 모두 0~1 사이라서 어느 한 열이 거리를 혼자 정하지 못해요.' },
 ];
 export const SCALE_PYTHON = [
   "d = ((df.loc[0, cols] - df.loc[5, cols]) ** 2).sum() ** 0.5   # 1번·153번 → 750.6",
@@ -398,7 +398,7 @@ export function scaleFrames(source = afterAllFill()) {
   const terms = (g) => g.parts.map((p) => `${fmt(p.diff, 2)}²`).join(' + ');
   const heavy = before.parts.reduce((m, p) => (p.share > m.share ? p : m));
   snap({ line: 1, icon: '📏', gap: before, showPair: true,
-    say: `왜 크기를 맞출까요? ${withJosa(name(a), '과/와')} ${name(b)}의 거리를 재면 √(${terms(before)}) ≈ ${fmt(before.dist, 1)}이에요. ${heavy.col} 차이 ${withJosa(fmt(heavy.diff), '과/와')} 거의 같아요 — 숫자가 큰 ${withJosa(heavy.col, '이/가')} 거리를 혼자 정해요.` });
+    say: `왜 크기를 맞출까요? ${withJosa(name(a), '과/와')} ${name(b)}의 거리를 재면 √(${terms(before)}) ≈ ${fmt(before.dist, 1)}이에요. ${heavy.col} 차이 ${withJosa(fmt(heavy.diff), '과/와')} 거의 같지요. 숫자가 큰 ${withJosa(heavy.col, '이/가')} 거리를 혼자 정하는 거예요.` });
 
   for (const col of SCALE_COLUMNS) {
     const vals = table.rows.map((r) => r[col]);
@@ -408,16 +408,16 @@ export function scaleFrames(source = afterAllFill()) {
     const maxKeys = table.rows.filter((r) => r[col] === hi).map((r) => r._k);
     const at = (keys) => table.rows.filter((r) => keys.includes(r._k)).map((r) => r._i).join('·');
     snap({ line: 3, icon: '🔎', col, lo, hi, minKeys, maxKeys,
-      say: `'${col}' 열 — 작은값 ${fmt(lo, 3)}(인덱스 ${at(minKeys)}행), 큰값 ${fmt(hi, 3)}(인덱스 ${at(maxKeys)}행). 폭 = ${fmt(hi, 3)} − ${fmt(lo, 3)} = ${fmt(hi - lo, 3)}` });
+      say: `'${col}' 열에서 작은값은 ${fmt(lo, 3)}(인덱스 ${at(minKeys)}행), 큰값은 ${fmt(hi, 3)}(인덱스 ${at(maxKeys)}행)이에요. 폭 = ${fmt(hi, 3)} − ${fmt(lo, 3)} = ${fmt(hi - lo, 3)}` });
     const example = pairRows().map((r) => ({ id: r.번호, v: r[col], out: hi === lo ? 0 : (r[col] - lo) / (hi - lo) }));
     table.rows.forEach((r, i) => { r[col] = out[i]; });
     scaled[col] = true;
     snap({ line: 4, icon: '🖊️', col, lo, hi, example,
-      say: `'${col}' 칸마다 (값 − ${fmt(lo, 3)}) ÷ ${withJosa(fmt(hi - lo, 3), '을/를')} 계산해 바꿨어요. 작은값은 0, 큰값은 1이 됐어요.` });
+      say: `'${col}' 열의 칸마다 (값 − ${fmt(lo, 3)}) ÷ ${withJosa(fmt(hi - lo, 3), '을/를')} 계산해 바꿨어요. 작은값은 0, 큰값은 1이 됐어요.` });
   }
 
   const after = pairGap(...pairRows());
   snap({ line: 5, icon: '🧾', done: true, gap: after, before, showPair: true,
-    say: `같은 두 펭귄을 다시 재면 √(${terms(after)}) ≈ ${fmt(after.dist, 2)}. 이제 ${heavy.col}만이 아니라 세 열이 모두 거리에 힘을 보태요.` });
+    say: `같은 두 펭귄의 거리를 다시 재면 √(${terms(after)}) ≈ ${fmt(after.dist, 2)}${josa(fmt(after.dist, 2), '이에요/예요')}. 이제 ${heavy.col}만이 아니라 세 열이 모두 거리에 힘을 보태요.` });
   return frames;
 }

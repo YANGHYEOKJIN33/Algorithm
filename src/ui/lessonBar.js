@@ -124,7 +124,7 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
       el('div.askpop__head', {}, el('strong', {}, '❓ 확인 문제'), el('span.topbar__spacer'),
         el('button.pill.pill--sm', { type: 'button', onclick: closeAsk }, '닫기 ✕')),
       el('p.askpop__q', {}, ask.q),
-      first === undefined ? el('p.askpop__note', {}, '처음 고른 답이 📋 학습 기록에 남아요. 찍지 말고 생각해서 골라요.') : null,
+      first === undefined ? el('p.askpop__note', {}, '처음 고른 답이 📋 학습 기록에 남아요. 찍지 말고 잘 생각해서 골라 보세요.') : null,
       el('div.askpop__opts', {}, ask.options.map((op, oi) => {
         let state = null;
         if (picked !== undefined) { if (oi === ask.answer && picked === oi) state = 'right'; else if (oi === picked) state = 'wrong'; }
@@ -139,8 +139,8 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
       })),
       picked !== undefined
         ? el(`p.callout${picked === ask.answer ? '.callout--add' : '.callout--warn'}`, {},
-          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why, first !== undefined && first !== ask.answer ? ' (처음 고른 답은 틀렸어요 — 💡 설명을 한 번 더 읽어 봐요.)' : '']
-            : `❌ 아직이에요. ${getScene(page.scene).kind === 'step' ? '의사코드와 그림을 다시 따라가 보고' : '화면을 다시 살펴보고'} 다른 답을 골라 보세요.`)
+          picked === ask.answer ? ['⭕ 맞았어요! ', ask.why, first !== undefined && first !== ask.answer ? ' (처음 고른 답은 틀렸으니 설명을 한 번 더 읽어 봐요.)' : '']
+            : `❌ 아직이에요. ${getScene(page.scene).kind === 'step' ? '의사코드와 그림을 다시 한번 따라가 보고' : '화면을 다시 한번 살펴보고'} 다른 답을 골라 보세요.`)
         : null);
   }
 
@@ -255,8 +255,8 @@ export function mountLessonBar(root, store, { progress, missions, player, glossa
     const all = pageDone(progress, tab, sub, page);
     const last = !nextPlace();
     toast.textContent = !all ? '✅ 할 일 하나 완료!'
-      : last ? '🎉 마지막 쪽까지 마쳤어요! 수업을 모두 끝냈어요.'
-        : `🎉 이 쪽의 할 일을 모두 마쳤어요! [${next.textContent}]으로 가요.`;
+      : last ? '🎉 마지막 쪽까지 왔어요! 수업을 모두 마쳤어요.'
+        : `🎉 이 쪽의 할 일을 다 했어요! [${next.textContent}] 단추를 눌러 넘어가요.`;
     toast.classList.add('is-on');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-on'), 2600);

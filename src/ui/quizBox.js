@@ -57,7 +57,7 @@ export function quizBox(questions, { row = false, title = null, saved = null, fi
       picked[qi] !== null ? el(`p.quiz__why.callout${picked[qi] === qq.answer ? '.callout--add' : '.callout--warn'}`, {},
         picked[qi] === qq.answer ? ['⭕ 맞았어요! ', qq.why]
           : wrongs[qi] >= 2 ? ['❌ 정답은 초록 칸이에요. ', qq.why]
-            : '❌ 다시 생각해 봐요. 다른 보기를 골라 보세요.',
+            : '❌ 아니에요. 한 번 더 생각해 보고 다른 보기를 골라 보세요.',
         picked[qi] !== qq.answer && qq.page && onReview
           ? el('button.pill.pill--sm.quiz__review', { type: 'button', onclick: () => onReview(qq.page) }, '📖 그 쪽 다시 보기 →')
           : null) : null)));

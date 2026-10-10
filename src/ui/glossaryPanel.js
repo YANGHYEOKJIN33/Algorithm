@@ -25,7 +25,7 @@ export function createGlossaryPanel() {
       .map((g) => ({ ...g, items: g.items.filter((it) => it !== exact) }))
       .filter((g) => g.items.length);
     count.textContent = `${groups.reduce((n, g) => n + g.items.length, 0) + (exact ? 1 : 0)}개`;
-    if (!groups.length && !exact) { fill(list, el('div.placeholder', {}, '찾는 용어가 없어요. 다른 낱말로 찾아보세요.')); return; }
+    if (!groups.length && !exact) { fill(list, el('div.placeholder', {}, '찾는 용어가 없네요. 다른 낱말로 찾아보세요.')); return; }
     fill(list,
       exact ? el('section.gloss__exact', {}, el('dl.gloss__items', {}, entry(exact))) : null,
       exact && groups.length ? el('h3.gloss__group-title', {}, '함께 보기') : null,
@@ -48,7 +48,7 @@ export function createGlossaryPanel() {
       el('button.pill', { type: 'button', onclick: close }, '닫기 ✕')),
     el('div.gloss__searchbar', {}, input),
     el('div.modal__scroll', {}, list),
-    el('p.modal__note', {}, '화면에는 교과서와 같은 정확한 용어를 써요. 뜻이 막히면 여기서 찾아보세요.'));
+    el('p.modal__note', {}, '화면에는 교과서와 똑같은 용어를 써요. 뜻이 헷갈리는 말이 있으면 여기서 찾아보세요.'));
   document.body.append(backdrop);
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
   document.addEventListener('keydown', (e) => { if (!backdrop.hidden && e.key === 'Escape') close(); });

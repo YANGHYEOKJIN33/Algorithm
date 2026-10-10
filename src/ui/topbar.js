@@ -52,7 +52,7 @@ export function mountTopbar(root, store, { progress, onHelp, onGlossary, onCours
         el('button.pill', { type: 'button', title: '사용 안내 다시 보기', onclick: onHelp }, '? 도움말'),
         el('button.pill', { type: 'button', title: '용어 사전', onclick: onGlossary }, '📖 용어'),
         el('button.pill', { type: 'button', title: '글자 작게', 'aria-label': '글자 작게', onclick: () => store.set({ scale: Math.max(0.85, +(store.get().scale - 0.15).toFixed(2)) }) }, '가−'),
-        el('button.pill', { type: 'button', title: '글자 크게 (교실 뒷자리)', 'aria-label': '글자 크게', onclick: () => store.set({ scale: Math.min(1.6, +(store.get().scale + 0.15).toFixed(2)) }) }, '가＋'),
+        el('button.pill', { type: 'button', title: '글자 크게 (교실 뒷자리에서도 잘 보이게)', 'aria-label': '글자 크게', onclick: () => store.set({ scale: Math.min(1.6, +(store.get().scale + 0.15).toFixed(2)) }) }, '가＋'),
         themeBtn),
     ),
     subtabs,

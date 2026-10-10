@@ -86,7 +86,7 @@ export function recordText(progress, now = new Date()) {
     canDo.forEach((c, i) => {
       const pagesOk = canDoDone(progress, t, c);
       if (self[i] === 'no' || (self[i] === 'yes' && !pagesOk)) {
-        notYet.push(`- ${t.unit.no}단원: ${c.text} (${self[i] === 'no' ? '스스로 🤔 아직' : '😀 골랐지만 쪽 미완료'})`);
+        notYet.push(`- ${t.unit.no}단원: ${c.text} (${self[i] === 'no' ? '스스로 🤔 아직' : '😀를 골랐지만 못 마친 쪽이 있음'})`);
       }
     });
   }
@@ -94,11 +94,11 @@ export function recordText(progress, now = new Date()) {
   return [
     `📋 펭귄 데이터로 배우는 인공지능 — 내 학습 기록 (${when})`,
     `전체 쪽 ${done}/${total} · 6-3 이해 확인 처음에 맞힘 ${shortScore(fin)}`,
-    '읽는 법: 쪽 = ✋ 할 일을 모두 한 쪽 수 · ❓ 점수 = 처음 고른 답이 맞은 수(–는 아직 안 풂) · 점검 = 할 수 있어요 스스로 점검',
+    '읽는 법: 쪽 = ✋ 할 일을 다 마친 쪽 수 · ❓ 점수 = 처음 고른 답으로 맞힌 문제 수(–는 아직 안 푼 것) · 점검 = 스스로 점검에서 고른 결과',
     '',
     ...lines,
     '',
-    notYet.length ? '더 볼 목표:' : '더 볼 목표: 없음',
+    notYet.length ? '다시 볼 목표:' : '다시 볼 목표: 없음',
     ...notYet,
   ].join('\n');
 }

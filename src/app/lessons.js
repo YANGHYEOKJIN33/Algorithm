@@ -57,12 +57,12 @@ function coverPage(tab) {
     id: 'cover', scene: 'unitCover', auto: 'cover',
     title: `${tab.unit.no}단원 들어가기 — ${tab.label}: ${tab.verb}`,
     short: '표지',
-    objective: '이 단원에서 무엇을 배우고, 끝나면 무엇을 할 수 있게 되는지 말할 수 있다.',
-    why: '어디로 가는지 알고 출발하면, 쪽마다 무엇을 봐야 하는지 보여요.',
+    objective: '이 단원에서 무엇을 배우는지, 마치고 나면 무엇을 할 수 있는지 말할 수 있다.',
+    why: '어디로 가는지 알고 출발해야 쪽마다 무엇을 눈여겨볼지 알 수 있어요.',
     terms: [],
     missions: [
-      { text: '🤔 생각 열기 — 질문에 내 생각을 하나 골라 보기', check: 'act:hook' },
-      { text: '📋 할 수 있어요 목록을 읽고 [시작하기 →]나 [다음 →]', check: 'act:begin' },
+      { text: '🤔 생각 열기 질문에 내 생각을 하나 골라 보기', check: 'act:hook' },
+      { text: '📋 할 수 있어요 목록을 읽고 [시작하기 →]나 [다음 →] 누르기', check: 'act:begin' },
     ],
     minutes: 2,
   };
@@ -73,8 +73,8 @@ function reviewPage(tab) {
     id: 'review', scene: 'unitReview', auto: 'review',
     title: `${tab.unit.no}단원 정리 — ${tab.label}에서 배운 것`,
     short: '정리',
-    objective: '이 단원의 목표를 스스로 점검하고, 확인 문제로 이해했는지 확인할 수 있다.',
-    why: '배운 것을 내 말로 정리하고 문제로 확인해야 오래 기억에 남아요.',
+    objective: '이 단원의 목표를 스스로 점검하고, 확인 문제로 제대로 이해했는지 알아볼 수 있다.',
+    why: '배운 것을 내 말로 정리하고 문제로 확인해 봐야 오래 기억에 남아요.',
     terms: [],
     missions: [
       { text: '✅ 할 수 있어요 점검표에 모두 표시하기', check: 'act:selfcheck' },

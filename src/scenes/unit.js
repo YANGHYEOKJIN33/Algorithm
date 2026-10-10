@@ -59,8 +59,8 @@ function unitCover(root, ctx) {
         onclick: () => { ctx.progress.setHook(tab.id, i); ctx.check('hook'); drawHook(); },
       }, op))),
       el('p.hook__note', {}, mine === null
-        ? '정답을 맞히는 게 아니라 내 생각을 먼저 정해 보는 거예요.'
-        : `내 생각: "${u.hook.options[mine]}" — 단원 정리에서 정답을 확인해요. 🔒`));
+        ? '정답을 맞히려는 게 아니에요. 배우기 전에 내 생각을 먼저 정해 보는 거예요.'
+        : `내 생각: "${u.hook.options[mine]}". 정답은 단원 정리에서 확인해요. 🔒`));
   }
 
   function drawLists() {
@@ -106,14 +106,14 @@ function unitCover(root, ctx) {
           u.minutes ? el('span.card__meta', {}, ` · 약 ${u.minutes}분 · ${all.length}쪽(표지·정리 포함)`) : null),
         el('h2.unit__q', {}, `🤔 ${u.question ?? tab.label}`),
         u.bigIdea ? el('p.unit__idea', {}, el('strong', {}, '핵심 아이디어 '), u.bigIdea) : null,
-        el('div.unit__heroGo', {}, heroStart, el('span.card__meta', {}, '먼저 아래 🎯 목록과 🤔 생각 열기를 보고 출발해요'))),
+        el('div.unit__heroGo', {}, heroStart, el('span.card__meta', {}, '아래의 🎯 목표와 🤔 생각 열기를 먼저 살펴본 뒤 출발해요'))),
       unitStrip(tab.id, (id) => ctx.go(id))),
     el('div.unit__grid', {},
       el('div.unit__col', {},
         el('section.ucard.ucard--goal', {},
           el('h3', {}, '🎯 이 단원을 마치면 할 수 있어요'),
           canDoList,
-          el('p.card__meta', {}, '쪽의 ✋ 할 일을 모두 하면 여기에 ✓가 붙어요.')),
+          el('p.card__meta', {}, '관련된 쪽의 ✋ 할 일을 모두 마치면 여기에 ✓가 붙어요.')),
         (u.before || u.after) ? el('section.ucard', {},
           el('h3', {}, '📦 데이터는 이렇게 바뀌어요'),
           el('div.flowpair', {},
@@ -144,7 +144,7 @@ function unitReview(root, ctx) {
   const askLine = el('p.card__meta.selfcheck__asks');
   function drawAsks() {
     const a = askScore(ctx.progress, tab);
-    askLine.textContent = a.total ? `❓ 이 단원 쪽마다의 확인 문제: ${scoreText(a)} — 처음 고른 답으로 세요. 틀렸던 쪽은 다시 보고 오면 좋아요.` : '';
+    askLine.textContent = a.total ? `❓ 이 단원 각 쪽의 확인 문제: ${scoreText(a)} · 처음 고른 답으로 센 결과예요. 틀렸던 쪽은 한 번 더 보고 오면 좋아요.` : '';
   }
 
   const allTerms = [...new Set(unitPages(tab).flatMap((it) => it.page.terms ?? []))];
@@ -156,7 +156,7 @@ function unitReview(root, ctx) {
       const pagesOk = canDoDone(ctx.progress, tab, c);
       const v = mine[i];
       return el('li.selfcheck__item', { 'data-v': v ?? null },
-        el('span.selfcheck__mark', { title: pagesOk ? '이 목표의 쪽을 모두 마쳤어요' : '아직 마치지 않은 쪽이 있어요' }, pagesOk ? '✓' : '·'),
+        el('span.selfcheck__mark', { title: pagesOk ? '이 목표와 관련된 쪽을 모두 마쳤어요' : '아직 마치지 않은 쪽이 있어요' }, pagesOk ? '✓' : '·'),
         el('span.selfcheck__text', {}, c.text),
         el('span.selfcheck__btns', {},
           el('button.pill.pill--sm', { type: 'button', 'aria-pressed': String(v === 'yes'), onclick: () => rate(i, 'yes') }, '😀 할 수 있어요'),
@@ -198,7 +198,7 @@ function unitReview(root, ctx) {
         el('section.ucard.ucard--goal', {},
           el('h3', {}, '✅ 할 수 있어요? — 스스로 점검'),
           selfBox,
-          el('p.card__meta', {}, '"🤔 아직"이면 [다시 보기 →]로 그 쪽에 다녀와요. 솔직하게 고를수록 도움이 돼요.'),
+          el('p.card__meta', {}, '"🤔 아직"을 골랐다면 [다시 보기 →]를 눌러 그 쪽에 다녀와요. 솔직하게 고를수록 나에게 도움이 돼요.'),
           askLine),
         hookBox),
       el('div.unit__col', {},
@@ -211,7 +211,7 @@ function unitReview(root, ctx) {
             onReview: go,
           })) : null,
         u.cheats?.length ? el('section.ucard', {},
-          el('h3', {}, '🐍 파이썬 한 줄 정리', el('span.card__meta', {}, ' — 프로젝트 때 다시 찾아보세요')),
+          el('h3', {}, '🐍 파이썬 한 줄 정리', el('span.card__meta', {}, ' — 프로젝트를 할 때 다시 찾아보세요')),
           el('table.cheat', {}, el('tbody', {}, u.cheats.map((c) => el('tr', {}, el('th', {}, c.idea), el('td', {}, el('code', {}, c.code))))))) : null,
         allTerms.length ? el('section.ucard', {},
           el('h3', {}, '📖 이 단원의 핵심 용어'),
@@ -238,8 +238,8 @@ function finale(ctx) {
   return el('section.ucard.ucard--sum', {},
     el('h3', {}, '🎓 수업을 마쳤어요!'),
     el('p', {}, `전체 ${done} / ${total}쪽을 마쳤어요. `, left.length ? `아직 남은 쪽이 있는 단원: ${left.join(' · ')}` : '모든 쪽의 할 일을 다 했어요. 👏'),
-    el('p', {}, '이제 배운 순서(수집 → 가공 → 전처리 → 학습 준비 → 기계학습 → 평가)를 내 주제로 따라가 볼 차례예요.'),
-    el('p.card__meta', {}, '선생님이 기록을 걷으면 [📋 내 학습 기록 복사]를 눌러 붙여 넣으세요. 단원마다 진도와 처음에 맞힌 문제 수가 들어 있어요.'),
+    el('p', {}, '이제 내 주제를 하나 정해서, 배운 순서(수집 → 가공 → 전처리 → 학습 준비 → 기계학습 → 평가)대로 직접 해 볼 차례예요.'),
+    el('p.card__meta', {}, '선생님이 기록을 걷을 때는 [📋 내 학습 기록 복사]를 눌러 복사한 뒤 붙여 넣으세요. 단원별 진도와 처음에 맞힌 문제 수가 함께 담겨 있어요.'),
     el('div.unit__go', {},
       recordButton(ctx.progress),
       el('button.pill', { type: 'button', onclick: () => document.querySelector('[title^="모든 단원"]')?.click() }, '📚 목차에서 못 한 쪽 찾기'),

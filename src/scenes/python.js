@@ -88,7 +88,7 @@ function copyButton(text) {
   const btn = el('button.pill.pill--sm', {
     type: 'button',
     onclick: async () => {
-      try { await navigator.clipboard.writeText(text); btn.textContent = '✅ 복사했어요'; } catch { btn.textContent = '복사가 막혔어요 — 직접 골라 복사하세요'; }
+      try { await navigator.clipboard.writeText(text); btn.textContent = '✅ 복사했어요'; } catch { btn.textContent = '복사가 막혔어요. 직접 골라 복사하세요'; }
       setTimeout(() => { btn.textContent = '📋 복사'; }, 1600);
     },
   }, '📋 복사');
@@ -100,8 +100,8 @@ function copyButton(text) {
  * 세 번째 칸 뒤에는 노트북마다 다른 "선생님께 보여 줄 결과"(notebooks.js의 check)가 붙는다.
  */
 const CHECKS = [
-  '📒 Colab에서 열고, 파일 → 드라이브에 사본 저장',
-  '▶ 셀을 위에서부터 차례로 끝까지 실행',
+  '📒 Colab에서 열고 파일 → 드라이브에 사본 저장하기',
+  '▶ 맨 위 셀부터 차례로 끝까지 실행하기',
   '🔍 내 결과 확인: ',
 ];
 
@@ -113,7 +113,7 @@ function checklist(nb, ctx) {
     const got = ctx?.progress?.answers(key) ?? {};
     const n = CHECKS.filter((_, i) => got[i]).length;
     fill(box,
-      el('div.nbcheck__head', {}, el('strong', {}, '✅ 실습 점검표'), el('span.card__meta', {}, ` ${n} / ${CHECKS.length} — 모두 체크하면 이 실습 끝!`)),
+      el('div.nbcheck__head', {}, el('strong', {}, '✅ 실습 점검표'), el('span.card__meta', {}, ` ${n} / ${CHECKS.length} · 모두 체크하면 이 실습은 끝이에요!`)),
       el('p', {}, '🙋 선생님께 보여 줄 것: ', el('strong', {}, '아래 🔍 결과가 나온 내 Colab 화면')),
       el('ul.nbcheck__list', {}, CHECKS.map((t, i) => el('li', {}, el('label', {},
         el('input', {
@@ -125,7 +125,7 @@ function checklist(nb, ctx) {
             draw();
           },
         }), el('span', {}, t, i === CHECKS.length - 1 ? el('strong', {}, nb.check) : null))))),
-      el('p.card__meta', {}, '💡 학교에서 Colab을 쓸 수 없으면: 아래 셀마다 붙은 "실행 결과 예시"를 보며 코드가 하는 일을 따라가요. 코드 셀의 📋 복사로 다른 파이썬 환경에서 실행해도 돼요.'));
+      el('p.card__meta', {}, '💡 학교에서 Colab을 쓸 수 없다면 셀마다 붙은 "실행 결과 예시"를 보면서 코드가 하는 일을 따라가요. 코드 셀의 📋 복사 단추로 코드를 옮겨 다른 파이썬 환경에서 실행해도 돼요.'));
   }
   draw();
   return box;
@@ -157,9 +157,9 @@ function pythonPage(notebookId) {
           el('summary', {}, 'Colab이 처음이라면 — 사용법 4단계'),
           el('ol', {},
             el('li', {}, '"📒 Colab에서 열기"를 누르고 구글 계정으로 로그인해요.'),
-            el('li', {}, '위쪽 메뉴 파일 → 드라이브에 사본 저장 을 누르면 내 노트북이 돼요(고쳐도 원본은 그대로).'),
-            el('li', {}, '셀 왼쪽 ▶(또는 Shift + Enter)로 위에서부터 차례로 실행해요.'),
-            el('li', {}, '오류가 나면 위 셀을 빠뜨리지 않았는지 확인하고, 런타임 → 모두 실행 을 눌러 봐요.'))),
+            el('li', {}, '위쪽 메뉴에서 [파일 → 드라이브에 사본 저장]을 누르면 내 노트북이 생겨요. 사본은 마음껏 고쳐도 원본에 영향이 없어요.'),
+            el('li', {}, '셀 왼쪽의 ▶를 누르거나 Shift + Enter를 눌러, 맨 위 셀부터 차례로 실행해요.'),
+            el('li', {}, '오류가 나면 앞쪽 셀을 빠뜨리지 않았는지 확인해요. 그래도 안 되면 [런타임 → 모두 실행]을 눌러 봐요.'))),
         cells));
       return {};
     },

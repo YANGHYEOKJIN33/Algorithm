@@ -11,7 +11,7 @@ export function createCodePanel(root, store) {
   const seg = el('div.seg', { role: 'group', 'aria-label': '코드 보기' },
     el('button', { type: 'button', 'data-v': 'pseudo', onclick: () => store.set({ codeView: 'pseudo' }) }, '📝 의사코드'),
     el('button', { type: 'button', 'data-v': 'python', onclick: () => store.set({ codeView: 'python' }) }, '🐍 파이썬 같이 보기'));
-  const colab = el('a.pill.pill--sm.pill--colab', { target: '_blank', rel: 'noopener', title: '이 내용을 Colab에서 파이썬으로 실습' }, '📒 Colab');
+  const colab = el('a.pill.pill--sm.pill--colab', { target: '_blank', rel: 'noopener', title: '이 내용을 Colab에서 파이썬으로 실습해요' }, '📒 Colab');
   fill(root,
     el('div.panel__head', {}, el('span.panel__title', {}, '의사코드'), el('div.panel__tools', {}, seg, colab)),
     body);

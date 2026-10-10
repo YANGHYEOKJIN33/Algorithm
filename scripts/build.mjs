@@ -90,7 +90,7 @@ function pager(p, n) {
 
 const FOOT = `<footer>
   <p>데이터 출처: palmerpenguins (Horst, Hill &amp; Gorman, 2020) · Palmer Station LTER, Dr. Kristen Gorman · 라이선스 CC0.<br>
-  이 사이트는 <a href="../">「펭귄 데이터로 배우는 인공지능」</a> 수업의 크롤링 연습용이에요. 수업을 위해 일부 값을 바꿔 두었어요(<a href="index.html#traps">자세히</a>).</p>
+  이 사이트는 <a href="../">「펭귄 데이터로 배우는 인공지능」</a> 수업에서 크롤링을 연습하려고 만든 곳이에요. 수업에 쓰려고 일부 값을 일부러 바꿔 두었어요(<a href="index.html#traps">자세히</a>).</p>
 </footer>`;
 
 function page(p, rows, n) {
@@ -109,7 +109,7 @@ function page(p, rows, n) {
   <p>크롤링 연습용 사이트 · <a href="index.html">처음으로</a></p>
 </header>
 <main>
-  <p class="note">단위 — 부리길이·부리깊이·날개길이: mm(밀리미터), 몸무게: g(그램). 빈 칸은 측정하지 못한 값이에요.</p>
+  <p class="note">단위: 부리길이·부리깊이·날개길이는 mm(밀리미터), 몸무게는 g(그램)이에요. 빈칸은 측정하지 못한 값이에요.</p>
   ${pager(p, n)}
   <div class="wrap">
   <table id="penguins">
@@ -143,10 +143,10 @@ function practiceIndex(pages) {
 <body>
 <header>
   <h1>🐧 남극 펭귄 관측소</h1>
-  <p>웹 크롤링 연습을 위해 만든 사이트예요. 마음껏 긁어 가도 괜찮아요(그래도 천천히!).</p>
+  <p>웹 크롤링을 연습하려고 만든 사이트예요. 마음껏 긁어 가도 괜찮지만, 요청은 천천히 보내 주세요!</p>
 </header>
 <main>
-  <p class="note">펭귄 관측 기록이 <b>${pages.length}쪽</b>에 나뉘어 <b>모두 ${total}줄</b> 실려 있어요. 쪽마다 표 하나(<code>&lt;table id="penguins"&gt;</code>)가 있어요.<br>
+  <p class="note">펭귄 관측 기록 <b>모두 ${total}줄</b>이 <b>${pages.length}쪽</b>에 나뉘어 실려 있어요. 쪽마다 <code>&lt;table id="penguins"&gt;</code> 표가 하나씩 있어요.<br>
   주소 규칙: <code>${SITE_URL}practice/page1.html</code> … <code>page${pages.length}.html</code></p>
   <h2>쪽 목록</h2>
   <ul>
@@ -155,13 +155,13 @@ function practiceIndex(pages) {
   <h2>열(속성)</h2>
   <p>${COLUMNS.join(' · ')}</p>
   <h2 id="traps">숨겨 둔 함정 🕵️</h2>
-  <p>이 데이터에는 가공·전처리 수업을 위한 함정이 숨어 있어요: <b>빈칸</b>, <b>이상한 값</b>, <b>겹친 행</b>. 먼저 스스로 찾아본 뒤 아래를 펼쳐 보세요.</p>
+  <p>이 데이터에는 가공·전처리 수업에서 쓸 함정이 숨어 있어요. 바로 <b>빈칸</b>, <b>이상한 값</b>, <b>겹친 행</b>이에요. 먼저 스스로 찾아본 다음에 아래를 펼쳐 보세요.</p>
   <details>
     <summary>선생님용 — 원본에서 바꾼 곳 보기</summary>
     <ul>
       ${traps}
-      <li>${DUPLICATE_ID}번 펭귄: 1쪽 마지막 줄과 2쪽 첫 줄에 두 번 실림 (겹친 행)</li>
-      <li>그 밖의 빈칸(측정값 2줄·성별 11칸)은 원본 데이터에 원래 있던 결측치예요.</li>
+      <li>${DUPLICATE_ID}번 펭귄: 1쪽 마지막 줄과 2쪽 첫 줄에 두 번 실렸어요 (겹친 행)</li>
+      <li>그 밖의 빈칸(측정값 2줄, 성별 11칸)은 원본 데이터에 처음부터 있던 결측치예요.</li>
     </ul>
   </details>
 </main>
@@ -187,7 +187,7 @@ const lines = (text) => {
 
 export function notebookJson(nb) {
   const cells = [];
-  cells.push({ cell_type: 'markdown', metadata: {}, source: lines(`> 📒 이 노트북은 [펭귄 데이터로 배우는 인공지능](${SITE_URL}) 수업의 실습이에요. 원본: [${REPO_URL}](${REPO_URL})`) });
+  cells.push({ cell_type: 'markdown', metadata: {}, source: lines(`> 📒 이 노트북은 [펭귄 데이터로 배우는 인공지능](${SITE_URL}) 수업에서 쓰는 실습 노트북이에요. 원본: [${REPO_URL}](${REPO_URL})`) });
   for (const c of nb.cells) {
     if (c.type === 'md') {
       cells.push({ cell_type: 'markdown', metadata: {}, source: lines(c.text) });
