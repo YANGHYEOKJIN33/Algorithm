@@ -90,10 +90,10 @@ const concat = {
         const allMoved = f.waiting.length === 0;
         const one = f.result.filter((r) => r._i === 1).map((r) => `${r.번호}번`);
         const status = f.renumbered
-          ? el('p.callout.callout--add', {}, '✅ 인덱스 새로 매기기 — 0부터 다시 매겨서 이제 "인덱스 1"은 한 행뿐이에요.')
+          ? el('p.callout.callout--add', {}, '✅ 인덱스 새로 매기기: 0부터 다시 매겼더니 이제 "인덱스 1"은 한 행뿐이에요.')
           : allMoved && dup
-            ? el('p.callout.callout--warn', {}, `⚠ 인덱스 0, 1, 2가 두 번씩 있어요! "인덱스 1"은 ${one.join('일까요, ')}일까요? → 인덱스를 0부터 새로 매겨요.`)
-            : el('p.panel__hint', {}, '주황 줄 = 친구 표에서 온 행. 인덱스(왼쪽 회색)는 표마다 0부터 세던 번호를 그대로 들고 와요.');
+            ? el('p.callout.callout--warn', {}, `⚠ 인덱스 0, 1, 2가 두 번씩 있어요! "인덱스 1"은 ${one.join('일까요, ')}일까요? 그래서 인덱스를 0부터 새로 매겨요.`)
+            : el('p.panel__hint', {}, '주황 줄은 친구 표에서 온 행이에요. 왼쪽 회색 인덱스는 표마다 0부터 세던 번호를 그대로 가져와요.');
         fill(stage, el('div.duo', {},
           el('div.duo__col', {},
             el('div.webx__cap', {}, `새 표 — ${f.result.length}행 ${dup ? '(인덱스가 겹쳐요!)' : f.renumbered ? '(인덱스 새로 매김 ✅)' : '(내 표에서 시작)'}`),
@@ -101,10 +101,10 @@ const concat = {
           el('div.duo__arrow', { 'aria-hidden': 'true' }, '⬅'),
           el('div.duo__col', {}, el('div.webx__cap', {}, '친구 표 — 아직 옮기지 않은 행'), waiting),
           el('div.duo__col.duo__col--grow', {},
-            whatIfBand('1단원에서는 크롤러 하나가 7쪽을 한 표로 모았어요. 그런데 친구와 쪽을 나눠 모았다면 파일이 두 개가 돼요. 열 이름이 같으니 위아래로 이어 붙여 한 표로 만들어요.'),
+            whatIfBand('1단원에서는 크롤러 하나가 7쪽을 한 표로 모았어요. 그런데 친구와 쪽을 나눠 모았다면 파일이 두 개 생겨요. 두 표는 열 이름이 같으니 위아래로 이어 붙여 한 표로 만들어요.'),
             counters([['새 표의 행', f.result.length, 'add'], ['남은 행', f.waiting.length]]),
             status,
-            el('p.panel__hint', {}, '🔎 보기 쉽게 쪽마다 3마리만 보여 줘요. Colab 실습에서는 7쪽(50줄씩, 마지막 쪽 45줄)을 이어 붙여 345줄을 만들어요.'))));
+            el('p.panel__hint', {}, '🔎 보기 쉽게 쪽마다 3마리만 보여 줘요. Colab 실습에서는 7쪽을 모두 이어 붙여 345줄을 만들어요. 한 쪽에 50줄씩이고, 마지막 쪽만 45줄이에요.'))));
         flip(stage);
       },
     };
@@ -123,7 +123,7 @@ const merge = {
   python: PR.MERGE_PYTHON,
   notebook: NB,
   stageTitle: '측정표  🔗  판정표 — 열쇠는 번호',
-  stageHint: '파랑 = 지금 보는 행 · 초록 = 짝을 찾음 · 빨강 = 짝 없음',
+  stageHint: '파랑 = 지금 보는 행 · 초록 = 짝 찾음 · 빨강 = 짝 없음',
   dataTitle: MERGE_TITLE.inner,
   rows: ['1.05fr', '0.95fr'],
   frames: () => PR.mergeFrames({ how: mergeHow }),
@@ -170,13 +170,13 @@ const merge = {
         const lonely = f.right.filter((r) => !matchedR.has(r._k)).map((r) => `${r.번호}번`);
         const status = f.matched === false && focusRow
           ? el('p.callout.callout--warn', {}, keep
-            ? `✖ ${focusRow.번호}번은 판정표에 짝이 없어요. "짝 없는 행도 남기기"라서 측정값은 남기고 종 칸을 빈칸(NaN)으로 둬요.`
-            : `✖ ${focusRow.번호}번은 판정표에 짝이 없어요. 기본(짝 있는 행만)은 이 행을 새 표에 넣지 않아요.`)
+            ? `✖ ${focusRow.번호}번은 판정표에 짝이 없어요. "짝 없는 행도 남기기"를 골랐으니 측정값은 남기고 종 칸을 빈칸(NaN)으로 둬요.`
+            : `✖ ${focusRow.번호}번은 판정표에 짝이 없어요. 기본인 '짝 있는 행만'에서는 이 행을 새 표에 넣지 않아요.`)
           : f.done
             ? el('p.callout.callout--add', {}, `🧾 측정표 ${f.left.length}줄 · 판정표 ${f.right.length}줄 → 새 표 ${f.result.length}줄`, el('br'),
               keep ? `짝 없는 행도 남기기: ${gone.join('·')}은 남고 종이 빈칸(NaN), 판정표에만 있던 ${lonely.join('·')}은 빠져요.`
                 : `짝 있는 행만: 짝이 없는 ${gone.join('·')}(측정표)과 ${lonely.join('·')}(판정표)은 빠져요.`)
-            : el('p.panel__hint', {}, '판정표는 순서가 뒤섞여 있어요. 그래도 번호(열쇠)만 같으면 같은 펭귄이에요.');
+            : el('p.panel__hint', {}, '판정표는 순서가 뒤섞여 있어요. 그래도 열쇠인 번호만 같으면 같은 펭귄이에요.');
         fill(stage, el('div.duo', {},
           el('div.duo__col', {}, el('div.webx__cap', {}, '측정표 파일 — 종 칸이 없어요'), leftT),
           el('div.mergelink', {},
@@ -184,20 +184,20 @@ const merge = {
               `번호 ${focusRow.번호}`, el('br'), f.matched === true ? '🔗 짝 찾음' : f.matched === false ? '✖ 짝 없음' : '🔎 찾는 중') : el('span.duo__arrow', {}, '🔗')),
           el('div.duo__col', {}, el('div.webx__cap', {}, '판정표 파일 — 순서가 달라요'), rightT),
           el('div.duo__col.duo__col--grow', {},
-            whatIfBand('측정은 관측팀이, 종 판정은 연구팀이 맡아 파일이 둘로 왔다면? 측정값과 종(정답)이 한 줄에 있어야 지도학습을 할 수 있어요.'),
+            whatIfBand('측정은 관측팀이, 종 판정은 연구팀이 맡는 바람에 파일이 둘로 나뉘어 왔다면? 지도학습을 하려면 측정값과 종(정답)이 한 줄에 있어야 해요.'),
             status,
-            el('p.panel__hint', {}, '🔎 100번은 종 판정이 아직 안 온 펭귄, 4번은 측정값이 모두 비어 3단원에서 지운 펭귄이에요. Colab의 두 파일(341줄씩)은 모두 짝을 찾아 341줄이 돼요.'))));
+            el('p.panel__hint', {}, '🔎 100번은 종 판정이 아직 오지 않은 펭귄이고, 4번은 측정값이 모두 비어서 3단원에서 지운 펭귄이에요. Colab의 두 파일은 341줄씩인데, 모두 짝을 찾아 341줄이 돼요.'))));
 
         const rows = f.result;
         // 방법 설명은 표 옆에 — 6줄이 되어도 720px 화면에서 표가 잘리지 않게
         const howNote = keep
           ? el('p.callout.callout--warn', { style: 'margin:0' }, '🕳️ 짝 없는 행도 남기기: 측정표의 행을 모두 남기고, 짝이 없는 종 칸은 빈칸(NaN)으로 둬요.')
-          : el('p.callout', { style: 'margin:0' }, '🔗 짝 있는 행만(기본): 두 표에 모두 있는 번호만 새 표에 넣어요. 오른쪽 위 [짝 없는 행도 남기기]를 눌러 견줘 보세요.');
+          : el('p.callout', { style: 'margin:0' }, '🔗 짝 있는 행만(기본): 두 표에 모두 있는 번호만 새 표에 넣어요. 오른쪽 위 [짝 없는 행도 남기기]를 눌러 결과를 견줘 보세요.');
         fill(data, el('div.duo', {},
           el('div.duo__col', {}, rows.length
             ? tight(dataTable({ columns: f.columns, rows, key: (r) => r._k,
               rowClass: (r, i) => (r._nan ? 'is-warn' : i === rows.length - 1 && f.line === 4 ? 'is-new' : '') }), '2px')
-            : el('p.panel__hint', {}, '두 표에 모두 있는 번호를 찾으면 한 줄로 이어 여기에 넣어요.')),
+            : el('p.panel__hint', {}, '두 표에 모두 있는 번호를 찾으면, 한 줄로 이어서 여기에 넣어요.')),
           el('div.duo__col.duo__col--grow', {}, howNote)));
         flip(data);
       },
@@ -212,7 +212,7 @@ const split = {
   pseudo: PR.SPLIT_PSEUDO,
   python: PR.SPLIT_PYTHON,
   notebook: NB,
-  stageTitle: '깨끗한 표 — 341줄 중 10마리',
+  stageTitle: '깨끗한 표 — 341줄 가운데 10마리',
   stageHint: '파랑 열 = X(입력) · 주황 열 = y(정답)',
   dataTitle: '훈련 데이터 | 테스트 데이터',
   rows: ['1.25fr', '0.75fr'],   // 10행 표(행 높이를 줄임)와 훈련·테스트 상자가 720px 화면에서도 모두 보이게
@@ -264,9 +264,9 @@ const split = {
           el('div.splitkey', {},
             el('span.tag.tag--current', {}, 'X = 입력(문제)'), el('span.tag.tag--result', {}, 'y = 정답'),
             el('span.tag.tag--add', {}, '📘 훈련 80%'), el('span.tag.tag--warn', {}, '📝 테스트 20%')),
-          el('p.panel__hint', {}, '🟦 3-1에서 고른 속성 4개 중 화면에는 2개(부리길이·날개길이)만 보여 줘요(Colab은 4개). 🏷 종(y)은 보기 쉽게 글자로 보여 줘요. 3단원처럼 숫자로 바꿔 둬도 나누는 방법은 같아요. 섞어도 행마다 X와 y는 함께 움직여요(왼쪽 회색 인덱스 = 원래 자리).'),
-          noShuffle ? unshuffled(f) : el('p.callout', {}, '📘 80%로 공부하고 📝 20%로 시험 봐요 — 공부한 문제로 시험 보지 않기! 왜 먼저 섞을까요? 위 [🤔 섞지 않으면?]을 눌러 보세요.'),
-          lineageStrip(`화면에는 그중 ${f.rows.length}마리만 보여 줘요`))));
+          el('p.panel__hint', {}, '🟦 3-1에서 고른 속성 4개 가운데 화면에는 부리길이와 날개길이만 보여 줘요. Colab에서는 4개를 다 써요. 🏷 종(y)은 보기 쉽게 글자로 두었어요. 3단원처럼 숫자로 바꿔 둬도 나누는 방법은 같아요. 행을 섞어도 X와 y는 한 행에 붙어 함께 움직여요. 왼쪽 회색 인덱스는 원래 자리를 알려 줘요.'),
+          noShuffle ? unshuffled(f) : el('p.callout', {}, '📘 80%로 공부하고 📝 20%로 시험을 봐요. 공부한 문제를 시험에 그대로 내지 않는 거예요! 그런데 왜 먼저 섞을까요? 위의 [🤔 섞지 않으면?]을 눌러 보세요.'),
+          lineageStrip(`화면에는 그 가운데 ${f.rows.length}마리만 보여 줘요`))));
       flip(stage);
       const chip = (r, cls) => ({ key: `c${r._k}`, cls, content: `${r.번호}번 (${r.부리길이}, ${r.날개길이}) → ${r.종}` });
       const train = rows.filter((r) => f.part[r._k] === 'train');

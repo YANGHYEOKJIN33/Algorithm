@@ -28,11 +28,11 @@ import { ensureStartStyle } from './start/style.js';
  * 단원의 동사·질문·데이터 변화·할 수 있어요 목록은 TABS(각 단원의 course 파일)에서 그때그때 읽는다.
  */
 const STAGE_EXTRA = {
-  collect: { what: '웹 페이지의 표를 프로그램으로 긁어 와(크롤링) 데이터프레임으로 만들어요.', change: ['HTML 글자', '표(345줄)'], tools: 'requests · BeautifulSoup · pandas' },
-  inspect: { what: '빈칸(결측치)이 어디에 몇 개 있는지, 동떨어진 값(이상치)이 있는지 찾아요.', change: ['표 345줄', 'NaN 20칸 · 8200g?! · 겹친 행'], tools: 'isnull() · quantile() · boxplot()' },
+  collect: { what: '프로그램으로 웹 페이지의 표를 긁어 와서(크롤링) 데이터프레임으로 만들어요.', change: ['HTML 글자', '표(345줄)'], tools: 'requests · BeautifulSoup · pandas' },
+  inspect: { what: '빈칸(결측치)이 어디에 몇 개 있는지, 홀로 동떨어진 값(이상치)은 없는지 찾아요.', change: ['표 345줄', 'NaN 20칸 · 8200g?! · 겹친 행'], tools: 'isnull() · quantile() · boxplot()' },
   prep: { what: '필요한 속성만 남기고, 잘못된 행은 지우고, 빈칸은 채우고, 글자는 숫자로 바꿔요.', change: ['수컷·암컷', '0·1'], tools: 'drop() · fillna() · map()' },
-  ready: { what: '흩어진 표를 하나로 합치고, 입력 X와 정답 y, 훈련 80%와 테스트 20%로 나눠요.', change: ['한 표', '훈련 | 테스트'], tools: 'concat() · merge() · train_test_split()' },
-  ml: { what: '훈련 데이터로 모델을 학습시켜요. 분류·회귀·군집에 맞는 알고리즘을 골라요.', change: ['부리·날개', '"젠투!"'], tools: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
+  ready: { what: '흩어진 표를 하나로 합쳐요. 그다음 입력 X와 정답 y로, 훈련 80%와 테스트 20%로 나눠요.', change: ['한 표', '훈련 | 테스트'], tools: 'concat() · merge() · train_test_split()' },
+  ml: { what: '분류·회귀·군집 가운데 문제에 맞는 알고리즘을 골라, 훈련 데이터로 모델을 학습시켜요.', change: ['부리·날개', '"젠투!"'], tools: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
   project: { what: '처음 보는 테스트 데이터로 정확도를 재고, 나만의 주제로 프로젝트를 해요.', change: ['6마리 중 5마리 정답', '정확도 83%'], tools: 'accuracy_score() · Colab' },
 };
 
@@ -58,8 +58,8 @@ function pipeline(root, ctx) {
         onclick: () => { ctx.progress.setHook(home.id, i); drawHook(); },
       }, op)),
       el('p.smap-hook__note', {}, mine === null
-        ? '정답을 맞히는 게 아니라 내 생각을 먼저 정해 보는 거예요. 아래 지도를 보면 힌트가 있어요.'
-        : `내 생각: "${h.options[mine]}" — 0단원 정리에서 정답을 확인해요. 🔒`));
+        ? '정답을 맞히라는 게 아니에요. 내 생각을 먼저 정해 두는 거예요. 아래 지도에 힌트가 있어요.'
+        : `내 생각: "${h.options[mine]}". 정답은 0단원 정리에서 확인해요. 🔒`));
   }
 
   function drawSteps() {
@@ -78,7 +78,7 @@ function pipeline(root, ctx) {
     fill(stepsBox, parts.flatMap((b, i) => (i < parts.length - 1 ? [b, el('span.smap-to', { 'aria-hidden': 'true' }, '→')] : [b])));
     countLine.textContent = opened.size === units.length
       ? `🎉 여섯 단계를 모두 열어 봤어요. 맨 위 탭의 1~6이 바로 이 순서예요.`
-      : `열어 본 단계 ${opened.size} / ${units.length} — 번호 카드를 눌러 보세요. 번호는 맨 위 탭의 번호와 같아요.`;
+      : `열어 본 단계 ${opened.size} / ${units.length}. 번호 카드를 눌러 보세요. 맨 위 탭의 번호와 같은 번호예요.`;
   }
 
   function drawDetail() {
@@ -124,12 +124,12 @@ function pipeline(root, ctx) {
       el('div.hero__emoji', { 'aria-hidden': 'true' }, '🐧❓'),
       el('div', {},
         el('h3', {}, home.unit.question ?? '처음 보는 펭귄의 종을 컴퓨터가 맞힐 수 있을까?'),
-        el('p', {}, '사람은 사진을 보고 알아보지만, 컴퓨터는 숫자로 된 데이터에서 규칙을 배워야 해요. 그 규칙을 배우기까지 데이터는 여섯 단계를 거쳐요.'))),
+        el('p', {}, '사람은 사진만 보고도 알아보지만, 컴퓨터는 숫자로 된 데이터에서 규칙을 배워야 해요. 그 규칙을 배우기까지 데이터는 여섯 단계를 거쳐요.'))),
     hookBox,
     stepsBox,
     countLine,
     detail,
-    el('div.callout', {}, '💡 실제 인공지능 프로젝트에서는 시간의 대부분(흔히 70~80%)을 수집·가공·전처리에 써요. 데이터가 나쁘면 아무리 좋은 알고리즘도 엉뚱한 것을 배우기 때문이에요(Garbage in, garbage out).'),
+    el('div.callout', {}, '💡 실제 인공지능 프로젝트에서는 흔히 시간의 70~80%를 수집, 가공, 전처리에 써요. 데이터가 나쁘면 아무리 좋은 알고리즘도 엉뚱한 것을 배우기 때문이지요(Garbage in, garbage out).'),
   ));
   drawHook();
   const unsub = ctx.progress.subscribe(() => { drawSteps(); drawDetail(); });
@@ -140,7 +140,7 @@ function pipeline(root, ctx) {
 
 const SPECIES_INFO = [
   { name: '아델리', look: '부리가 짧고 굵어요. 눈 둘레에 흰 테가 있어요.' },
-  { name: '턱끈', look: '턱 아래에 검은 끈 무늬가 있어요. 부리가 길어요.' },
+  { name: '턱끈', look: '턱 아래에 검은 끈 무늬가 있고, 부리가 길어요.' },
   { name: '젠투', look: '몸집이 가장 크고 날개가 길어요. 부리는 길고 얇아요.' },
 ];
 
@@ -158,7 +158,7 @@ function billFigure() {
       <line x1="226" y1="50" x2="238" y2="50" class="billfig__dim"/><line x1="226" y1="76" x2="238" y2="76" class="billfig__dim"/>
       <text x="238" y="40" text-anchor="middle" class="billfig__txt">부리깊이</text>
     </svg>` },
-  el('figcaption', {}, '부리길이는 앞뒤로, 부리깊이는 위아래로 잰 두께예요. 날개길이·몸무게도 함께 쟀어요.'));
+  el('figcaption', {}, '부리길이는 부리를 앞뒤로 잰 길이, 부리깊이는 위아래로 잰 두께예요. 날개길이와 몸무게도 함께 쟀어요.'));
 }
 
 function dataIntro(root, ctx) {
@@ -197,9 +197,9 @@ function dataIntro(root, ctx) {
     const r = recs[sel.row];
     const v = r[sel.col];
     fill(info,
-      el('div.cellinfo__row', {}, el('span.tag.tag--current', {}, '행'), ` 인덱스 ${sel.row} — 펭귄 ${r.번호}번 한 마리의 기록`),
-      el('div.cellinfo__row', {}, el('span.tag.tag--result', {}, '열'), ` '${sel.col}' — 모든 펭귄의 ${sel.col} 값이 세로로 모여 있어요(속성 하나)`),
-      el('div.cellinfo__row', {}, el(`span.tag${isMissing(v) ? '.tag--warn' : '.tag--add'}`, {}, '값'), ` ${isMissing(v) ? 'NaN — 비어 있어요! (결측치)' : fmt(v)}`),
+      el('div.cellinfo__row', {}, el('span.tag.tag--current', {}, '행'), ` 인덱스 ${sel.row}: 펭귄 ${r.번호}번 한 마리의 기록`),
+      el('div.cellinfo__row', {}, el('span.tag.tag--result', {}, '열'), ` '${sel.col}': 모든 펭귄의 ${sel.col} 값을 세로로 모은 속성 하나`),
+      el('div.cellinfo__row', {}, el(`span.tag${isMissing(v) ? '.tag--warn' : '.tag--add'}`, {}, '값'), ` ${isMissing(v) ? 'NaN: 비어 있는 칸이에요! (결측치)' : fmt(v)}`),
       el('div.cellinfo__code', {}, el('code', {}, `df.loc[${sel.row}, '${sel.col}']`), ' → ', el('code', {}, isMissing(v) ? 'nan' : String(v))));
   }
 
@@ -212,24 +212,24 @@ function dataIntro(root, ctx) {
     el('p.di-count', { 'aria-label': '줄 수 맞추기' },
       '🧮 ', el('span', {}, `원본 펭귄 ${SPECIES.map((sp, i) => `${sp} ${counts[i]}`).join(' + ')} = `), el('b', {}, `${total}마리`),
       el('span.di-count__eq', {}, ' + '),
-      el('span.di-count__dup', {}, `수업용으로 한 번 더 넣은 ${DUPLICATE_ID}번 펭귄 줄 1줄`),
+      el('span.di-count__dup', {}, `수업을 위해 한 번 더 넣은 ${DUPLICATE_ID}번 펭귄 1줄`),
       el('span.di-count__eq', {}, ' = '), el('b', {}, `연습 표 ${all.length}줄`),
-      el('span.card__meta', {}, ' (겹친 줄은 3단원 🧹 전처리에서 찾아 지워요)')),
+      el('span.card__meta', {}, ' (겹친 줄은 3단원 🧹 전처리에서 찾아서 지워요)')),
     el('div.datawrap', {},
       el('div.datawrap__table', {},
-        el('div.datawrap__cap', {}, `연습 표의 처음 8줄 (전체 ${all.length}줄 × ${COLUMNS.length}열) — 칸을 눌러 보세요. 빨간 NaN은 빈칸이에요.`),
+        el('div.datawrap__cap', {}, `연습 표의 처음 8줄 (전체 ${all.length}줄 × ${COLUMNS.length}열). 칸을 눌러 보세요. 빨간 NaN은 빈칸이에요.`),
         tableBox),
       el('div.datawrap__side', {},
         info,
         el('ul.termlist', {},
           el('li', {}, infoTerm('행', { strong: true }), ' = 관측 하나(펭귄 한 마리)'),
           el('li', {}, infoTerm('열', { strong: true }), ' = ', infoTerm('속성'), ' 하나(부리길이, 몸무게 …)'),
-          el('li', {}, infoTerm('인덱스', { strong: true }), ' = 왼쪽 회색 번호, 0부터 세요(펭귄 번호와 달라요)'),
+          el('li', {}, infoTerm('인덱스', { strong: true }), ' = 왼쪽의 회색 번호. 0부터 세고, 펭귄 번호와 달라요'),
           el('li', {}, infoTerm('결측치', { strong: true, label: 'NaN' }), ' = 비어 있는 칸'),
-          el('li', {}, infoTerm('데이터프레임', { strong: true }), ' = 이런 표를 파이썬(판다스)이 부르는 이름'),
-          el('li', {}, el('strong', {}, el('code', {}, 'df')), ' = 이 표에 붙인 이름(변수). 코드에서 df를 보면 "이 펭귄 표"라고 읽어요'),
-          el('li', {}, el('strong', {}, el('code', {}, "df.loc[인덱스, '열']")), ' = 그 행과 그 열이 만나는 칸 하나(지금 누른 칸). 예: ', el('code', {}, "df.loc[2, '몸무게']"))))),
-    el('p.card__meta', {}, '데이터 출처: palmerpenguins — 남극 파머 기지에서 2007~2009년에 관측(Gorman 박사 연구팀, CC0). 수업을 위해 빈칸 1칸·잘못 적은 값 1칸·겹친 행 1줄을 일부러 넣었어요.'),
+          el('li', {}, infoTerm('데이터프레임', { strong: true }), ' = 판다스(파이썬 도구)에서 이런 표를 부르는 이름'),
+          el('li', {}, el('strong', {}, el('code', {}, 'df')), ' = 이 표에 붙인 이름(변수). 코드에서 df가 보이면 "이 펭귄 표"라고 읽으면 돼요'),
+          el('li', {}, el('strong', {}, el('code', {}, "df.loc[인덱스, '열']")), ' = 그 행과 그 열이 만나는 칸 하나. 지금 누른 칸이 바로 이런 칸이에요. 예: ', el('code', {}, "df.loc[2, '몸무게']"))))),
+    el('p.card__meta', {}, '데이터 출처: palmerpenguins. Gorman 박사 연구팀이 2007~2009년에 남극 파머 기지에서 관측했어요(CC0). 수업을 위해 빈칸 1칸, 잘못 적은 값 1칸, 겹친 행 1줄을 일부러 넣었어요.'),
   ));
   draw();
   return {};
@@ -242,9 +242,9 @@ const pseudoIntro = {
   pseudo: BASICS.PSEUDO,
   python: BASICS.PYTHON,
   stageTitle: '펭귄 줄',
-  stageHint: '지금 보는 펭귄은 파란 테두리, 지금까지 가장 무거운 펭귄은 👑',
+  stageHint: '파란 테두리는 지금 보는 펭귄, 👑는 지금까지 가장 무거운 펭귄',
   dataTitle: '변수(상자)',
-  dataHint: '← 로 값을 넣으면 상자 속 값이 바뀌어요',
+  dataHint: '← 로 새 값을 넣으면 상자 속 값이 바뀌어요',
   rows: ['1.2fr', '0.8fr'],
   frames: () => BASICS.maxFrames(),
   mount({ stage, data }) {
@@ -271,9 +271,9 @@ const pseudoIntro = {
           varBox('최고', `${f.best}g`, { hot: f.line === 1 || f.line === 4, sub: `${f.bestId}번 펭귄` }),
           varBox('p', cur ? `${cur.w}g` : '—', { sub: cur ? `${cur.id}번 펭귄` : '' }),
           el('div.varrow__note', {},
-            el('p', {}, el('strong', {}, '의사(擬似)코드 '), '= 진짜 코드를 흉내 내어 사람 말로 적은 프로그램 순서예요. 왼쪽 줄을 위에서부터 한 줄씩 실행해요.'),
+            el('p', {}, el('strong', {}, '의사(擬似)코드 '), '= 진짜 코드를 흉내 내어 프로그램의 순서를 사람 말로 적은 글이에요. 왼쪽 줄을 위에서부터 한 줄씩 실행해요.'),
             el('p', {}, el('strong', {}, '← '), '오른쪽 값을 왼쪽 상자(변수)에 넣어요. 넣으면 예전 값은 사라져요.'),
-            el('p', {}, el('strong', {}, '반복 '), '같은 일을 되풀이해요. 들여 쓴 줄이 반복 안에서 할 일이에요.'),
+            el('p', {}, el('strong', {}, '반복 '), '같은 일을 되풀이해요. 그 아래 들여 쓴 줄이 반복할 때마다 하는 일이에요.'),
             el('p', {}, el('strong', {}, '만약 '), '조건이 참일 때만 그 아래 줄을 실행해요.'))));
       },
     };

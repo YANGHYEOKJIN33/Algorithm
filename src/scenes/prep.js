@@ -59,7 +59,7 @@ const features = {
   python: PP.FEATURE_PYTHON,
   notebook: NB,
   stageTitle: '속성 하나를 종(색)별로 펼쳐 보기',
-  stageHint: '345줄에서 겹친 행을 뺀 344마리 · 8200g 같은 함정은 원래 값으로 그렸어요',
+  stageHint: '345줄에서 겹친 행을 뺀 344마리 · 8200g처럼 잘못 적은 값도 고치지 않고 그렸어요',
   dataTitle: '고른 결과',
   rows: ['1.45fr', '0.75fr'],
   frames: () => PP.featureFrames(),
@@ -79,18 +79,18 @@ const features = {
       const g = guesses[col];
       const btn = (keep, label) => el('button.pill.pill--sm', { type: 'button', 'aria-pressed': String(g === keep), onclick: () => pick(col, keep) }, label);
       return el('div.featwhy', {}, el('strong', {}, '🤔 내 예상은? '), btn(true, '✅ 넣는다'), ' ', btn(false, '✖️ 뺀다'),
-        el('span.card__meta', {}, g === undefined ? '  고른 다음 ⏭ 한 단계로 확인해요.' : '  ⏭ 한 단계를 눌러 맞았는지 확인해요.'));
+        el('span.card__meta', {}, g === undefined ? '  고른 뒤 ⏭ 한 단계를 눌러 확인해요.' : '  ⏭ 한 단계를 눌러 맞았는지 확인해요.'));
     }
     function verdictNote(f) {
       const g = guesses[f.col];
       return el('p.featwhy', {}, f.verdict.why,
-        g === undefined ? null : el('strong', {}, g === f.verdict.keep ? '  ⭕ 내 예상과 같아요!' : '  🤔 내 예상과 달라요 — 까닭을 읽어 봐요.'));
+        g === undefined ? null : el('strong', {}, g === f.verdict.keep ? '  ⭕ 내 예상과 같아요!' : '  🤔 내 예상과 달라요. 까닭을 읽어 봐요.'));
     }
     function endNote() {
       const tried = PP.FEATURE_VERDICTS.filter((v) => guesses[v.col] !== undefined);
       const ok = tried.filter((v) => guesses[v.col] === v.keep).length;
       return el('div.placeholder', {},
-        el('p', {}, '고른 속성 4개는 입력 X(독립변수), 맞힐 종은 정답 y(종속변수)예요. 아래 칸을 보세요.'),
+        el('p', {}, '고른 속성 4개가 입력 X(독립변수)이고, 맞힐 종이 정답 y(종속변수)예요. 아래 칸에서 확인해 보세요.'),
         tried.length ? el('p', {}, el('strong', {}, `내 예상: ${tried.length}개 중 ${ok}개 맞힘`)) : null);
     }
     function drawStage(f) {
@@ -105,7 +105,7 @@ const features = {
           speciesLegend()),
         p ? el('div.fit__grow', {}, p.kind === 'num' ? stripPlot(p) : countGrid(p))
           : el('div.fit__grow', {}, f.done ? endNote()
-            : el('div.placeholder', {}, '정답 열은 \'종\'이에요. 나머지 8개 속성을 하나씩 꺼내, 넣을지 뺄지 먼저 예상한 뒤 확인해요.')),
+            : el('div.placeholder', {}, '정답 열은 \'종\'이에요. 나머지 8개 속성을 하나씩 꺼내 볼게요. 넣을지 뺄지 먼저 예상하고 나서 확인해요.')),
         f.verdict ? verdictNote(f) : p ? guessBar(f.col) : null);
     }
     return {
@@ -157,8 +157,8 @@ const drop = {
         fill(data,
           counters([['행', t.rows.length], ['열', t.columns.length]]),
           pyList('지운 것', removed.map((x) => ({ ...x, cls: 'is-dim' })), { showIndex: false, empty: '아직 없어요' }),
-          el('p.callout', { style: 'margin:var(--sp-2) 0 0' }, el('strong', {}, '🗂️ 3-1쪽에서 X에서 뺀 열은? '),
-            '연도는 어디에도 안 써서 지워요. 번호는 4단원에서 짝을 찾는 열쇠로 쓰고, 섬·성별은 다른 목표(예: 성별 맞히기 프로젝트)에 쓸 수 있어 표에 남겨 둬요.'));
+          el('p.callout', { style: 'margin:var(--sp-2) 0 0' }, el('strong', {}, '🗂️ 3-1쪽에서 X에 넣지 않은 열은? '),
+            '연도는 어디에도 쓰지 않으니 지워요. 번호는 4단원에서 짝을 찾는 열쇠로 써요. 섬·성별도 성별 맞히기 프로젝트 같은 다른 목표에 쓸 수 있어서 표에 남겨 둬요.'));
       },
     };
   },
@@ -174,9 +174,9 @@ const LOST_A = PP.dropnaFrames().at(-1).removed.length;
 
 function methodBand(which) {
   const [name, rest] = {
-    A: ['방법 A · 지우기', ` — 빈칸이 있는 행을 통째로 지워요. 다음 쪽 방법 B는 같은 ${SAMPLE_ROWS}행을 지우지 않고 채워요.`],
-    B1: ['방법 B ① · 평균값으로 채우기', ` — 앞 쪽(방법 A)과 같은 ${SAMPLE_ROWS}행이에요. 지웠던 행도 그대로 두고 빈칸만 채워요.`],
-    B2: ['방법 B ② · 최빈값으로 채우기', ' — 앞 쪽에서 숫자 빈칸을 채운 표에 이어서, 글자 열을 채워요.'],
+    A: ['방법 A · 지우기', ` — 빈칸이 있는 행을 통째로 지워요. 다음 쪽의 방법 B에서는 같은 ${SAMPLE_ROWS}행을 지우지 않고 채워요.`],
+    B1: ['방법 B ① · 평균값으로 채우기', ` — 앞 쪽(방법 A)과 같은 ${SAMPLE_ROWS}행 표예요. 앞에서 지웠던 행도 그대로 두고 빈칸만 채워요.`],
+    B2: ['방법 B ② · 최빈값으로 채우기', ' — 앞 쪽에서 숫자 빈칸을 채운 표를 이어받아, 이번에는 글자 열을 채워요.'],
   }[which];
   return el(`p.callout${which === 'A' ? '' : '.callout--add'}`, { style: 'flex:1 1 300px; margin:0 0 var(--sp-2)' }, el('strong', {}, name), rest);
 }
@@ -222,7 +222,7 @@ const dropna = {
               el('span.lossbar__keep', { style: `width:${(left / f.total) * 100}%` }, `남음 ${Math.round((left / f.total) * 100)}%`),
               lost ? el('span.lossbar__lost', { style: `width:${(lost / f.total) * 100}%` }, `잃음 ${Math.round((lost / f.total) * 100)}%`) : null)),
           f.sexOnly?.length ? el('p.callout.callout--warn', { style: 'margin:0' },
-            `⚠️ ${f.sexOnly.map((n) => `${n}번`).join('·')} 펭귄은 입력 X에 쓰지도 않는 성별 한 칸만 비었는데, 측정값까지 통째로 잃었어요.`) : null);
+            `⚠️ ${f.sexOnly.map((n) => `${n}번`).join('·')} 펭귄은 입력 X에 쓰지도 않는 성별 한 칸만 비었는데, 멀쩡한 측정값까지 함께 잃었어요.`) : null);
       },
     };
   },
@@ -255,14 +255,14 @@ const fillmean = {
         const filledN = Object.keys(f.filled).length;
         // 처음: 어느 방법인지 · 열마다: 평균 계산과 변수 m · 끝: 방법 A와 같은 눈금으로 견주기
         if (!f.col && !f.done) {
-          fill(data, methodBand('B1'), el('p.panel__hint', {}, '열마다 빈칸이 아닌 값들의 합 ÷ 개수로 평균을 구해 빈칸에 적어요.'));
+          fill(data, methodBand('B1'), el('p.panel__hint', {}, '열마다 빈칸을 뺀 나머지 값을 모두 더하고 개수로 나눠 평균을 구해요. 그 평균을 빈칸에 적어요.'));
         } else if (f.done) {
           fill(data,
             counters([['원래', `${SAMPLE_ROWS}행`], ['지운 행', 0], ['남은 행', t.rows.length, 'add'], ['채운 칸', filledN, 'add']]),
-            el('p.panel__hint', {}, `방법 A(지우기)는 같은 표에서 ${SAMPLE_ROWS - LOST_A}행만 남았어요. 방법 B는 행을 모두 지키지만, 채운 ${filledN}칸은 진짜가 아닌 어림값이에요.`),
+            el('p.panel__hint', {}, `방법 A(지우기)는 같은 표에서 ${SAMPLE_ROWS - LOST_A}행만 남았어요. 방법 B는 행을 모두 지키지만, 채운 ${filledN}칸은 진짜 값이 아니라 어림값이에요.`),
             f.allGuess?.length ? el('p.callout.callout--warn', { style: 'margin:var(--sp-2) 0 0' },
               el('strong', {}, '⚠️ 모두 어림값 — '),
-              `인덱스 ${t.rows.filter(guessAll).map((r) => `${r._i}행(펭귄 ${r.번호}번)`).join(', ')}은 측정값 ${PP.FILL_COLUMNS.length}칸이 전부 평균으로 채운 값이라, 진짜로 잰 값이 하나도 없어요. 이런 행은 어떻게 할지 3-5쪽 끝에서 골라 봐요.`) : null);
+              `인덱스 ${t.rows.filter(guessAll).map((r) => `${r._i}행(펭귄 ${r.번호}번)`).join(', ')}은 측정값 ${PP.FILL_COLUMNS.length}칸을 모두 평균으로 채워서, 실제로 잰 값이 하나도 없어요. 이런 행을 어떻게 할지는 3-5쪽 끝에서 정해요.`) : null);
         } else {
           fill(data, el('div.varrow', {},
             calc ? el('div.meancalc', { style: 'flex:1 1 420px; margin:0' },
@@ -271,7 +271,7 @@ const fillmean = {
                 calc.values.map((x, i) => el('span.meancalc__v', {}, `${fmt(x)}${i < calc.values.length - 1 ? ' +' : ''}`)),
                 el('span.meancalc__name', {}, `) ÷ ${calc.count}`)),
               el('div.meancalc__res', {}, `= ${fmt(calc.sum)} ÷ ${calc.count} = `, el('strong', {}, fmt(calc.mean, 3))))
-              : el('p.panel__hint', { style: 'flex:1 1 420px' }, `'${f.col}' 열의 빈칸이 아닌 값들을 더하고 개수로 나눠요.`),
+              : el('p.panel__hint', { style: 'flex:1 1 420px' }, `'${f.col}' 열에서 빈칸을 뺀 값을 모두 더하고, 그 개수로 나눠요.`),
             varBox('m', calc ? fmt(calc.mean, 3) : '?', { hot: Boolean(calc), sub: `'${f.col}'의 평균` })));
         }
       },
@@ -292,14 +292,14 @@ function choosePanel(choose) {
     el('div.varrow', { style: 'gap:var(--sp-2)' },
       d ? el('p.callout.callout--warn', { style: 'flex:1 1 280px; margin:0' },
         el('strong', {}, `🗑️ 지운다 — 펭귄 ${d.id}번 (인덱스 ${d.i})`), el('br'),
-        `측정값 ${PP.FILL_COLUMNS.length}칸이 모두 빈칸 → 채우면 ${vals(d)}, 전부 어림값이에요.`) : null,
+        `측정값 ${PP.FILL_COLUMNS.length}칸이 모두 비어 있어요. 채우면 ${vals(d)}인데, 전부 어림값이에요.`) : null,
       f ? el('p.callout.callout--add', { style: 'flex:1 1 280px; margin:0' },
         el('strong', {}, `🖊️ 채운다 — 펭귄 ${f.id}번 (인덱스 ${f.i})`), el('br'),
-        `${f.holes.join('·')} 한 칸만 빈칸 → ${VALUE_COLUMNS.filter((c) => !f.holes.includes(c)).join('·')}는 진짜 값이라 채워서 살려요.`,
-        more.length ? ` (${more.map((x) => `${x.id}번`).join('·')}도 ${[...new Set(more.flatMap((x) => x.holes))].join('·')} 한 칸만 비어 채워요)` : '') : null),
+        `${f.holes.join('·')} 한 칸만 비어 있어요. ${VALUE_COLUMNS.filter((c) => !f.holes.includes(c)).join('·')}는 실제로 잰 값이니 빈칸을 채워서 행을 살려요.`,
+        more.length ? ` (${more.map((x) => `${x.id}번`).join('·')}도 ${[...new Set(more.flatMap((x) => x.holes))].join('·')} 한 칸만 비어 있어서 채워요)` : '') : null),
     el('p.panel__hint', { style: 'margin-top:var(--sp-2)' },
       el('strong', {}, '고르는 규칙: 측정값이 모두 빈 행은 지우고, 한두 칸만 빈 행은 채워요. '),
-      'Colab에서도 측정값이 모두 빈 2줄(4번·272번)만 지우고 나머지를 채워 341줄을 남겨요(dropna()만 하면 331줄).'));
+      'Colab에서도 측정값이 모두 빈 2줄(4번·272번)만 지우고 나머지는 채워서 341줄을 남겨요. dropna()만 하면 331줄이 남아요.'));
 }
 
 const fillmode = {
@@ -365,10 +365,10 @@ const replace = {
           ? el('div.varrow', {},
             pyDict('아델리' in f.dict ? 'sp_map' : 'sex_map', Object.entries(f.dict), { hot: f.key ?? null, note: ' = 바꿈표' }),
             el('div.varrow__note', {},
-              el('p', {}, '칸의 글자를 열쇠로 바꿈표에서 찾아, 그 값(숫자)으로 바꿔 적어요.'),
+              el('p', {}, '칸의 글자를 열쇠 삼아 바꿈표에서 숫자를 찾고, 그 숫자로 바꿔 적어요.'),
               '아델리' in f.dict
-                ? el('p.callout.callout--warn', {}, '⚠️ 0·1·2는 이름표일 뿐 크기에 뜻이 없어요. 젠투(2)가 턱끈(1)의 2배인 것도, 아델리(0)보다 큰 것도 아니에요.')
-                : el('p', {}, '수컷(0)·암컷(1)의 숫자도 이름표일 뿐, 크고 작음에 뜻이 없어요.')))
+                ? el('p.callout.callout--warn', {}, '⚠️ 0·1·2는 이름표일 뿐이라 크고 작음에 뜻이 없어요. 젠투(2)가 턱끈(1)의 2배인 것도, 아델리(0)보다 큰 것도 아니에요.')
+                : el('p', {}, '수컷(0)·암컷(1)도 이름표일 뿐이라 크고 작음에 뜻이 없어요.')))
           : el('p.panel__hint', {}, '바꿈표를 먼저 만들어요.'));
       },
     };
@@ -480,7 +480,7 @@ const scaleScene = {
           fill(data, el('div.varrow', { style: 'align-items:center' },
             counters([['바꾼 열', `${Object.keys(f.scaled).length}개`, 'add'], ['모든 값', '0 ~ 1', 'add'], ['거리', `${fmt(f.before.dist, 1)} → ${fmt(f.gap.dist, 2)}`]]),
             el('p.panel__hint', { style: 'flex:1 1 300px; margin:0' },
-              '거리의 숫자 크기는 달라졌지만, 이제 몸무게 혼자가 아니라 세 열이 모두 힘을 보태요. 모델을 평가할 때는 작은값·큰값을 훈련 데이터에서만 구해요 → 6-1에서 직접 고쳐 봐요.')));
+              '거리 값은 달라졌지만, 이제 몸무게 혼자가 아니라 세 열이 모두 거리에 힘을 보태요. 모델을 평가할 때는 작은값·큰값을 훈련 데이터에서만 구해요. 이건 6-1에서 직접 해 봐요.')));
           return;
         }
         fill(data, el('div.varrow', {},

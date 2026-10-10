@@ -12,11 +12,11 @@ import { predict, rankNeighbors, vote } from './knn.js';
 export const K = 3;
 
 export const PSEUDO = [
-  { code: '맞힌수 ← 0', note: '맞힌 개수를 셀 칸이에요.' },
-  { code: '반복: 테스트 데이터의 각 펭귄 t', note: '공부할 때 본 적 없는 펭귄으로만 시험을 봐요.' },
-  { code: '    예측 ← 모델이 t의 종을 맞혀 본다 (정답은 가린 채)', note: '모델에게는 부리길이·부리깊이만 보여 줘요.' },
+  { code: '맞힌수 ← 0', note: '맞힌 개수를 세어 둘 칸이에요.' },
+  { code: '반복: 테스트 데이터의 각 펭귄 t', note: '학습할 때 한 번도 보지 않은 펭귄으로만 시험을 봐요.' },
+  { code: '    예측 ← 모델이 t의 종을 맞혀 본다 (정답은 가린 채)', note: '모델에게는 부리길이와 부리깊이만 보여 주고, 종은 가려 둬요.' },
   { code: '    만약 예측 = t의 진짜 종이면 → 맞힌수 ← 맞힌수 + 1', note: '가려 둔 정답(y_test)과 견줘 채점해요.' },
-  { code: '정확도 ← 맞힌수 ÷ 테스트 데이터 수', note: '분류 모델의 가장 기본 성적표예요. 1에 가까울수록 잘 맞혀요.' },
+  { code: '정확도 ← 맞힌수 ÷ 테스트 데이터 수', note: '분류 모델의 가장 기본이 되는 성적표예요. 1에 가까울수록 잘 맞힌 거예요.' },
 ];
 
 export const PYTHON = [
@@ -33,8 +33,8 @@ function whyWrong(train, t, k, pred) {
   const first = train.find((p) => p.id === nb[0].id);
   const votes = nb.filter((n) => train.find((p) => p.id === n.id).label === pred).length;
   return first.label === t.label
-    ? `가장 가까운 ${first.id}번은 '${first.label}'이지만, 이웃 ${k}마리 중 ${votes}마리가 '${pred}'라 다수결에서 졌어요.`
-    : `가장 가까운 ${first.id}번부터 '${pred}'이고, 이웃 ${k}마리 중 ${votes}마리가 '${pred}'였어요.`;
+    ? `가장 가까운 ${first.id}번은 '${first.label}'${josa(first.label, '이지만/지만')}, 이웃 ${k}마리 중 ${votes}마리가 '${pred}'${josa(pred, '이라서/라서')} 다수결에서 졌어요.`
+    : `가장 가까운 ${first.id}번부터 '${pred}' 쪽이고, 이웃 ${k}마리 중 ${votes}마리가 '${pred}'${josa(pred, '이었어요/였어요')}.`;
 }
 
 export function evalFrames({ train = knnTrain(), test = knnTest(), k = K } = {}) {
@@ -47,13 +47,13 @@ export function evalFrames({ train = knnTrain(), test = knnTest(), k = K } = {})
   for (const t of test) {
     const { pred } = predict(train, t, k);
     const nb = rankNeighbors(train, t).slice(0, k).map((n) => n.id);
-    snap({ line: 3, icon: '🤔', focus: t.id, neighbors: nb, say: `${t.id}번 펭귄 — 가까운 이웃 ${k}마리의 다수결로 '${pred}'${josa(pred, '이라고/라고')} 예측했어요.` });
+    snap({ line: 3, icon: '🤔', focus: t.id, neighbors: nb, say: `${t.id}번 펭귄과 가까운 이웃 ${k}마리를 찾았어요. 이웃들의 다수결로 '${pred}'${josa(pred, '이라고/라고')} 예측했어요.` });
     const ok = pred === t.label;
     if (ok) correct += 1;
     rows.push({ id: t.id, truth: t.label, pred, ok });
     snap({ line: 4, icon: ok ? '⭕' : '❌', focus: t.id, neighbors: nb,
-      say: ok ? `정답도 '${t.label}' → 맞혔어요! (맞힌수 ${correct})`
-        : `정답은 '${t.label}' → 틀렸어요. ${whyWrong(train, t, k, pred)}` });
+      say: ok ? `정답도 '${t.label}'${josa(t.label, '이라서/라서')} 맞혔어요! (맞힌수 ${correct})`
+        : `정답은 '${t.label}'${josa(t.label, '이에요/예요')}. 예측과 달라서 틀렸어요. ${whyWrong(train, t, k, pred)}` });
   }
   const accuracy = correct / test.length;
   snap({ line: 5, icon: '📊', accuracy, done: true,
@@ -119,14 +119,14 @@ export function improveNote(res, base = improveScore()) {
     const others = res.features.filter((c) => c !== WING).map((c) => `${c} ${span(c)}mm`).join('·');
     const why = broke.map((c) => {
       const r = res.rows.find((x) => x.id === c.id);
-      return ` 그래서 ${withJosa(`${c.truth} ${c.id}번`, '은/는')} 날개길이(${r.values[WING]}mm)가 ${withJosa(c.to, '과/와')} 비슷해 틀렸어요.`;
+      return ` 그래서 ${withJosa(`${c.truth} ${c.id}번`, '은/는')} 날개길이(${r.values[WING]}mm)가 ${withJosa(c.to, '과/와')} 비슷해서 틀렸어요.`;
     }).join('');
-    return { kind: 'warn', text: `⚠️ 날개길이는 훈련 펭귄끼리 폭이 ${span(WING)}mm로, 부리(${others})보다 숫자 폭이 훨씬 넓어 거리를 거의 혼자 정해요.${why}` };
+    return { kind: 'warn', text: `⚠️ 훈련 펭귄의 날개길이는 폭이 ${span(WING)}mm나 돼요. 부리(${others})보다 훨씬 넓어서 거리를 거의 혼자 정해요.${why}` };
   }
   if (res.scale) {
-    return { kind: 'add', text: `📏 작은값·큰값은 훈련 ${KNN_TRAIN_IDS.length}마리에서만 구했어요(테스트는 시험 문제라 미리 보면 안 돼요). 열마다 0~1로 맞추니 어느 열도 거리를 혼자 정하지 못해요.` };
+    return { kind: 'add', text: `📏 작은값·큰값은 훈련 ${KNN_TRAIN_IDS.length}마리에서만 구했어요. 테스트 펭귄은 시험 문제라서 미리 보면 안 되거든요. 열마다 0~1로 맞추니 어느 한 열이 거리를 혼자 정하지 못해요.` };
   }
-  if (res.k === 1) return { kind: 'info', text: '👆 k = 1은 가장 가까운 한 마리만 믿어요. 이번엔 맞혀도, 그 한 마리가 잘못 적힌 값이면 바로 틀려요.' };
-  if (res.k !== K) return { kind: 'info', text: `🗳️ k = ${res.k}는 이웃 ${res.k}마리의 다수결이에요. 멀리 있는 펭귄까지 투표에 끼어요.` };
-  return { kind: 'info', text: `처음 모델 그대로예요. ${TARGET_ID}번을 틀려요 — k·속성·크기 맞추기를 바꿔 다시 채점해 봐요.` };
+  if (res.k === 1) return { kind: 'info', text: '👆 k = 1이면 가장 가까운 한 마리만 믿어요. 이번에는 맞혔어도, 그 한 마리의 값이 잘못 적혀 있으면 바로 틀려요.' };
+  if (res.k !== K) return { kind: 'info', text: `🗳️ k = ${res.k}${josa(res.k, '이면/면')} 이웃 ${res.k}마리가 다수결로 정해요. 그만큼 멀리 있는 펭귄까지 투표에 끼어들어요.` };
+  return { kind: 'info', text: `처음 모델 그대로라서 ${TARGET_ID}번을 여전히 틀려요. k나 속성을 바꾸거나 크기를 맞춘 뒤 다시 채점해 봐요.` };
 }

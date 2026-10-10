@@ -103,7 +103,7 @@ export function dropFrames() {
   const frames = [];
   const snap = (extra) => frames.push({ table: cloneTable(table), markCol: null, markRows: [], ...extra });
 
-  snap({ line: 1, icon: '📋', markCol: '연도', say: "겹친 행과 이상치까지 모두 7행인 표예요. 앞 쪽에서 X에서 뺀 열 가운데 '연도'는 어디에도 쓰지 않으니 열을 통째로 지울 거예요." });
+  snap({ line: 1, icon: '📋', markCol: '연도', say: "겹친 행과 이상치가 섞여 있는 7행 표예요. 앞 쪽에서 X에서 뺀 열 가운데 '연도'는 어디에도 쓰지 않으니 열을 통째로 지울 거예요." });
   table.columns = table.columns.filter((c) => c !== '연도');
   table.rows.forEach((r) => { delete r.연도; });
   snap({ line: 2, icon: '✂️', say: "'연도' 열을 지웠더니 모든 행에서 그 칸이 사라졌어요. 번호·섬은 뒤에서 쓸 수 있으니 남겨 둬요." });
@@ -398,7 +398,7 @@ export function scaleFrames(source = afterAllFill()) {
   const terms = (g) => g.parts.map((p) => `${fmt(p.diff, 2)}²`).join(' + ');
   const heavy = before.parts.reduce((m, p) => (p.share > m.share ? p : m));
   snap({ line: 1, icon: '📏', gap: before, showPair: true,
-    say: `왜 크기를 맞출까요? ${withJosa(name(a), '과/와')} ${name(b)}의 거리를 재면 √(${terms(before)}) ≈ ${fmt(before.dist, 1)}이에요. ${heavy.col} 차이 ${withJosa(fmt(heavy.diff), '과/와')} 거의 같지요. 숫자가 큰 ${withJosa(heavy.col, '이/가')} 거리를 혼자 정하는 거예요.` });
+    say: `왜 크기를 맞출까요? ${withJosa(name(a), '과/와')} ${name(b)}의 거리를 재면 √(${terms(before)}) ≈ ${fmt(before.dist, 1)}이에요. ${heavy.col} 차이 ${withJosa(fmt(heavy.diff), '과/와')} 거의 같지요. 숫자가 큰 ${withJosa(heavy.col, '이/가')} 거리를 혼자 정해 버리는 셈이에요.` });
 
   for (const col of SCALE_COLUMNS) {
     const vals = table.rows.map((r) => r[col]);

@@ -135,10 +135,10 @@ function whyWrong(f, t, pred) {
   const [x0, x1] = range('x');
   const [y0, y1] = range('y');
   const r = (a, b) => `${a.toFixed(1)}~${b.toFixed(1)}mm`;
-  if (t.x < x0) return `부리길이 ${t.x}mm — 훈련 ${t.label}(${r(x0, x1)})보다 짧아 ${pred} 곁에 있어요.`;
-  if (t.x > x1) return `부리길이 ${t.x}mm — 훈련 ${t.label}(${r(x0, x1)})보다 길어 ${pred} 곁에 있어요.`;
-  if (t.y < y0) return `부리깊이 ${t.y}mm — 훈련 ${t.label}(${r(y0, y1)})보다 얕아 ${pred} 곁에 있어요.`;
-  if (t.y > y1) return `부리깊이 ${t.y}mm — 훈련 ${t.label}(${r(y0, y1)})보다 깊어 ${pred} 곁에 있어요.`;
+  if (t.x < x0) return `부리길이가 ${t.x}mm예요. 훈련 데이터의 ${t.label}(${r(x0, x1)})보다 짧아서 ${pred} 무리 곁에 놓였어요.`;
+  if (t.x > x1) return `부리길이가 ${t.x}mm예요. 훈련 데이터의 ${t.label}(${r(x0, x1)})보다 길어서 ${pred} 무리 곁에 놓였어요.`;
+  if (t.y < y0) return `부리깊이가 ${t.y}mm예요. 훈련 데이터의 ${t.label}(${r(y0, y1)})보다 얕아서 ${pred} 무리 곁에 놓였어요.`;
+  if (t.y > y1) return `부리깊이가 ${t.y}mm예요. 훈련 데이터의 ${t.label}(${r(y0, y1)})보다 깊어서 ${pred} 무리 곁에 놓였어요.`;
   return `${t.label} 무리보다 ${pred} 무리에 더 가까이 있어요.`;
 }
 
@@ -271,10 +271,10 @@ const evaluate = {
         return el('div.pj-why', {},
           el('div.pj-why__head', {}, '🔎 살펴보기'),
           f.rows.length === 0
-            ? el('span', {}, '⏭ 한 단계를 눌러 채점을 시작해요. 채점한 줄은 단추를 눌러 이웃을 볼 수 있어요.')
+            ? el('span', {}, '⏭ 한 단계를 눌러 채점을 시작해요. 채점이 끝난 줄은 단추를 누르면 이웃을 볼 수 있어요.')
             : f.done && wrongLeft
-              ? [el('span', {}, '👆 채점표의 ', el('b', {}, '❌ 틀림'), ' 단추를 눌러 왜 틀렸는지 살펴본 뒤, 고쳐서 다시 채점해 봐요.'), fixBtn()]
-              : el('span', {}, '👆 채점한 줄의 단추(⭕/❌ 🔎)를 누르면 그 펭귄의 가까운 이웃 3마리와 투표를 볼 수 있어요.'));
+              ? [el('span', {}, '👆 채점표의 ', el('b', {}, '❌ 틀림'), ' 단추를 눌러 왜 틀렸는지 살펴보세요. 그다음 모델을 고쳐서 다시 채점해 봐요.'), fixBtn()]
+              : el('span', {}, '👆 채점한 줄의 단추(⭕/❌ 🔎)를 누르면 그 펭귄과 가까운 이웃 3마리, 그리고 다수결 결과를 볼 수 있어요.'));
       }
       const votes = {};
       for (const n of nbs) votes[n.label] = (votes[n.label] ?? 0) + 1;
@@ -289,7 +289,7 @@ const evaluate = {
           : [
             el('span', {}, '💡 ', whyWrong(f, t, picked.pred)),
             nbs[0]?.label === t.label
-              ? el('span.pj-why__tip', {}, `가장 가까운 ${nbs[0].id}번은 ${t.label}지만 ${f.k}마리 다수결에서 졌어요.`)
+              ? el('span.pj-why__tip', {}, `가장 가까운 ${nbs[0].id}번은 진짜 종과 같은 ${t.label}인데, ${f.k}마리 다수결에서 졌어요.`)
               : null,
             f.done ? fixBtn() : null,
           ]);
@@ -322,7 +322,7 @@ const evaluate = {
             EV.IMPROVE_KS.map((k) => el('button', { type: 'button', 'aria-pressed': String(improve.k === k), onclick: () => set({ k }) }, String(k))))),
           toggle('wing', '날개길이도 넣기'),
           toggle('scale', '크기 맞추기(정규화)'),
-          el('button.pill.pill--sm', { type: 'button', onclick: () => setImprove({ k: EV.K, wing: false, scale: false }), title: '처음 모델(k=3 · 부리길이·부리깊이 · 크기 그대로)로' }, '↺ 처음 모델')),
+          el('button.pill.pill--sm', { type: 'button', onclick: () => setImprove({ k: EV.K, wing: false, scale: false }), title: '처음 모델(k=3 · 부리길이·부리깊이 · 크기 그대로)로 돌아가기' }, '↺ 처음 모델')),
         el('div.pj-imp__body', {},
           el('div.pj-imp__grid', {}, res.rows.map((r) => {
             const si = speciesIndex(r.truth);
@@ -345,7 +345,7 @@ const evaluate = {
             el('div.calcgrid__k', {}, `처음 ${base.correct} ÷ ${base.total} (${basePct}%)`))),
         el('p.pj-imp__note', {}, `🔎 ${cur.id}번 이웃 ${res.k}마리: ${cur.neighbors.map((n) => `${n.id}번 ${n.label}`).join(' · ')} → ${Object.entries(votes).sort((a, b) => b[1] - a[1]).map(([k, c]) => `${k} ${c}표`).join(' · ')} → '${cur.pred}' ${cur.ok ? '⭕' : '❌'}`),
         el(`p.pj-imp__note.is-${note.kind}`, {}, note.text),
-        el('p.pj-imp__warn', {}, `⚠️ 테스트가 ${res.total}마리뿐이라 한 마리만 달라져도 정확도가 약 17%p 바뀌어요. 어느 방법이 정말 나은지는 더 많은 테스트 데이터로 다시 재야 해요(Colab의 69줄에서는 결과가 또 달라요).`)));
+        el('p.pj-imp__warn', {}, `⚠️ 테스트가 ${res.total}마리뿐이라 한 마리만 달라져도 정확도가 약 17%p나 바뀌어요. 어느 방법이 정말 나은지는 더 많은 테스트 데이터로 다시 재 봐야 알 수 있어요. Colab의 테스트 69줄로 재면 결과가 또 달라요.`)));
     }
 
     return {
@@ -364,11 +364,11 @@ const evaluate = {
 /** 단원마다 — 우리가 한 일 · 의사코드 핵심 · 파이썬 함수 (단원 번호·이름·동사는 TABS에서) */
 const FLOW = {
   collect: { did: '연습 사이트 7쪽을 크롤링해 345줄 표를 만들었어요.', pseudo: '요청 → 분석 → <tr> 찾기 → 칸 꺼내기 → 행목록에 추가', py: 'requests.get · BeautifulSoup · find_all · DataFrame · to_csv' },
-  inspect: { did: '결측치 20칸(12줄)과 이상치(8200g) 하나, 겹친 행 하나를 찾았어요.', pseudo: '칸마다 비었나? → True 세기 → 위치 모으기 · Q1/Q3/IQR → 울타리 밖', py: 'isnull() · sum() · any(axis=1) · quantile() · boxplot()' },
-  prep: { did: '핵심 속성 4개를 고르고, 지우고, 채우고, 글자를 숫자로 바꿨어요.', pseudo: '속성 고르기 · 행/열 지우기 · 평균/최빈값으로 채우기 · 바꿈표로 바꾸기', py: 'drop() · drop_duplicates() · dropna() · fillna() · map()' },
-  ready: { did: '표를 합치고, X와 y, 훈련 80%와 테스트 20%로 나눴어요.', pseudo: '아래로 잇기 · 열쇠로 짝 찾기 · 섞기 → 앞 80% / 나머지 20%', py: 'concat() · merge() · train_test_split()' },
-  ml: { did: '분류(k-최근접 이웃·트리), 회귀(선형 회귀), 군집(k-평균)을 배웠어요.', pseudo: '거리·다수결 / 질문으로 나누기 / 평균에서 벗어난 정도 / 배정↔이동', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
-  project: { did: '처음 보는 테스트 데이터로 정확도를 쟀어요(화면 6마리 중 5마리 83% · Colab 69줄 중 66줄 95.7%).', pseudo: '테스트마다 예측 → 정답과 견주기 → 맞힌수 ÷ 전체', py: 'predict() · accuracy_score() · mean_squared_error()' },
+  inspect: { did: '결측치 20칸(12줄), 이상치 하나(8200g), 겹친 행 하나를 찾았어요.', pseudo: '칸마다 비었나? → True 세기 → 위치 모으기 · Q1/Q3/IQR → 울타리 밖', py: 'isnull() · sum() · any(axis=1) · quantile() · boxplot()' },
+  prep: { did: '핵심 속성 4개를 고르고, 잘못된 행은 지우고, 빈칸은 지우거나 채우고, 글자는 숫자로 바꿨어요.', pseudo: '속성 고르기 · 행/열 지우기 · 평균/최빈값으로 채우기 · 바꿈표로 바꾸기', py: 'drop() · drop_duplicates() · dropna() · fillna() · map()' },
+  ready: { did: '표를 합친 뒤 X와 y로 나누고, 다시 훈련 80%와 테스트 20%로 나눴어요.', pseudo: '아래로 잇기 · 열쇠로 짝 찾기 · 섞기 → 앞 80% / 나머지 20%', py: 'concat() · merge() · train_test_split()' },
+  ml: { did: '분류(k-최근접 이웃·의사결정 트리), 회귀(선형 회귀), 군집(k-평균) 알고리즘을 배웠어요.', pseudo: '거리·다수결 / 질문으로 나누기 / 평균에서 벗어난 정도 / 배정↔이동', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans' },
+  project: { did: '처음 보는 테스트 데이터로 정확도를 쟀어요. 화면에서는 6마리 중 5마리(83%), Colab에서는 69줄 중 66줄(95.7%)을 맞혔어요.', pseudo: '테스트마다 예측 → 정답과 견주기 → 맞힌수 ÷ 전체', py: 'predict() · accuracy_score() · mean_squared_error()' },
 };
 
 function summary(root, ctx) {
@@ -431,21 +431,21 @@ function summary(root, ctx) {
       return isOpen ? [row, detailRow(t)] : row;
     }));
     countLine.textContent = seen.size === units.length
-      ? '🎉 1~6단원을 모두 펼쳐 봤어요. 프로젝트도 이 순서 그대로 해요.'
-      : `펼쳐 본 단원 ${seen.size} / ${units.length} — 단원 이름(▶)을 누르면 그 단원의 데이터 변화와 파이썬 한 줄 정리가 펼쳐져요.`;
+      ? '🎉 1~6단원을 모두 펼쳐 봤어요. 프로젝트도 이 순서를 그대로 따라가요.'
+      : `펼쳐 본 단원 ${seen.size} / ${units.length} · 단원 이름(▶)을 누르면 그 단원에서 데이터가 바뀐 모습과 파이썬 한 줄 정리를 볼 수 있어요.`;
   }
 
   fill(root, el('div.read.read--wide', {},
     el('div.pj-head', {},
-      el('p.pj-intro', {}, '🗺 펭귄 데이터가 거쳐 온 6단계예요. 번호는 맨 위 탭의 번호와 같고, [다시 보기 →]는 그 단원의 표지로 가요.'),
+      el('p.pj-intro', {}, '🗺 펭귄 데이터가 거쳐 온 6단계예요. 번호는 맨 위 탭의 번호와 같아요. [다시 보기 →]를 누르면 그 단원의 표지로 가요.'),
       countLine),
     el('div.pj-scroll', {}, el('table.mini.flowtable.pj-flow', {},
       el('thead', {}, el('tr', {}, ['단원', '우리가 한 일', '의사코드 핵심', '파이썬', '진도'].map((h) => el('th', {}, h)))),
       body)),
     el('div.cards', {},
       el('div.card.card--current', {}, el('div.card__title', {}, '🔁 데이터가 바뀐 모습'), el('p.card__text', {}, 'HTML 글자 → 345줄 표(빈칸·이상치·겹친 행) → 깨끗한 341줄 표 → X(속성 4개)·y(종) → 훈련 272줄 · 테스트 69줄 → 모델 → 예측')),
-      el('div.card.card--result', {}, el('div.card__title', {}, '🧠 자료구조가 한 일'), el('p.card__text', {}, '리스트(행목록·거리목록·위치목록), 사전(세기표·바꿈표), 큐(트리의 할일), 표(데이터프레임)·점수표(Q). 알고리즘은 결국 자료구조를 바꿔 가는 절차예요.')),
-      el('div.card.card--add', {}, el('div.card__title', {}, '✅ 기억할 것 세 가지'), el('p.card__text', {}, '① 데이터가 나쁘면 결과도 나쁘다. ② 테스트 데이터는 학습에 쓰지 않는다. ③ 알고리즘은 목적(분류·회귀·군집)에 맞춰 고른다.')))));
+      el('div.card.card--result', {}, el('div.card__title', {}, '🧠 자료구조가 한 일'), el('p.card__text', {}, '리스트(행목록·거리목록·위치목록), 사전(세기표·바꿈표), 큐(트리의 할일 큐), 표(데이터프레임), 점수표(Q)를 썼어요. 알고리즘은 결국 자료구조를 한 단계씩 바꿔 가는 절차예요.')),
+      el('div.card.card--add', {}, el('div.card__title', {}, '✅ 기억할 것 세 가지'), el('p.card__text', {}, '① 데이터가 나쁘면 결과도 나빠요. ② 테스트 데이터는 학습에 쓰지 않아요. ③ 알고리즘은 분류·회귀·군집 가운데 목적에 맞춰 골라요.')))));
   draw();
   const unsub = ctx.progress.subscribe(() => draw());
   return { destroy: unsub };
@@ -498,7 +498,7 @@ function quiz(root, ctx) {
 
   fill(root, el('div.read.pj-final', {},
     el('div.pj-quizhead', {},
-      el('p', {}, '1~5단원에서 2문제씩 골랐어요. 처음 고른 답이 기록되니(처음에 맞힘) 찍지 말고 생각해서 골라요. 틀리면 ', el('b', {}, '[📖 그 쪽 다시 보기 →]'), '로 그 개념을 배운 쪽에 다녀와서 다시 골라 보세요. 고른 답은 이 브라우저에 저장돼요.'),
+      el('p', {}, '1~5단원에서 단원마다 2문제씩 골랐어요. 처음 고른 답은 "처음에 맞힘"으로 따로 기록되니, 찍지 말고 잘 생각해서 골라요. 틀리면 ', el('b', {}, '[📖 그 쪽 다시 보기 →]'), '를 눌러 그 개념을 배운 쪽에 다녀온 뒤 다시 골라 보세요. 고른 답은 이 브라우저에 저장돼요.'),
       el('button.pill.pill--sm', { type: 'button', onclick: reset }, '🔄 처음부터 다시 풀기')),
     tally,
     box));
@@ -511,22 +511,22 @@ function quiz(root, ctx) {
 
 /** go: [탭, 쪽, 하위탭] — "다시 보기" 단추가 데려갈 곳 */
 const STEPS = [
-  { id: 'problem', icon: '🎯', name: '문제 정하기', todo: '무엇을 맞힐까(정답 y)? 분류·회귀·군집 중 무엇인가? 모둠이면 역할(데이터·코드·발표)도 나눠요.', py: '', go: ['ml', 'purpose', 'concept'] },
+  { id: 'problem', icon: '🎯', name: '문제 정하기', todo: '무엇을 맞힐지(정답 y) 정하고, 분류·회귀·군집 가운데 어느 것인지 골라요. 모둠이라면 데이터·코드·발표 역할도 나눠요.', py: '', go: ['ml', 'purpose', 'concept'] },
   { id: 'collect', icon: '🕸', name: '데이터 모으기', todo: '공개 데이터를 내려받거나 크롤링해요. 출처와 이용 조건을 적어 둬요.', py: 'pd.read_csv · requests · BeautifulSoup', go: ['collect'] },
-  { id: 'inspect', icon: '🔍', name: '데이터 살펴보기', todo: '행·열 수, 결측치, 이상치, 겹친 행을 확인해요. 그래프로 그려 봐요.', py: 'shape · isnull().sum() · duplicated() · describe() · boxplot', go: ['inspect'] },
-  { id: 'prep', icon: '🧹', name: '전처리', todo: '핵심 속성 고르기, 지우기·채우기, 글자를 숫자로.', py: 'drop_duplicates · dropna · fillna · map', go: ['prep'] },
-  { id: 'split', icon: '🧩', name: '나누기', todo: 'X와 y, 훈련과 테스트로 나눠요.', py: 'train_test_split', go: ['ready'] },
-  { id: 'train', icon: '🤖', name: '모델 학습', todo: '목적에 맞는 알고리즘을 골라 fit() 해요. 두 가지 이상 견줘 보면 더 좋아요.', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans', go: ['ml'] },
-  { id: 'eval', icon: '📊', name: '평가와 개선', todo: '테스트 데이터로 정확도(분류)·오차(회귀)를 재고, 틀린 예를 살펴 고쳐 봐요.', py: 'accuracy_score · mean_squared_error', go: ['project', 'eval'] },
-  { id: 'impact', icon: '⚖️', name: '사회적 영향 점검', todo: '개인정보가 들어 있지 않나? 데이터가 한쪽으로 치우치지(편향) 않았나? 틀린 예측으로 피해를 보는 사람은 없나?', py: '', go: ['collect', 'manners'] },
-  { id: 'present', icon: '🎤', name: '발표', todo: '문제 → 데이터 → 전처리 근거 → 모델 선택 이유 → 결과 → 한계와 개선점 순서로.', py: '', go: null },
+  { id: 'inspect', icon: '🔍', name: '데이터 살펴보기', todo: '행·열 수와 결측치, 이상치, 겹친 행을 확인해요. 그래프로 그려 보면 더 잘 보여요.', py: 'shape · isnull().sum() · duplicated() · describe() · boxplot', go: ['inspect'] },
+  { id: 'prep', icon: '🧹', name: '전처리', todo: '핵심 속성을 고르고, 잘못된 행은 지우고, 빈칸은 지우거나 채워요. 글자는 숫자로 바꿔요.', py: 'drop_duplicates · dropna · fillna · map', go: ['prep'] },
+  { id: 'split', icon: '🧩', name: '나누기', todo: '표를 X와 y로 나누고, 다시 훈련 데이터와 테스트 데이터로 나눠요.', py: 'train_test_split', go: ['ready'] },
+  { id: 'train', icon: '🤖', name: '모델 학습', todo: '목적에 맞는 알고리즘을 골라 fit()으로 학습시켜요. 두 가지 이상을 견줘 보면 더 좋아요.', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans', go: ['ml'] },
+  { id: 'eval', icon: '📊', name: '평가와 개선', todo: '테스트 데이터로 정확도(분류)나 오차(회귀)를 재요. 틀린 예를 살펴보고, 모델을 고친 뒤 다시 재요.', py: 'accuracy_score · mean_squared_error', go: ['project', 'eval'] },
+  { id: 'impact', icon: '⚖️', name: '사회적 영향 점검', todo: '개인정보가 들어 있지 않은지, 데이터가 한쪽으로 치우치지(편향) 않았는지, 틀린 예측으로 피해를 볼 사람은 없는지 점검해요.', py: '', go: ['collect', 'manners'] },
+  { id: 'present', icon: '🎤', name: '발표', todo: '문제, 데이터, 전처리 근거, 모델을 고른 이유, 결과, 한계와 개선점 순서로 발표해요.', py: '', go: null },
 ];
 /** 예전 판은 체크를 순서 번호로 저장했다 — 번호를 단계 id로 옮겨 읽는다 */
 const OLD_ORDER = ['problem', 'collect', 'inspect', 'prep', 'split', 'train', 'eval', 'present'];
 
 const KINDS = {
-  분류: { what: '정해진 무리 중 하나를 골라요(종·품종)', algo: 'k-최근접 이웃 · 의사결정 트리', py: 'KNeighborsClassifier · DecisionTreeClassifier', go: ['ml', 'idea', 'knn'] },
-  회귀: { what: '숫자를 내놓는 예측이에요(몸무게·기온)', algo: '선형 회귀', py: 'LinearRegression', go: ['ml', 'idea', 'linreg'] },
+  분류: { what: '종·품종처럼 정해진 무리 가운데 하나를 골라요', algo: 'k-최근접 이웃 · 의사결정 트리', py: 'KNeighborsClassifier · DecisionTreeClassifier', go: ['ml', 'idea', 'knn'] },
+  회귀: { what: '몸무게·기온처럼 숫자를 예측해요', algo: '선형 회귀', py: 'LinearRegression', go: ['ml', 'idea', 'linreg'] },
   군집: { what: '정답 없이 비슷한 것끼리 묶어요', algo: 'k-평균', py: 'KMeans', go: ['ml', 'idea', 'kmeans'] },
 };
 
@@ -562,7 +562,7 @@ function project(root, ctx) {
   /* 내 프로젝트 계획 — 주제 · 학습 목적 → 알맞은 알고리즘 */
   const topicInput = el('input', {
     type: 'text', value: plan.topic, maxlength: '60', 'aria-label': '내 프로젝트 주제',
-    placeholder: '예: 우리 동네 기온 예측 — 아래 주제 예시를 눌러도 돼요',
+    placeholder: '예: 우리 동네 기온 예측 (아래 주제 예시를 눌러도 돼요)',
     oninput: (e) => {
       plan.topic = e.target.value;
       savePlan();
@@ -582,7 +582,7 @@ function project(root, ctx) {
     fill(algoLine, kd
       ? ['→ ', el('b', {}, plan.kind), ` — ${kd.what}. 알맞은 알고리즘: `, el('b', {}, kd.algo), ' ', el('code.flowtable__py', {}, kd.py), ' ',
         goBtn(kd.go, '5단원에서 다시 보기 →')]
-      : '학습 목적을 고르면 알맞은 알고리즘을 알려 줘요. 헷갈리면 정답(y)이 있는지, 숫자인지부터 생각해 봐요.');
+      : '학습 목적을 고르면 알맞은 알고리즘을 알려 줘요. 헷갈리면 정답(y)이 있는지, 그 정답이 숫자인지부터 따져 봐요.');
   }
 
   /* 주제 예시 — 누르면 내 계획에 들어간다 */
@@ -618,7 +618,7 @@ function project(root, ctx) {
             if (e.target.checked) ctx.check('proj-check');
             drawSteps();
           },
-        }), el('span.sr-only', {}, `${st.name} 했어요`)),
+        }), el('span.sr-only', {}, `${st.name} 마쳤어요`)),
         el('span.projstep__icon', {}, st.icon),
         el('div.projstep__body', {},
           el('b', {}, `${i + 1}. ${st.name}`), el('span', {}, st.todo), st.py ? el('code.flowtable__py', {}, st.py) : null,
@@ -631,7 +631,7 @@ function project(root, ctx) {
   drawSteps();
   fill(root, el('div.read.read--wide', {},
     el('div.nb__top', {},
-      el('p', {}, '📒 ', el('b', {}, '프로젝트 틀 노트북'), ' — 펭귄 데이터로 처음부터 끝까지(수집 → 평가) 돌아가는 완성 예시예요. "✏️ 여기를 바꿔요" 표시가 있는 DATA_URL·TARGET·FEATURES를 내 데이터와 내 목표로 바꿔 쓰면 돼요.'),
+      el('p', {}, '📒 ', el('b', {}, '프로젝트 틀 노트북'), ' — 펭귄 데이터로 수집부터 평가까지 한 번에 돌아가는 완성 예시예요. "✏️ 여기를 바꿔요" 표시가 있는 DATA_URL·TARGET·FEATURES만 내 데이터와 목표에 맞게 바꾸면 돼요.'),
       el('a.pill.pill--colab', { href: colabUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
       el('a.pill', { href: notebookUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
     el('div.projgrid', {},
@@ -641,18 +641,18 @@ function project(root, ctx) {
           el('label', {}, '주제 — 무엇을 맞힐까?', topicInput),
           kindRow,
           algoLine),
-        el('section', {}, el('h3', {}, '✅ 단계별 체크리스트'), el('p.panel__hint', {}, '한 단계씩 끝낼 때마다 체크하세요. 막히면 [다시 보기 →]로 그 단원에 다녀와요.'), list)),
+        el('section', {}, el('h3', {}, '✅ 단계별 체크리스트'), el('p.panel__hint', {}, '단계를 하나 끝낼 때마다 체크해요. 막히면 [다시 보기 →]를 눌러 그 단원에 다녀와요.'), list)),
       el('div.pj-col', {},
         el('section', {}, el('h3', {}, '💡 주제 예시 — 눌러서 내 주제로'), topicBox),
         el('section', {},
           el('h3', {}, '🔎 데이터 구하는 곳'),
           el('ul', {},
             el('li', {}, '공공데이터포털 data.go.kr · 서울 열린데이터광장 data.seoul.go.kr · 기상자료개방포털 data.kma.go.kr'),
-            el('li', {}, 'scikit-learn 내장 데이터: load_iris(), load_wine(), load_diabetes() — 내려받기 없이 바로 써요'),
+            el('li', {}, 'scikit-learn 내장 데이터: load_iris(), load_wine(), load_diabetes() — 내려받지 않고 바로 쓸 수 있어요'),
             el('li', {}, 'Kaggle Datasets(kaggle.com/datasets) — 회원가입이 필요해요'),
-            el('li', {}, '직접 크롤링 — 🕸 수집 단원의 예절(robots.txt·천천히·개인정보 없이)을 꼭 지켜요'),
+            el('li', {}, '직접 크롤링 — 🕸 수집 단원에서 배운 예절(robots.txt 확인·천천히 요청·개인정보 빼기)을 꼭 지켜요'),
             el('li', {}, '이 수업의 펭귄 데이터: ', el('a', { href: DATA_CSV_URL, target: '_blank', rel: 'noopener' }, 'penguins.csv')))))),
-    el('div.callout', {}, '🧭 평가 기준 예시 — ① 문제가 분명한가(무엇을 맞히나) ② 데이터 출처와 수집 방법을 밝혔나 ③ 결측치·이상치를 확인하고 처리한 근거가 있나 ④ 목적에 맞는 알고리즘을 골랐나 ⑤ 테스트 데이터로 공정하게 평가하고, 틀린 예를 보고 고쳐 봤나 ⑥ 개인정보·편향을 점검했나 ⑦ 모둠원이 역할을 나눠 함께 해결했나 ⑧ 한계와 개선점을 말할 수 있나')));
+    el('div.callout', {}, '🧭 평가 기준 예시 — ① 문제가 분명한가(무엇을 맞히나) ② 데이터 출처와 수집 방법을 밝혔나 ③ 결측치·이상치를 확인하고 처리한 근거가 있나 ④ 목적에 맞는 알고리즘을 골랐나 ⑤ 테스트 데이터로 공정하게 평가하고, 틀린 예를 보고 모델을 고쳐 봤나 ⑥ 개인정보·편향을 점검했나 ⑦ 모둠원이 역할을 나눠 함께 해결했나 ⑧ 한계와 개선점을 말할 수 있나')));
   return {};
 }
 
