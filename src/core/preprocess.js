@@ -360,11 +360,11 @@ export const SCALE_PSEUDO = [
   { code: '거리를 다시 잰다', note: '이제 세 열이 모두 0~1이라, 어느 한 열이 거리를 혼자 정하지 못해요.' },
 ];
 export const SCALE_PYTHON = [
-  'd = ((a - b) ** 2).sum() ** 0.5        # a, b: 두 펭귄의 숫자 열',
-  "for col in ['부리길이', '날개길이', '몸무게']:",
+  "d = ((df.loc[0, cols] - df.loc[5, cols]) ** 2).sum() ** 0.5   # 1번·153번 → 750.6",
+  "for col in cols:        # cols = ['부리길이', '날개길이', '몸무게'], scaled = df.copy()",
   '    lo, hi = df[col].min(), df[col].max()',
-  '    df[col] = (df[col] - lo) / (hi - lo)',
-  'd = ((a - b) ** 2).sum() ** 0.5        # 같은 두 펭귄, 다시',
+  '    scaled[col] = (df[col] - lo) / (hi - lo)   # df는 그대로, 복사본에 적어요',
+  "d = ((scaled.loc[0, cols] - scaled.loc[5, cols]) ** 2).sum() ** 0.5   # → 0.83",
 ];
 
 /** 두 행의 열마다 차이와, √ 안에서 그 차이(제곱)가 차지하는 몫 */

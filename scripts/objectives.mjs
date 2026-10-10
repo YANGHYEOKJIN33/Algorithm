@@ -56,7 +56,7 @@ export function planMarkdown() {
     '|---|---|---|---|---|',
     ...rows.map((r) => `| ${r.no}${r.project ? '~' : ''} | ${pageRange(r.pages)} | ${cell(r.focus)} | ${r.minutes}분${r.core !== r.minutes ? ` (➕ 빼면 ${r.core}분)` : ''} | ${cell(r.tip ?? '')} |`),
     '',
-    `쪽 시간의 합은 모두 ${rows.reduce((s, r) => s + r.minutes, 0)}분이고, 한 차시는 40분을 넘지 않게 묶었습니다(5분은 설명·마무리).`
+    `쪽 시간의 합은 모두 ${rows.reduce((s, r) => s + r.minutes, 0)}분이고, 한 차시는 ➕ 선택 쪽을 빼고 ${Math.max(...rows.map((r) => r.core))}분을 넘지 않게 묶었습니다(남는 5분 이상은 설명·마무리).`
       + ` ${last.no}차시부터는 프로젝트입니다.`,
   ].join('\n');
 }

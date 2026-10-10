@@ -75,7 +75,7 @@ export function createCourseDrawer(store, progress, { onReset } = {}) {
       recordButton(progress),
       el('button.pill.pill--sm', {
         type: 'button', title: '이 브라우저에 저장된 진도(✅)를 모두 지워요',
-        onclick: () => { if (confirm('진도(✅ 표시와 문제 답)를 모두 지울까요? 되돌릴 수 없어요.')) { progress.reset(); onReset?.(); render(); } },
+        onclick: () => { if (confirm('📋 내 학습 기록을 먼저 복사해 냈나요?\n진도(✅ 표시)와 문제 답, 처음 고른 답 기록까지 모두 지워져요. 되돌릴 수 없어요.')) { progress.reset(); onReset?.(); render(); } },
       }, '↺ 진도 초기화'),
       closeBtn),
     el('div.modal__scroll', {}, list),

@@ -67,6 +67,8 @@ const CSS = String.raw`
 .pj-imp__warn { margin: 0; font-size: var(--fs-xs) !important; color: var(--text-muted); }
 .pj-imp__tag:empty { display: none; }
 .pj-imp__tag { font-weight: 700; color: var(--current); }
+.pj-imp__row { flex-wrap: wrap; }
+@media (max-width: 1100px) { .pj-imp__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .pj-imp__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pj-imp__score { flex: 1 1 100%; } }
 
 /* ── 6-2 전체 흐름 정리 ── */
@@ -343,7 +345,7 @@ const evaluate = {
             el('div.calcgrid__k', {}, `처음 ${base.correct} ÷ ${base.total} (${basePct}%)`))),
         el('p.pj-imp__note', {}, `🔎 ${cur.id}번 이웃 ${res.k}마리: ${cur.neighbors.map((n) => `${n.id}번 ${n.label}`).join(' · ')} → ${Object.entries(votes).sort((a, b) => b[1] - a[1]).map(([k, c]) => `${k} ${c}표`).join(' · ')} → '${cur.pred}' ${cur.ok ? '⭕' : '❌'}`),
         el(`p.pj-imp__note.is-${note.kind}`, {}, note.text),
-        el('p.pj-imp__warn', {}, `⚠️ 테스트가 ${res.total}마리뿐이라 한 마리만 달라져도 정확도가 약 17%p 바뀌어요. 어느 방법이 정말 나은지는 Colab 09에서 테스트 69줄로 확인해요.`)));
+        el('p.pj-imp__warn', {}, `⚠️ 테스트가 ${res.total}마리뿐이라 한 마리만 달라져도 정확도가 약 17%p 바뀌어요. 어느 방법이 정말 나은지는 더 많은 테스트 데이터로 다시 재야 해요(Colab의 69줄에서는 결과가 또 달라요).`)));
     }
 
     return {
