@@ -8,19 +8,60 @@
  *   hooks[탭]     = 고른 보기 번호                       — 단원 표지의 "생각 열기" 첫 생각
  *   self[탭]      = { [할 수 있어요 번호]: 'yes' | 'no' }  — 단원 정리의 스스로 점검
  *   last          = { tab, sub, page }                   — 이어서 하기
+ *   v             = 저장 형식 판(지금 2). 없으면 1판으로 보고 불러올 때 한 번 고친다(migrate)
+ *
+ * 미션 번호는 쪽의 missions 배열 자리다. 앞에 미션을 끼워 넣으면 저장된 번호가 어긋나므로 판을 올리고 migrate에 적는다.
  */
 const KEY = 'ai-data-lab:progress';
 
-const empty = () => ({ pages: {}, quizzes: {}, firsts: {}, hooks: {}, self: {}, last: null });
+/** 저장 형식 판 */
+export const VERSION = 2;
+
+const empty = () => ({ v: VERSION, pages: {}, quizzes: {}, firsts: {}, hooks: {}, self: {}, last: null });
+
+/** 2판에서 맨 앞에 미션이 하나 늘어난 쪽 — 0-2(🤔 생각 열기 act:hook), 6-1(⏩ 끝까지 end) */
+const SHIFTED_V2 = ['start:pipeline', 'project:eval'];
+
+/**
+ * 옛 판의 진도를 지금 판으로 — 새 객체를 돌려준다(넘겨받은 것은 고치지 않는다).
+ *  1 → 2: 0-2·6-1의 미션 번호를 한 칸씩 뒤로 민다. 0-2는 생각 열기를 이미 골랐으면(hooks.start) 새 0번도 ✅.
+ *         firsts·quizzes·hooks·self·last는 그대로.
+ */
+export function migrate(raw) {
+  const from = Number(raw?.v) || 1;
+  const data = { ...empty(), ...raw, v: Math.max(from, VERSION) };
+  if (from < 2) {
+    data.pages = { ...data.pages };
+    for (const key of SHIFTED_V2) {
+      const p = data.pages[key];
+      if (!p) continue;
+      const moved = {};
+      for (const [i, ok] of Object.entries(p.missions ?? {})) moved[Number(i) + 1] = ok;
+      data.pages[key] = { ...p, missions: moved };
+    }
+    if (data.hooks?.start !== undefined && data.hooks?.start !== null) {
+      const p = data.pages['start:pipeline'] ?? { visited: true, missions: {} };
+      data.pages['start:pipeline'] = { ...p, missions: { ...p.missions, 0: true } };
+    }
+  }
+  return data;
+}
 
 function load() {
+  let saved;
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return empty();
-    return { ...empty(), ...JSON.parse(raw) };
+    saved = JSON.parse(raw);
   } catch {
     return empty();
   }
+  const data = migrate(saved);
+  // 고친 판을 바로 적어 둔다 — 다음에 열 때 두 번 밀리지 않게
+  if (saved?.v !== data.v) {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* 적지 못해도 이번에는 고친 판으로 공부한다 */ }
+  }
+  return data;
 }
 
 /** 쪽 열쇠 — 'inspect:mask', 'ml:knn:step' */

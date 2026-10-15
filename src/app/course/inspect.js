@@ -74,11 +74,13 @@ export default {
       title: '결측치 ① 빈칸인지 확인하기 (여부)',
       short: '여부',
       objective: '표의 칸마다 빈칸인지 아닌지를 True/False로 표시할 수 있다.',
+      takeaway: 'isnull()은 칸마다 비었으면 True, 값이 있으면 False를 적어요.',
+      setup: '빈칸이 섞인 펭귄 10마리 표(6열)를 칸마다 검사해요.',
       why: '빈칸을 그대로 두면 평균 같은 계산이 어긋나거나 모델이 오류를 내요. 고치려면 먼저 찾아야 하지요.',
       terms: ['결측치', 'True / False'],
       missions: [
-        { text: "⏭ 한 칸씩 눌러 '부리길이' 열의 첫 True까지 가 보기", check: 'step:6' },
-        { text: '⏩ 끝까지 가서 True/False 결과표 완성하기', check: 'end' },
+        { text: "⏭ 한 칸씩 눌러 '부리길이' 열의 첫 True까지 가 보기", check: 'step:6', look: "결과표 '부리길이' 열의 True" },
+        { text: '⏩ 끝까지 가서 True/False 결과표 완성하기', check: 'end', look: '결과표의 True 칸' },
       ],
       ask: {
         q: '완성된 결과표에서 True가 가장 많은 열은 어디일까요?',
@@ -95,10 +97,12 @@ export default {
       title: '결측치 ② 몇 개인지 세기 (개수)',
       short: '개수',
       objective: 'True를 1, False를 0으로 쳐서 더해 열마다 결측치 개수를 셀 수 있다.',
+      takeaway: 'True를 1, False를 0으로 보고 더하면 빈칸 수가 나와요.',
+      setup: '앞 쪽에서 만든 True/False 결과표(10행)로 시작해요.',
       why: '열마다 빈칸이 몇 개인지 세어 보면, 어느 속성에 문제가 많은지 한눈에 알 수 있어요.',
       terms: ['결측치', 'True / False'],
       missions: [
-        { text: "⏭ 한 단계씩 '부리길이' 열의 True를 더해 적는 모습 보기", check: 'step:9' },
+        { text: "⏭ 한 단계씩 '부리길이' 열의 True를 더해 적는 모습 보기", check: 'step:9', look: "개수표의 '부리길이' 줄" },
         { text: '⏮ 뒤로를 눌러 방금 장면을 다시 보기', check: 'back' },
       ],
       ask: {
@@ -116,11 +120,13 @@ export default {
       title: '결측치 ③ 어디에 있는지 찾기 (인덱스)',
       short: '위치',
       objective: '빈칸이 하나라도 있는 행의 인덱스를 찾아 위치목록(리스트)에 모을 수 있다.',
+      takeaway: '빈칸이 있는 행의 인덱스를 모아 두면 그 행을 바로 찾아 고칠 수 있어요.',
+      setup: '빈칸이 섞인 펭귄 10마리 표를 한 행씩 검사해요.',
       why: '어느 행에 빈칸이 있는지 알아야 다음 단원에서 그 행을 지우거나 채울 수 있어요.',
       terms: ['인덱스', '리스트'],
       missions: [
-        { text: '⏭ 한 단계씩 첫 인덱스(2)가 위치목록에 들어가는 모습 보기', check: 'step:5' },
-        { text: '⏩ 끝까지 가서 완성된 위치목록 확인하기', check: 'end' },
+        { text: '⏭ 한 단계씩 첫 인덱스(2)가 위치목록에 들어가는 모습 보기', check: 'step:5', look: '위치목록 where의 [2]' },
+        { text: '⏩ 끝까지 가서 완성된 위치목록 확인하기', check: 'end', look: '완성된 위치목록 where' },
       ],
       ask: {
         q: '인덱스 3행에 있는 펭귄은 몇 번 펭귄일까요?',
@@ -137,11 +143,13 @@ export default {
       title: '이상치 ① 사분위수로 울타리 세우기',
       short: '사분위수',
       objective: '값을 줄 세워 Q1·Q2·Q3와 IQR을 구하고, 울타리 밖의 이상치를 찾을 수 있다.',
+      takeaway: 'Q1·Q3에서 IQR의 1.5배 밖에 있는 값이 이상치예요.',
+      setup: '아델리펭귄 13마리의 몸무게만 골라 계산해요.',
       why: '동떨어진 값 하나가 평균을 크게 흔들 수 있어요. 그래서 어떤 값을 "동떨어졌다"고 볼지 기준이 필요해요.',
       terms: ['사분위수', 'IQR', '이상치'],
       missions: [
-        { text: '⏭ 한 단계씩 Q2 → Q1 → Q3를 구하는 장면까지 가 보기', check: 'step:4' },
-        { text: '⏩ 끝까지 가서 울타리 밖으로 나간 값 확인하기', check: 'end' },
+        { text: '⏭ 한 단계씩 Q2 → Q1 → Q3를 구하는 장면까지 가 보기', check: 'step:4', look: '계산표의 Q1·Q2·Q3 칸' },
+        { text: '⏩ 끝까지 가서 울타리 밖으로 나간 값 확인하기', check: 'end', look: '이상치 상자' },
       ],
       ask: {
         q: '울타리(2925g ~ 4325g) 밖으로 나가 이상치가 된 값은 무엇일까요?',
@@ -158,11 +166,13 @@ export default {
       title: '이상치 ② 상자그림으로 한눈에 보기',
       short: '상자그림',
       objective: '상자그림에서 상자(Q1~Q3)·가운데 선(Q2)·수염·이상치 점을 읽을 수 있다.',
+      takeaway: '상자그림에서 수염 밖에 따로 찍힌 점이 이상치예요.',
+      setup: '앞 쪽의 아델리펭귄 13마리 몸무게로 상자그림을 그려요.',
       why: '값이 수백 개라도 상자그림 한 장이면 값이 퍼진 모양과 이상치가 한눈에 들어와요.',
       terms: ['상자그림', '중앙값'],
       missions: [
-        { text: '⏩ 끝까지 가서 상자그림 완성하기', check: 'end' },
-        { text: '🖱 "실제 비율로"를 눌러 Colab 13마리 그림과 같은 모양 보기', check: 'act:real-scale' },
+        { text: '⏩ 끝까지 가서 상자그림 완성하기', check: 'end', look: '수염 밖에 찍힌 빨간 점' },
+        { text: '🖱 "실제 비율로"를 눌러 Colab 13마리 그림과 같은 모양 보기', check: 'act:real-scale', chip: '실제 비율' },
       ],
       ask: {
         q: '상자그림에서 수염 밖에 따로 찍힌 점은 무엇일까요?',
@@ -179,6 +189,7 @@ export default {
       title: '🐍 파이썬으로 결측치·이상치 찾기 — Colab 실습',
       short: '🐍 실습',
       objective: 'Colab에서 판다스로 345줄 전체의 결측치 개수와 이상치를 찾을 수 있다.',
+      takeaway: '판다스는 isnull()에 sum()만 붙이면 열마다 빈칸 수를 한 번에 세어 줘요.',
       why: '사이트에서 한 단계씩 따라간 일을 판다스는 한 줄로 끝내요. 프로젝트에서도 이 방법을 그대로 써요.',
       terms: ['판다스', 'Colab'],
       missions: [

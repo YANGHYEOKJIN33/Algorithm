@@ -78,11 +78,18 @@ export default {
       title: '웹 페이지는 무엇으로 이루어져 있을까?',
       short: 'HTML',
       objective: '웹 페이지의 표에서 줄(<tr>)과 칸(<td>) 태그를 찾을 수 있다.',
+      takeaway: '브라우저가 그린 표 뒤에는 <tr> 줄과 <td> 칸 태그가 있어요.',
       why: '펭귄 기록 345줄이 웹 페이지 7쪽에 나뉘어 있어요. 프로그램에게 대신 읽게 하려면 태그의 위치를 알아야 해요.',
       terms: ['웹 크롤링', 'HTML', '태그'],
       missions: [
         { text: '🖱️ 왼쪽 화면의 표 칸을 하나 눌러 보기', check: 'act:web-cell' },
         { text: '🖱️ HTML에서 3800이 든 <td>를 찾아 누르기', check: 'act:web-td' },
+      ],
+      beats: [
+        { id: 'why', chip: '왜?', title: '왜 웹 페이지를 볼까?', lead: '서버는 HTML 글자를 보내고, 브라우저는 그 글자를 그려 줘요.', show: ['web-why'], checks: [] },
+        { id: 'cell', chip: '화면↔HTML', title: '사람이 보는 화면, 컴퓨터가 받은 HTML', lead: '같은 표가 사람에게는 칸으로, 컴퓨터에게는 태그로 보여요.', show: ['web-panes', 'web-path'], checks: ['act:web-cell'] },
+        { id: 'td', chip: '3800 찾기', title: '3800은 HTML 어디에 있을까?', lead: '화면의 칸 하나는 HTML의 <td> 태그 하나예요.', show: ['web-task', 'web-panes', 'web-path'], checks: ['act:web-td'] },
+        { id: 'tags', chip: '태그 정리', title: '태그 정리 — <tr> 줄과 <td> 칸', lead: '표는 <table>, 줄은 <tr>, 칸은 <td>로 감싸요.', show: ['web-cards'], checks: [] },
       ],
       ask: {
         q: '화면에 줄여서 보여 준 1쪽 HTML에는 <tr> 태그가 모두 몇 개 있을까요?',
@@ -99,12 +106,14 @@ export default {
       title: '크롤링을 한 단계씩 — 요청 · 분석 · 찾기 · 모으기',
       short: '크롤링',
       objective: '크롤링 ①~⑤ 단계를 순서대로 말하고, 쪽마다 행목록이 어떻게 늘어나는지 설명할 수 있다.',
+      takeaway: '크롤링은 쪽마다 요청·분석·<tr> 찾기·칸 꺼내기·모으기를 되풀이해요.',
+      setup: '미니 관측소 2쪽(쪽마다 펭귄 3줄)을 차례로 긁어 와요.',
       why: '쪽이 7개라도 이 다섯 단계를 되풀이하면 돼요. 순서를 알고 나면 파이썬 코드도 술술 읽혀요.',
       terms: ['요청과 응답', '파싱', '리스트'],
       missions: [
-        { text: '⏭ 한 단계씩 눌러 행목록에 첫 줄 넣기', check: 'step:8' },
-        { text: '⏭ 2쪽 차례가 되는 장면까지 가 보기', check: 'step:15' },
-        { text: '⏩ 끝까지 가서 CSV 파일 확인하기', check: 'end' },
+        { text: '⏭ 한 단계씩 눌러 행목록에 첫 줄 넣기', check: 'step:8', look: '행목록 rows의 첫 줄' },
+        { text: '⏭ 2쪽 차례가 되는 장면까지 가 보기', check: 'step:15', look: "받은 HTML의 '2쪽' 표시" },
+        { text: '⏩ 끝까지 가서 CSV 파일 확인하기', check: 'end', look: 'penguins.csv 파일 내용' },
       ],
       ask: {
         q: '2쪽까지 모두 모으면 행목록은 몇 줄이 될까요?',
@@ -121,11 +130,16 @@ export default {
       title: '크롤링 예절과 주의할 점',
       short: '예절',
       objective: '크롤링해도 되는 경우와 안 되는 경우를 약속에 따라 구분할 수 있다.',
+      takeaway: '크롤링은 허락된 곳에서 천천히, 개인정보 없이, 끝까지 골고루 해요.',
       why: '펭귄 데이터도 남의 서버에서 가져와요. 약속을 지켜 모아야 안심하고 쓸 수 있어요.',
       terms: ['robots.txt', '웹 크롤링'],
       missions: [
         { text: '🖱️ O/X 여섯 문제에 모두 답하기', check: 'quiz' },
         { text: '🖱️ O/X 문제를 5개 이상 맞히기', check: 'right:5' },
+      ],
+      beats: [
+        { id: 'rules', chip: '여섯 약속', title: '크롤링 전에 확인할 여섯 가지', lead: '남의 서버에서 가져오니 기술보다 약속이 먼저예요.', show: ['rules'], checks: [] },
+        { id: 'cases', chip: '해도 될까?', title: '이건 해도 될까? — 한 문제씩', lead: '여섯 약속에 비추어 보면 답이 보여요.', show: ['cases'], checks: ['quiz', 'right:5'] },
       ],
       more: '크롤링은 남의 서버에서 데이터를 가져오는 일이에요. 그래서 기술보다 먼저 지켜야 할 약속이 있어요. robots.txt와 이용약관이 허락한 곳에서만, 천천히, 개인정보는 빼고, 출처를 밝히며 모아야 해요. 그리고 끝까지 골고루 모아야 하지요. 연습 사이트의 1~3쪽은 모두 아델리펭귄이라서, 앞쪽만 모으면 한 종으로 치우친 데이터가 되거든요.',
       minutes: 6,
@@ -136,6 +150,7 @@ export default {
       title: '🐍 파이썬으로 크롤링하기 — Colab 실습',
       short: '🐍 실습',
       objective: 'Colab에서 연습 사이트 7쪽을 크롤링해 345줄 표를 CSV로 저장할 수 있다.',
+      takeaway: '연습 사이트 7쪽을 모으면 345줄 × 9열 표가 CSV 파일로 남아요.',
       why: '사이트에서 따라간 의사코드는 파이썬 몇 줄로 옮길 수 있어요. 이렇게 모은 진짜 345줄을 다음 단원에서 써요.',
       terms: ['Colab', '데이터프레임', 'CSV'],
       missions: [

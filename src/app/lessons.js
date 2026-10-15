@@ -1,15 +1,17 @@
 /**
- * 수업 구성 — 상단 큰 탭 = 단원. 단원마다 쪽 묶음이 있고, 기계학습 단원은 하위 탭(알고리즘)으로 한 번 더 나뉜다.
+ * 수업 구성 — 단원(맨 위 줄의 단원 번호 0~6)마다 쪽 묶음이 있고, 기계학습 단원은 하위 탭(알고리즘)으로 한 번 더 나뉜다.
  * 단원의 내용은 course/ 폴더에 단원 하나당 파일 하나로 적고, 이 파일은 그것을 모아 표지·정리 쪽을 붙인다.
+ * 쪽은 다시 "장"으로 나뉘어 한 장에 한 가지만 보인다 — 장 차례는 beats.js가 만든다(FINAL_SPEC §1.3).
  *
  * 원칙 (교과서의 "학습 목표 · 학습 요소 · 생각 열기 · 1분 요약"과 같은 틀)
  *  - 목표와 설명을 나눈다. 🎯 objective는 "~할 수 있다"로 끝나는 한 문장, 설명은 장면 속이나 💡 more에.
  *  - ✋ missions는 손으로 할 일 1~3개. 학생이 실제로 하면 스스로 ✅가 된다(missions.js). 막지는 않는다.
- *  - 단원마다 맨 앞에 표지(무엇을 할 수 있게 되나·쪽 목록·생각 열기), 맨 뒤에 정리(1분 요약·확인 문제)가 붙는다.
+ *    지금 할 일 줄에는 늘 미션 하나의 text만 나온다 — text는 단추 이모지로 시작하는 명령문으로 적는다.
+ *  - 단원마다 맨 앞에 표지(생각 열기·데이터 변화·목표와 길), 맨 뒤에 정리(1분 요약·확인 문제)가 붙는다.
  *  - 단계 실행 쪽은 의사코드가 중심이고, 파이썬은 "같이 보기"와 Colab 실습 쪽에서만 꺼낸다.
  *
- * ── 단원(탭) ─────────────────────────────────────────────
- *  id, label, icon, verb('문제 찾기' — 탭과 표지에 붙는 동사), tip
+ * ── 단원 ─────────────────────────────────────────────────
+ *  id, label, icon, verb('문제 찾기' — 단원 이름과 표지에 붙는 동사), tip
  *  unit: {
  *    no,                 단원 번호(시작 = 0, 수집 = 1 … 프로젝트 = 6). 시작 화면의 6단계 흐름 번호와 같다.
  *    question,           생각 열기 — 단원 전체를 이끄는 질문 하나
@@ -17,26 +19,41 @@
  *    hook: { q, options, answer, reveal }   표지에서 내 생각을 먼저 골라 보는 질문(정답은 정리에서 확인)
  *    canDo: [{ text, pages: [쪽 id] }]       이 단원을 마치면 할 수 있는 것("~할 수 있다"). 쪽을 다 하면 ✓
  *                                          (기계학습은 'knn:idea'처럼 '하위탭:쪽id')
- *    before, after,      들어올 때 / 나갈 때 데이터의 모습(한 줄씩)
+ *    before, after,      들어올 때 / 나갈 때 데이터의 모습(한 줄씩). 둘 다 없으면 표지의 "데이터 변화" 장을 뺀다
  *    note,               표지에 강조할 한마디(선택)
  *    minutes             단원 전체 예상 시간(분) — 적지 않는다. 표지·정리를 포함한 쪽 시간의 합으로 저절로 채운다
- *    standards: [{ code, text }]           2022 개정 교육과정 성취기준
+ *    standards: [{ code, text }]           2022 개정 교육과정 성취기준(📚 목차 › 선생님용)
  *    summary: [문장 3~4개]                 1분 요약
  *    cheats: [{ idea, code }]              🐍 파이썬 한 줄 정리(프로젝트 때 다시 찾아보는 용도)
  *    quiz: [{ q, options, answer, why, page }]   단원 확인 문제 3~6개 — 틀리면 page로 다시 보러 간다
  *    cover: false / review: false          표지·정리를 붙이지 않을 때
  *  }
- *  pages: [쪽] 또는 sub: [{ id, name, tag('분류 · 지도학습'), question, pages }]
+ *  pages: [쪽] 또는 sub: [{ id, name, icon?, tag('분류 · 지도학습'), question, pages }]
+ *    sub.icon은 선택 — 있으면 하위 탭 끝의 [다음: 🌳 의사결정 트리 →]처럼 이름 앞에 붙는다
  *
  * ── 쪽 ───────────────────────────────────────────────────
  *  id, scene(장면 이름 — scenes/index.js, 'python:<노트북>'은 파이썬 실습), title
- *  short      단계 표시 줄에 쓰는 짧은 이름(6자 안팎)
+ *  short      쪽 이름표·목록·[다음 쪽: 2-3 위치 →]에 쓰는 짧은 이름(6자 안팎)
  *  objective  🎯 이 쪽의 목표 — "~할 수 있다." 한 문장
  *  why        💡 왜 배우나 — 한 문장
+ *  takeaway   핵심 한 줄 — 정리 장에 크게 나오는 이 쪽의 핵심 메시지. 10~60자, 한 문장, "."으로 끝
+ *             (표지·정리처럼 저절로 붙는 쪽 말고 모든 쪽)
+ *  setup      📦 이 쪽에서 쓰는 데이터 — 단계 실행 쪽의 읽기 장에 나온다. 한 문장, 60자까지
+ *             (예: '아델리펭귄 13마리의 몸무게만 골라 계산해요.')
  *  terms      학습 요소 — glossary.js의 term 그대로(0~3개)
- *  missions   ✋ [{ text, check }] — check 낱말은 missions.js 참고
- *  ask        ❓ { q, options, answer, why } — 확인 문제 1개(선택). 미션 끝에 저절로 붙는다
- *  more       자세한 설명(💡 안에 접혀 있다)
+ *  missions   ✋ [{ text, check, look?, chip? }] — check 낱말은 missions.js 참고
+ *               look  👀 볼 곳 — 'step:N'·'end' 미션에는 꼭. 어디를 보면 되는지 명사구로 24자까지
+ *                     (예: "개수표의 '부리길이' 줄")
+ *               chip  장 칩 이름(8자까지) — 단계 실행 쪽의 'act:*' 미션에는 꼭(예: '실제 비율').
+ *                     없으면 check로 정한다: step:N → '장면 N+1까지' · end → '끝까지' · back → '뒤로 보기'
+ *                     · python → '파이썬 짝' · colab → 'Colab 열기' · quiz → '문제 풀기' · right:N → 'N개 맞히기'
+ *  beats      살펴보기 쪽의 장 차례 — 살펴보기(view) 쪽에는 꼭. 도입·확인·정리는 저절로 붙으니 적지 않는다
+ *             [{ id, chip(8자까지), title(28자까지), lead?(50자까지), show: [data-beat id] | null, checks: [check 낱말] }]
+ *               show    이 장에서 보일 장면 덩어리(data-beat). null이면 장면 전체. 한 장에 3개까지
+ *               checks  이 장이 맡는 미션 check(1~2개; 둘은 quiz+right:N, act:flow-open+act:flow-all 짝만).
+ *                       비우면 읽기 장. ask가 아닌 미션은 모두 꼭 한 장에만 넣는다. 읽기 장은 4개까지
+ *  ask        ❓ { q, options, answer, why } — 확인 문제 1개(선택). 미션 끝에 저절로 붙고, 정리 바로 앞의 확인 장이 된다
+ *  more       자세한 설명(정리 장의 "💡 더 알아보기" 안에 접혀 있다)
  *  minutes    예상 시간(분)
  *  level      'challenge'(🔥 도전) | 'optional'(➕ 더 알아보기) — 선택
  */
@@ -62,7 +79,7 @@ function coverPage(tab) {
     terms: [],
     missions: [
       { text: '🤔 생각 열기 질문에 내 생각을 하나 골라 보기', check: 'act:hook' },
-      { text: '📋 할 수 있어요 목록을 읽고 [시작하기 →]나 [다음 →] 누르기', check: 'act:begin' },
+      { text: '🚀 [시작하기 →]를 눌러 첫 쪽으로 가기', check: 'act:begin' },
     ],
     minutes: 2,
   };
@@ -106,7 +123,7 @@ function build(raw) {
   return tab;
 }
 
-/** 상단 탭(단원) 목록 */
+/** 단원 목록 */
 export const TABS = UNITS.map(build);
 export const ML_SUBTABS = TABS.find((t) => t.id === 'ml').sub;
 
@@ -192,7 +209,7 @@ export function levelTag(page) {
   return '';
 }
 
-/** 쪽의 종류 — 단계 표시 줄의 배지 */
+/** 쪽의 종류 — 쪽 이름표·목록의 배지 */
 export function pageKind(page) {
   if (page.auto === 'cover') return { icon: '🧭', name: '단원 표지' };
   if (page.auto === 'review') return { icon: '📝', name: '단원 정리' };

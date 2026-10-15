@@ -5,19 +5,19 @@
 
 const STORAGE_KEY = 'ai-data-lab:prefs';
 
-/** 새로 고쳐도 남길 값 — "어디까지 봤나"와 보기 설정 */
-const PERSIST_PREFIX = ['step:'];
+/** 새로 고쳐도 남길 값 — "어디까지 봤나"(단원마다 쪽 step:*, 쪽마다 장 beat:*)와 보기 설정 */
+const PERSIST_PREFIX = ['step:', 'beat:'];
 /* codeView는 일부러 저장하지 않는다 — 새로 열면 늘 의사코드만(파이썬을 모르는 학생이 기본) */
-const PERSISTED = ['tab', 'mlTab', 'speedId', 'theme', 'scale', 'lessonFold'];
+const PERSISTED = ['tab', 'mlTab', 'speedId', 'theme', 'scale'];
 
 const initial = {
-  tab: 'start',          // 큰 탭: start · collect · inspect · prep · ready · ml · project
+  tab: 'start',          // 단원: start · collect · inspect · prep · ready · ml · project
   mlTab: 'concept',      // 기계학습 하위 탭: concept · knn · tree · linreg · kmeans
   codeView: 'pseudo',    // 코드 패널: pseudo(의사코드만) | python(파이썬 나란히)
   speedId: 'normal',
   theme: 'auto',
   scale: 1,
-  lessonFold: false,     // 레슨 막대의 목표·할 일을 접었나(좁은 화면에서 그림을 넓게)
+  // 'step:<탭>'·'step:ml:<하위탭>' = 그 단원에서 보던 쪽 번호, 'beat:<쪽열쇠>' = 그 쪽에서 보던 장 번호(nav.js beatKey)
 };
 
 function loadPrefs() {
