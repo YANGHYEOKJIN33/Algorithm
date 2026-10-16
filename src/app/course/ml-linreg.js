@@ -11,12 +11,18 @@ export default {
       title: '선형 회귀 ① 아이디어 — 점들 사이로 직선 긋기',
       short: '아이디어',
       objective: '기울기 w와 절편 b를 바꿔 오차가 작은 직선을 찾고 몸무게를 예측할 수 있다.',
+      takeaway: '오차 점수(MSE)가 가장 작은 직선으로 몸무게를 예측해요.',
       why: '선형 회귀는 몸무게처럼 숫자를 맞히는 회귀(숫자 예측)의 기본이에요. 날개길이만 재도 몸무게를 어림할 수 있지요.',
       terms: ['선형 회귀', '기울기와 절편', '오차'],
       missions: [
         { text: '🖱️ w·b 손잡이로 오차 점수를 100,000 아래로 낮추기', check: 'act:lr-hand' },
         { text: '🖱️ "컴퓨터가 조금씩 고치기" 눌러 보기', check: 'act:lr-gd' },
         { text: '🖱️ "가장 좋은 직선 보기"로 내 직선과 견주기', check: 'act:lr-best' },
+      ],
+      beats: [
+        { id: 'hand', chip: '손으로', title: '손잡이로 직선을 맞춰 봐요', lead: '빨간 세로선이 오차예요. 오차 점수가 작을수록 좋은 직선이에요.', show: ['lr-hand'], checks: ['act:lr-hand'] },
+        { id: 'gd', chip: '조금씩', title: '컴퓨터가 조금씩 고쳐요', lead: '오차 점수가 줄어드는 쪽으로 w와 b를 조금씩 고쳐 가요(경사 하강법).', show: ['lr-hand', 'lr-gd'], checks: ['act:lr-gd'] },
+        { id: 'best', chip: '가장 좋은', title: '가장 잘 맞는 직선과 견줘요', lead: '공식 한 번으로 구한 가장 좋은 직선은 오차 점수가 42,010이에요.', show: ['lr-hand', 'lr-gd', 'lr-best'], checks: ['act:lr-best'] },
       ],
       ask: {
         q: '가장 좋은 직선으로 날개길이 210mm인 펭귄의 몸무게를 예측하면 얼마일까요?',
@@ -33,12 +39,14 @@ export default {
       title: '선형 회귀 ② 의사코드로 한 단계씩 (최소제곱법)',
       short: '한 단계씩',
       objective: 'dx×dy의 부호를 읽고 위합÷아래합으로 기울기를 구할 수 있다.',
+      takeaway: '기울기 w는 위합 ÷ 아래합이고, 가장 좋은 직선은 평균 점을 지나요.',
+      setup: '펭귄 10마리의 날개길이와 몸무게로 가장 좋은 직선을 구해요.',
       why: '사이킷런의 fit() 안에서 일어나는 계산이에요. 공식이 하는 일을 알면 w와 b가 무엇을 뜻하는지 읽을 수 있어요.',
       terms: ['최소제곱법', '기울기와 절편', '의사코드'],
       missions: [
-        { text: '⏭ dx×dy가 처음 −(빨강)이 되는 장면까지', check: 'step:15' },
-        { text: '⏭ 기울기 w = 42.35가 나오는 장면까지', check: 'step:22' },
-        { text: '⏩ 끝까지 가서 210mm 펭귄의 예측 보기', check: 'end' },
+        { text: '⏭ dx×dy가 처음 −(빨강)이 되는 장면까지', check: 'step:15', look: '계산표 282번 줄의 dx×dy' },
+        { text: '⏭ 기울기 w = 42.35가 나오는 장면까지', check: 'step:22', look: "'기울기 w = 위합 ÷ 아래합' 칸" },
+        { text: '⏩ 끝까지 가서 210mm 펭귄의 예측 보기', check: 'end', look: '그래프의 210mm 예측 점' },
       ],
       ask: {
         q: '평균 점의 오른쪽 아래(날개는 길고 몸무게는 가벼운 쪽)에 있는 펭귄의 dx×dy는?',
@@ -56,6 +64,7 @@ export default {
       title: '선형 회귀 ③ 🐍 파이썬 실습 (Colab)',
       short: '🐍 실습',
       objective: 'Colab에서 LinearRegression으로 w와 b를 구하고, 오차로 예측을 평가할 수 있다.',
+      takeaway: '숫자를 맞히는 회귀는 맞힌 개수 대신 오차(MSE·RMSE)로 평가해요.',
       why: '프로젝트에서 숫자를 예측할 때도 만들기·fit·predict 세 줄과 오차 평가를 그대로 써요.',
       terms: ['사이킷런', '평균 제곱 오차', 'Colab'],
       missions: [

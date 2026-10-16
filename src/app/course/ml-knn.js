@@ -11,12 +11,18 @@ export default {
       title: 'k-최근접 이웃 ① 아이디어 — 가까운 이웃에게 물어보기',
       short: '아이디어',
       objective: '새 펭귄과 가장 가까운 이웃 k마리를 찾아 다수결로 종을 정할 수 있다.',
+      takeaway: '새 펭귄과 가장 가까운 k마리가 투표해 종을 정해요.',
       why: '펭귄 프로젝트의 목표는 처음 보는 펭귄의 종을 맞히는 거예요. 가장 쉬운 방법부터 알아봐요.',
       terms: ['k-최근접 이웃', '거리', '하이퍼파라미터'],
       missions: [
         { text: '🖱️ 그래프의 빈 곳을 눌러 새 펭귄(★) 옮기기', check: 'act:move-star' },
         { text: '🖱️ k를 바꿔 예측이 달라지는지 보기', check: 'act:change-k' },
         { text: '🖱️ 🎨 영역 색칠을 켜서 종의 경계 보기', check: 'act:region' },
+      ],
+      beats: [
+        { id: 'star', chip: '★ 옮기기', title: '가장 가까운 3마리가 투표해요', lead: '★이 자리를 옮기면 가장 가까운 이웃과 예측이 바뀌어요.', show: ['knn-chart', 'knn-side'], checks: ['act:move-star'] },
+        { id: 'k', chip: 'k 바꾸기', title: '이웃을 몇 마리 부를까?', lead: 'k를 바꾸면 투표에 참여하는 이웃 수가 바뀌어요.', show: ['knn-k', 'knn-chart', 'knn-side'], checks: ['act:change-k'] },
+        { id: 'region', chip: '영역 색칠', title: '종의 경계를 색칠해 봐요', lead: '★이 어디에 놓이면 어떤 종이 되는지 색으로 보여요.', show: ['knn-k', 'knn-region', 'knn-chart', 'knn-side'], checks: ['act:region'] },
       ],
       ask: {
         q: '★을 341번 펭귄 자리(↺)에 두고 k = 1로 하면 무엇으로 예측할까요?',
@@ -33,12 +39,14 @@ export default {
       title: 'k-최근접 이웃 ② 의사코드로 한 단계씩',
       short: '한 단계씩',
       objective: '거리를 비교해 가까운 k마리를 고르고 다수결로 종을 예측할 수 있다.',
+      takeaway: '거리목록을 짧은 순으로 정렬해 앞의 k마리 표를 세면 예측이 나와요.',
+      setup: '훈련 펭귄 18마리와의 거리를 재서 종을 가린 341번 펭귄을 맞혀요.',
       why: '리스트와 사전만 있으면 기계학습 알고리즘을 만들 수 있어요. 사이킷런 안에서도 같은 일이 일어나지요.',
       terms: ['거리', '리스트', '사전'],
       missions: [
-        { text: '⏭ 거리목록이 거리 순으로 정렬되는 장면까지', check: 'step:37' },
-        { text: '⏩ 끝까지 가서 세기표의 투표 결과 보기', check: 'end' },
-        { text: '🖱️ 그림 위의 k를 바꿔 처음부터 다시 실행하기', check: 'act:step-k' },
+        { text: '⏭ 거리목록이 거리 순으로 정렬되는 장면까지', check: 'step:37', look: '거리목록의 순서' },
+        { text: '⏩ 끝까지 가서 세기표의 투표 결과 보기', check: 'end', look: '세기표의 투표 수' },
+        { text: '🖱️ 그림 위의 k를 바꿔 처음부터 다시 실행하기', check: 'act:step-k', chip: 'k 바꾸기' },
       ],
       ask: {
         q: '거리목록을 정렬하면 맨 앞(0번 자리)에 오는 펭귄은?',
@@ -55,6 +63,7 @@ export default {
       title: 'k-최근접 이웃 ③ 🐍 파이썬 실습 (Colab)',
       short: '🐍 실습',
       objective: 'Colab에서 KNeighborsClassifier로 학습하고 테스트 정확도를 잴 수 있다.',
+      takeaway: '사이킷런은 만들기·fit·predict 세 줄로 k-최근접 이웃을 학습시켜요.',
       why: '프로젝트에서는 사이킷런 세 줄(만들기·fit·predict)이면 훈련 데이터 272줄을 학습시킬 수 있어요.',
       terms: ['사이킷런', '정확도', 'Colab'],
       missions: [

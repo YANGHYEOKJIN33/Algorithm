@@ -1,7 +1,11 @@
 /**
- * 🐍 파이썬 실습 쪽 — Colab 노트북(src/app/notebooks.js)을 사이트에서 미리 읽는 화면.
- * 코드마다 "이 줄이 하는 일"을 쉬운 말로 붙이고, 복사 단추와 Colab 열기 단추를 둔다.
- * 맨 위 ✅ 실습 점검표를 모두 체크하면 미션 'act:nb-done'이 이루어진다(진도에 저장).
+ * 🐍 파이썬 실습 쪽 — Colab 노트북(src/app/notebooks.js)을 사이트에서 미리 읽는 화면. 장은 셋(FINAL_SPEC §2.6·§4.3):
+ *
+ *   nb-open    📒 Colab에서 노트북 열기 — 큰 [📒 Colab에서 열기] 하나 · [⬇ 노트북 받기] · Colab이 처음이라면 4단계   colab
+ *   nb-follow  ▶ 셀을 차례로 실행하며 따라 하기 — "섹션 2 / 7 — 제목" 넘기기(마크다운 셀의 '## '에서 나눈다).
+ *              코드마다 "이 줄이 하는 일"과 "실행 결과 예시", 📋 복사. 넘기기는 지금 할 일 줄의 [다음 섹션 →]이 한다
+ *   nb-result  🔍 내 결과 확인하기 — 🙋 선생님께 보여 줄 결과(nb.check) + ✅ 실습 점검표 세 칸                    act:nb-done
+ *              (아직 체크하지 않은 첫 칸에 data-act="nb-done" — 보라 고리)
  */
 import { el, fill } from '../ui/dom.js';
 import { getNotebook } from '../app/notebooks.js';
@@ -97,25 +101,107 @@ function copyButton(text) {
 
 /**
  * 점검표 세 칸 — 진도에는 nb:<노트북 id>의 0·1·2번으로 저장한다(순서를 바꾸지 않는다).
- * 세 번째 칸 뒤에는 노트북마다 다른 "선생님께 보여 줄 결과"(notebooks.js의 check)가 붙는다.
+ * 세 번째 칸은 위 상자의 "선생님께 보여 줄 결과"(notebooks.js의 check)와 내 화면을 견주는 일이다.
  */
 const CHECKS = [
   '📒 Colab에서 열고 파일 → 드라이브에 사본 저장하기',
   '▶ 맨 위 셀부터 차례로 끝까지 실행하기',
-  '🔍 내 결과 확인: ',
+  '🔍 내 결과가 위 상자의 결과와 같은지 확인하기',
 ];
 
-/** ✅ 실습 점검표 — 무엇을 하면 실습이 끝난 것인지, 선생님께 무엇을 보여 주면 되는지 */
+/**
+ * 노트북 셀을 섹션으로 — 마크다운 셀이 '## '로 시작하면 새 섹션. 첫 '## ' 앞(제목·사용법·준비 셀)은 "시작하기".
+ * [{ heading, cells }] — 화면과 떨어진 순수 함수(test/slides.test.js)
+ */
+export function splitSections(cells) {
+  const out = [];
+  let cur = null;
+  for (const c of cells) {
+    const m = c.type === 'md' ? c.text.match(/^##\s+(.+)/) : null;
+    if (m || !cur) {
+      cur = { heading: m ? m[1].trim() : '시작하기', cells: [] };
+      out.push(cur);
+    }
+    cur.cells.push(c);
+  }
+  return out;
+}
+
+/** 섹션 첫 마크다운의 제목 줄은 넘기기 머리에 이미 있으니 뺀다 */
+const dropHeading = (text) => text.replace(/^#{1,2}\s+.*(\n|$)/, '').trim();
+
+/** 코드 셀 하나 — 코드 · 이 줄이 하는 일 · 실행 결과 예시 · 📋 복사 */
+function codeCell(c, n) {
+  return el('div.nb__cell', {},
+    el('div.nb__cellhead', {}, el('span', {}, `코드 셀 ${n}`), el('span.topbar__spacer'), copyButton(c.code)),
+    el('pre.nb__code', { html: highlightPython(c.code) }),
+    c.explain.length ? el('ul.nb__explain', { 'aria-label': '이 줄이 하는 일' }, c.explain.map((e) => el('li', {}, e))) : null,
+    c.out ? el('pre.nb__out', {}, c.out) : null);
+}
+
+/** ▶ 따라 하기 — 섹션 넘기기(data-pager). 지금 할 일 줄이 pager.next()/prev()를 부른다 */
+function sectionPager(nb) {
+  const sections = splitSections(nb.cells);
+  // 코드 셀 번호는 노트북 전체에서 이어지게
+  let n = 0;
+  const numbered = sections.map((s) => ({
+    heading: s.heading,
+    cells: s.cells.map((c, i) => {
+      if (c.type === 'md') {
+        const text = i === 0 ? dropHeading(c.text) : c.text;
+        return text ? { md: text } : null;
+      }
+      n += 1;
+      return { code: c, n };
+    }).filter(Boolean),
+  }));
+  const subs = new Set();
+  let cur = 0;
+  const head = el('div.nb-sec__head');
+  const body = el('div.nb-sec__body');
+  const box = el('div.nb-sec', { 'data-pager': 'section' }, head, body);
+
+  function draw() {
+    const s = numbered[cur];
+    fill(head,
+      el('span.nb-sec__no', {}, `섹션 ${cur + 1} / ${numbered.length}`),
+      el('strong.nb-sec__title', {}, s.heading),
+      el('span.nb-sec__dots', { 'aria-hidden': 'true' }, numbered.map((_, i) => el('span.quiz__dot', { 'data-current': i === cur ? 'true' : null, 'data-state': i < cur ? 'right' : null }))));
+    fill(body, s.cells.map((c) => (c.md ? el('div.nb__md', { html: markdown(c.md) }) : codeCell(c.code, c.n))));
+    body.scrollTop = 0;
+  }
+  const changed = () => { for (const fn of subs) { try { fn(box.pager); } catch { /* 듣는 쪽의 잘못은 무시 */ } } };
+  const to = (i) => { cur = i; draw(); changed(); return true; };
+
+  box.pager = {
+    get label() { return `섹션 ${cur + 1} / ${numbered.length}`; },
+    get index() { return cur; },
+    get total() { return numbered.length; },
+    nextLabel: '다음 섹션 →',
+    canNext: () => cur < numbered.length - 1,
+    canPrev: () => cur > 0,
+    next: () => (cur < numbered.length - 1 ? to(cur + 1) : false),
+    prev: () => (cur > 0 ? to(cur - 1) : false),
+    onChange(fn) { subs.add(fn); return () => subs.delete(fn); },
+  };
+  draw();
+  return box;
+}
+
+/** 지금 할 곳 표시 — 아직 체크하지 않은 첫 칸에만 붙인다 */
+const NB_DONE = { 'data-act': 'nb-done' };
+
+/** 🔍 결과 확인 — 선생님께 보여 줄 결과 + ✅ 실습 점검표. 아직 안 한 첫 칸에 보라 고리(data-act="nb-done") */
 function checklist(nb, ctx) {
   const key = `nb:${nb.id}`;
   const box = el('section.nbcheck', { 'aria-label': '실습 점검표' });
   function draw() {
     const got = ctx?.progress?.answers(key) ?? {};
     const n = CHECKS.filter((_, i) => got[i]).length;
+    const firstOpen = CHECKS.findIndex((_, i) => !got[i]);
     fill(box,
-      el('div.nbcheck__head', {}, el('strong', {}, '✅ 실습 점검표'), el('span.card__meta', {}, ` ${n} / ${CHECKS.length} · 모두 체크하면 이 실습은 끝이에요!`)),
-      el('p', {}, '🙋 선생님께 보여 줄 것: ', el('strong', {}, '아래 🔍 결과가 나온 내 Colab 화면')),
-      el('ul.nbcheck__list', {}, CHECKS.map((t, i) => el('li', {}, el('label', {},
+      el('div.nbcheck__head', {}, el('strong', {}, '✅ 실습 점검표'), el('span.card__meta', {}, ` ${n} / ${CHECKS.length}${n === CHECKS.length ? ' · 실습 끝! 👏' : ' · 모두 체크하면 이 실습은 끝이에요'}`)),
+      el('ul.nbcheck__list', {}, CHECKS.map((t, i) => el('li', { 'data-done': got[i] ? 'true' : null }, el('label', i === firstOpen ? NB_DONE : {},
         el('input', {
           type: 'checkbox', checked: got[i] ? true : null,
           onchange: (e) => {
@@ -123,9 +209,9 @@ function checklist(nb, ctx) {
             const now = ctx?.progress?.answers(key) ?? {};
             if (CHECKS.every((_, k) => now[k])) ctx?.check('nb-done');
             draw();
+            box.querySelectorAll('input')[i]?.focus({ preventScroll: true });
           },
-        }), el('span', {}, t, i === CHECKS.length - 1 ? el('strong', {}, nb.check) : null))))),
-      el('p.card__meta', {}, '💡 학교에서 Colab을 쓸 수 없다면, 셀마다 붙은 "실행 결과 예시"를 보면서 코드가 하는 일을 따라가요. 코드 셀의 📋 복사 단추로 코드를 옮겨서 다른 파이썬 환경에서 실행해도 돼요.'));
+        }), el('span', {}, t))))));
   }
   draw();
   return box;
@@ -137,30 +223,27 @@ function pythonPage(notebookId) {
     mount(root, ctx) {
       const nb = getNotebook(notebookId);
       if (!nb) { fill(root, el('div.placeholder', {}, '노트북을 찾지 못했어요.')); return {}; }
-      let n = 0;
-      const cells = nb.cells.map((c) => {
-        if (c.type === 'md') return el('div.nb__md', { html: markdown(c.text) });
-        n += 1;
-        return el('div.nb__cell', {},
-          el('div.nb__cellhead', {}, el('span', {}, `코드 셀 ${n}`), el('span.topbar__spacer'), copyButton(c.code)),
-          el('pre.nb__code', { html: highlightPython(c.code) }),
-          c.explain.length ? el('ul.nb__explain', {}, c.explain.map((e) => el('li', {}, e))) : null,
-          c.out ? el('pre.nb__out', {}, c.out) : null);
-      });
       fill(root, el('div.read.nb', {},
-        el('div.nb__top', {},
-          el('p', {}, el('b', {}, nb.title), el('br'), nb.intro),
-          el('a.pill.pill--colab', { href: colabUrl(nb.id), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
-          el('a.pill', { href: notebookUrl(nb.id), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
-        checklist(nb, ctx),
-        el('details.nb__howto', {},
-          el('summary', {}, 'Colab이 처음이라면 — 사용법 4단계'),
-          el('ol', {},
-            el('li', {}, '"📒 Colab에서 열기"를 누르고 구글 계정으로 로그인해요.'),
-            el('li', {}, '위쪽 메뉴에서 [파일 → 드라이브에 사본 저장]을 누르면 내 노트북이 생겨요. 사본은 마음껏 고쳐도 원본은 그대로예요.'),
-            el('li', {}, '셀 왼쪽의 ▶를 누르거나 Shift + Enter를 눌러, 맨 위 셀부터 차례로 실행해요.'),
-            el('li', {}, '오류가 나면 앞쪽 셀을 건너뛰지 않았는지 살펴봐요. 그래도 안 되면 [런타임 → 모두 실행]을 누르면 돼요.'))),
-        cells));
+        /* ① 열기 */
+        el('section.nb-block.nb-open', { 'data-beat': 'nb-open' },
+          el('div.nb-open__intro', {}, el('strong.nb-open__title', {}, nb.title), el('p', {}, nb.intro)),
+          el('div.nb-open__go', {},
+            el('a.nb-open__colab.pill--colab', { href: colabUrl(nb.id), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
+            el('a.pill.pill--sm', { href: notebookUrl(nb.id), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
+          el('div.nb-open__howto', {},
+            el('strong', {}, 'Colab이 처음이라면'),
+            el('ol', {},
+              el('li', {}, '"📒 Colab에서 열기"를 누르고 구글 계정으로 로그인해요.'),
+              el('li', {}, '위쪽 메뉴에서 [파일 → 드라이브에 사본 저장]을 누르면 내 노트북이 생겨요. 사본은 마음껏 고쳐도 원본은 그대로예요.'),
+              el('li', {}, '셀 왼쪽의 ▶를 누르거나 Shift + Enter를 눌러, 맨 위 셀부터 차례로 실행해요.'),
+              el('li', {}, '오류가 나면 앞쪽 셀을 건너뛰지 않았는지 살펴봐요. 그래도 안 되면 [런타임 → 모두 실행]을 누르면 돼요.'))),
+          el('p.card__meta', {}, "💡 학교에서 Colab이 막히면 다음 장의 '실행 결과 예시'를 보며 따라가요.")),
+        /* ② 따라 하기 */
+        el('section.nb-block.nb-follow', { 'data-beat': 'nb-follow' }, sectionPager(nb)),
+        /* ③ 결과 확인 */
+        el('section.nb-block.nb-result', { 'data-beat': 'nb-result' },
+          el('p.nb-result__teacher', {}, el('span', {}, '🙋 선생님께 보여 줄 결과: '), el('strong', {}, nb.check)),
+          checklist(nb, ctx))));
       return {};
     },
   };

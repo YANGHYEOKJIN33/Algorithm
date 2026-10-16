@@ -13,29 +13,29 @@
   <link rel="stylesheet" href="./src/styles/components.css">
   <link rel="stylesheet" href="./src/styles/viz.css">
   <link rel="stylesheet" href="./src/styles/learn.css">
+  <link rel="stylesheet" href="./src/styles/slides.css">
+  <link rel="stylesheet" href="./src/styles/shell.css">
 </head>
 <body>
   <div class="app">
-    <!-- 단원 탭 (시작 · 1 수집 … 6 프로젝트) -->
-    <header class="topbar" id="topbar"></header>
-    <!-- 단원 · 쪽 단계 · 🎯 목표 · ✋ 할 일 · 쪽 넘기기 -->
-    <nav class="lesson" id="lessonbar" aria-label="쪽"></nav>
-    <!-- 실행 제어 (단계 실행 쪽에서만) -->
-    <div class="controlbar" id="controlbar" role="group" aria-label="실행 제어"></div>
-    <!-- 지금 무슨 일이 일어났나 -->
-    <div class="actionbar" id="actionbar" aria-live="polite"></div>
+    <!-- 맨 위 줄: 📚 목차 · 단원 · 쪽 · 🎯 · 장 칩 · 📖 용어 · ⋯ -->
+    <header class="topnav" id="topnav" aria-label="맨 위 줄"></header>
 
+    <!-- 무대: 한 번에 장 하나(슬라이드, 단계 실행 작업대, 또는 이 장의 장면 덩어리) -->
     <main class="workspace" id="workspace" data-layout="view">
+      <!-- 방금 자막: 방금 무슨 일이 일어났나(단계 실행 쪽에서만) -->
+      <div class="caption" id="caption" aria-live="polite"></div>
       <section class="panel panel--code" id="panel-code" aria-label="의사코드"></section>
       <section class="panel panel--stage" id="panel-stage" aria-label="그림"></section>
       <section class="panel panel--data" id="panel-data" aria-label="자료구조"></section>
       <section class="panel panel--view" id="panel-view" aria-label="학습 화면"></section>
+      <!-- 도입·읽기·확인·정리 슬라이드(장면 위에 겹친다) -->
+      <section class="slidecard" id="slidecard" aria-label="장"></section>
     </main>
 
-    <footer class="sitefoot">
-      펭귄 데이터로 배우는 인공지능 · 데이터: palmerpenguins (CC0, Palmer Station LTER) ·
-      <a href="./practice/">크롤링 연습 사이트</a> ·
-      <a href="https://github.com/YANGHYEOKJIN33/Algorithm/blob/main/REQUIREMENTS.md">요구사항 정의서</a>
+    <!-- 지금 할 일 줄: 할 일 한 가지와 파란 단추 하나 -->
+    <footer class="nowbar" id="nowbar" role="region" aria-label="지금 할 일">
+      <div class="nowbar__player" role="group" aria-label="실행 제어"></div>
     </footer>
   </div>
   <noscript><p style="padding:16px">이 사이트는 자바스크립트를 켜야 쓸 수 있어요. 브라우저 설정에서 자바스크립트를 켜 주세요.</p></noscript>

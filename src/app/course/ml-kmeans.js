@@ -11,12 +11,18 @@ export default {
       title: 'k-평균 ① 아이디어 — 정답 없이 묶기',
       short: '아이디어',
       objective: '처음 중심 3개를 골라 배정과 이동을 되풀이하며 펭귄을 세 묶음으로 나눌 수 있다.',
+      takeaway: 'k-평균은 배정과 중심 옮기기를 되풀이해 정답 없이 묶어요.',
       why: '정답(종)이 없는 데이터라도 비슷한 펭귄끼리 묶다 보면 숨어 있던 무리가 드러나요.',
       terms: ['k-평균', '중심', '군집'],
       missions: [
         { text: '🖱️ 그래프의 점을 눌러 처음 중심 3개 고르기', check: 'act:km-pick' },
         { text: '⏩ 끝까지 실행해 중심이 멈추는 것 보기', check: 'act:km-end' },
         { text: '🖱️ 처음 중심을 바꿔 한 번 더 끝까지 돌리기', check: 'act:km-compare' },
+      ],
+      beats: [
+        { id: 'pick', chip: '중심 고르기', title: '처음 중심 3개를 골라요', lead: '중심은 묶음의 한가운데예요. 처음에는 아무 점이나 골라도 돼요.', show: ['km-chart'], checks: ['act:km-pick'] },
+        { id: 'run', chip: '끝까지', title: '중심이 멈출 때까지 돌려요', lead: '가까운 중심에 배정하고, 중심을 평균 자리로 옮기기를 되풀이해요.', show: ['km-chart', 'km-run'], checks: ['act:km-end'] },
+        { id: 'compare', chip: '다시 해 보기', title: '다른 중심에서 시작하면?', lead: '같은 18마리라도 출발점이 다르면 어떻게 묶일까요?', show: ['km-chart', 'km-run', 'km-compare'], checks: ['act:km-compare'] },
       ],
       ask: {
         q: '🧪 아델리 3마리(1·6·14번)에서 시작해 끝까지 돌리면 어떻게 될까요?',
@@ -33,12 +39,14 @@ export default {
       title: 'k-평균 ② 의사코드로 한 단계씩',
       short: '한 단계씩',
       objective: '점을 가까운 중심에 배정하고 중심을 평균으로 옮기는 일을 되풀이하며, 언제 멈추는지 설명할 수 있다.',
+      takeaway: '다시 배정해도 바뀐 점이 없으면 중심도 그대로라 멈춰요.',
+      setup: '종을 지운 펭귄 18마리를 처음 중심 21·160·282번에서 묶어요.',
       why: '사이킷런의 KMeans.fit() 안에서도 이 되풀이가 일어나요. 언제 멈추는지 알면 결과를 믿고 쓸 수 있어요.',
       terms: ['k-평균', '중심', '리스트'],
       missions: [
-        { text: '⏭ 18마리가 모두 처음 배정되는 장면까지', check: 'step:19' },
-        { text: '⏭ 중심이 묶음의 평균으로 옮겨지는 장면까지', check: 'step:20' },
-        { text: '⏩ 끝까지 가서 중심이 멈추는 것 보기', check: 'end' },
+        { text: '⏭ 18마리가 모두 처음 배정되는 장면까지', check: 'step:19', look: "'배정한 점 18 / 18'과 소속목록" },
+        { text: '⏭ 중심이 묶음의 평균으로 옮겨지는 장면까지', check: 'step:20', look: '중심표의 새 중심 자리' },
+        { text: '⏩ 끝까지 가서 중심이 멈추는 것 보기', check: 'end', look: '되풀이 칸과 중심표' },
       ],
       ask: {
         q: '중심이 더는 움직이지 않아 멈춘 때는 몇 번째 되풀이일까요?',
@@ -55,6 +63,7 @@ export default {
       title: 'k-평균 ③ 🐍 파이썬 실습 (Colab)',
       short: '🐍 실습',
       objective: 'Colab에서 KMeans로 펭귄을 세 묶음으로 나누고, 묶음을 실제 종과 견줄 수 있다.',
+      takeaway: '거리로 묶는 k-평균은 속성의 크기를 맞춘 뒤 돌려야 종과 잘 맞아요.',
       why: '정답 없이 찾은 묶음을 실제 종과 견주어 보면, 군집 결과가 무엇을 뜻하는지 해석할 수 있어요.',
       terms: ['사이킷런', '군집', 'Colab'],
       missions: [
