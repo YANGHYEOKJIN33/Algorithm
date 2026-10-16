@@ -179,8 +179,8 @@ export function mountSpotlight({ flow, store } = {}) {
     // 바탕색 전환(transition) 중간값을 읽지 않게, 재는 동안만 전환을 끈다
     ws.classList.add('is-measuring');
     for (const b of list) b.classList.remove('is-demoted');
+    // 파란 단추는 지금 할 일 줄에만 — 무대 안 단추는 지금 누를 곳(.is-now)이어도 보라 고리만 두르고 파랗게 칠하지 않는다(N3)
     for (const b of list) {
-      if (b.classList.contains('is-now')) continue;
       if (getComputedStyle(b).backgroundColor === blue) b.classList.add('is-demoted');
     }
     ws.classList.remove('is-measuring');
@@ -201,6 +201,17 @@ export function mountSpotlight({ flow, store } = {}) {
       if (r.bottom < pr.top + 4 || r.top > pr.bottom - 4) return false;
     }
     return true;
+  }
+
+  /** 고리가 통째로 보이나 — 일부만 보여도 화면을 움직여 다 보이게 한다(키가 보이는 곳보다 크면 위쪽이 보이면 된다) */
+  function wholeInView(node) {
+    if (!inView(node)) return false;
+    if (node.closest('#nowbar, #topnav')) return true;
+    const r = node.getBoundingClientRect();
+    const top = document.getElementById('topnav')?.getBoundingClientRect().bottom ?? 0;
+    const bottom = Math.min(window.innerHeight, document.getElementById('nowbar')?.getBoundingClientRect().top ?? window.innerHeight);
+    if (r.height > bottom - top - 16) return r.top >= top - 2;
+    return r.top >= top - 2 && r.bottom <= bottom + 2;
   }
 
   function place() {
@@ -288,8 +299,18 @@ export function mountSpotlight({ flow, store } = {}) {
     // 휴대폰은 페이지째 가운데로, 큰 화면은 그 칸 안에서만(무대는 넘치지 않으니 페이지는 움직이지 않는다)
     const sig = `${v.key}#${v.index}`;
     if (sig !== lastSig) { lastSig = sig; scrollUntil = Date.now() + 1500; }
-    if (current && where === 'stage' && Date.now() < scrollUntil && !inView(current)) {
+    if (current && where === 'stage' && Date.now() < scrollUntil && !wholeInView(current)) {
       current.scrollIntoView({ block: narrow() ? 'center' : 'nearest' });
+      // 휴대폰의 고정된 지금 할 일 줄·맨 위 줄에 가리면 그만큼 더 움직인다
+      const r = current.getBoundingClientRect();
+      const top = document.getElementById('topnav')?.getBoundingClientRect().bottom ?? 0;
+      const bottom = Math.min(window.innerHeight, document.getElementById('nowbar')?.getBoundingClientRect().top ?? window.innerHeight);
+      // 실제로 스크롤되는 칸(휴대폰에서는 body)을 찾아 그 칸을 움직인다
+      let sc = current.parentElement;
+      while (sc && sc !== document.documentElement && !(sc.scrollHeight > sc.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+      const by = (dy) => (sc && sc !== document.documentElement ? sc.scrollBy(0, dy) : window.scrollBy(0, dy));
+      if (r.bottom > bottom - 8 && r.height < bottom - top - 16) by(r.bottom - bottom + 16);
+      else if (r.top < top + 8) by(r.top - top - 16);
       place();
     }
   }

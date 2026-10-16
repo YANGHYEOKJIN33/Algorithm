@@ -362,8 +362,8 @@
 }
 .now-tag[data-side="below"]::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--now); }
 .now-tag[data-side="right"]::after { right: 100%; top: 50%; margin-top: -6px; border-top-color: transparent; border-right-color: var(--now); }
-/* 무대 안의 파란 바탕 단추는 .is-now가 아니면 한 단계 낮춘다(N5) */
-#workspace .is-demoted:not(.is-now) {
+/* 무대 안의 파란 바탕 단추는 한 단계 낮춘다 — 지금 누를 곳이어도 보라 고리만 두르고 파랗게 칠하지 않는다(N3·N5) */
+#workspace .is-demoted {
   background: var(--current-bg) !important;
   color: var(--current) !important;
   border-color: var(--current) !important;
@@ -439,7 +439,8 @@
   .tn-only-phone { display: flex; }
   .tn-tools { margin-left: auto; }
 
-  body { padding-bottom: var(--bar-h); }
+  /* 고정된 지금 할 일 줄 아래로 본문 끝이 숨지 않게 — 스크롤되는 내용(.app)의 끝에 줄 높이만큼 여백 */
+  .app { padding-bottom: var(--bar-h); }
   .nowbar {
     position: fixed;
     left: 0; right: 0; bottom: 0;
@@ -450,7 +451,7 @@
     padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
   }
   body.is-typing .nowbar, body.is-kb .nowbar { position: static; }
-  body.is-typing, body.is-kb { padding-bottom: 0; }
+  body.is-typing .app, body.is-kb .app { padding-bottom: 0; }
   .nowbar__main { order: 1; flex: 1 1 100%; }
   .nowbar__back { order: 2; width: 48px; height: 48px; justify-content: center; }
   .nowbar__backtext { display: none; }

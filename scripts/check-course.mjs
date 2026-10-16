@@ -5,16 +5,68 @@
  *   node scripts/check-course.mjs inspect    한 단원만 (기계학습 하위 탭만: ml:knn,ml:tree)
  *
  * test/site.test.js도 이 함수를 쓴다(문제가 하나라도 있으면 실패).
+ *
+ * 한 장에 한 가지(FINAL_SPEC §5.4)에서 더한 약속
+ *   - takeaway(핵심 한 줄): 표지·정리 말고 모든 쪽, 10~60자, "."으로 끝나는 한 문장(1.5 · df.isnull() 의 점은 문장 끝이 아니다)
+ *   - setup: 단계 실행 쪽마다 60자까지 · look: 'step:N'·'end' 미션마다 24자까지 · chip: 단계 실행 쪽 act 미션마다 8자까지
+ *   - beats: 살펴보기 쪽마다 — id가 겹치지 않고, chip 8 · title 28 · lead 50자까지, show의 id는 장면 소스(하위 폴더 포함)의
+ *     data-beat 글자 그대로, checks는 그 쪽 미션 안에서, ask 말고 모든 미션이 꼭 한 장에, 한 장에 check 2개는 허용된 짝만,
+ *     한 장에 보이는 덩어리 3개까지(예외: 5-4 영역 색칠 장은 고정 표대로 4개)
+ *   - 모든 쪽(pageBeats): 장 3~8개, 읽기 장 4개까지, 어느 장에도 들지 않은 미션 없음
+ *   - act:<이름>(begin 말고)은 장면 소스나 src/ui/slideCard.js에 data-act 글자로 있어야 한다(보라 고리가 갈 곳)
+ *   - 없어진 화면 틀을 가리키는 말(REMOVED_CHROME)이 course 파일·장면 소스에 없어야 한다
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { TABS, unitPages } from '../src/app/lessons.js';
 import { NOTEBOOKS } from '../src/app/notebooks.js';
 import { GLOSSARY } from '../src/app/glossary.js';
 import { getScene, sceneNames } from '../src/scenes/index.js';
+import { pageBeats, deckKind } from '../src/app/beats.js';
 
+/** 폴더 아래 .js 파일을 하위 폴더까지 모두 — [{ name, text }] */
+function jsFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
+    if (d.isDirectory()) return jsFiles(new URL(`${d.name}/`, dir)).map((f) => ({ ...f, name: `${d.name}/${f.name}` }));
+    return d.name.endsWith('.js') ? [{ name: d.name, text: readFileSync(new URL(d.name, dir), 'utf8') }] : [];
+  });
+}
 const sceneDir = new URL('../src/scenes/', import.meta.url);
-const sceneSrc = readdirSync(sceneDir).filter((f) => f.endsWith('.js'))
-  .map((n) => readFileSync(new URL(n, sceneDir), 'utf8')).join('\n');
+const sceneFiles = jsFiles(sceneDir);
+const sceneSrc = sceneFiles.map((f) => f.text).join('\n');
+const courseFiles = jsFiles(new URL('../src/app/course/', import.meta.url));
+const slideSrc = readFileSync(new URL('../src/ui/slideCard.js', import.meta.url), 'utf8');
+
+/** 소스에 글자 그대로 적힌 data-beat / data-act 값 — 'data-act': 'a b' · setAttribute('data-act', 'a') · data-act="a" */
+function attrWords(src, attr) {
+  const out = new Set();
+  const re = new RegExp(`['"]?${attr}['"]?\\s*[:,]\\s*'([^']+)'|${attr}="([^"]+)"`, 'g');
+  for (const m of src.matchAll(re)) for (const w of (m[1] ?? m[2]).split(/\s+/)) if (w) out.add(w);
+  return out;
+}
+const BEAT_IDS = attrWords(sceneSrc, 'data-beat');
+const ACT_WORDS = attrWords(`${sceneSrc}\n${slideSrc}`, 'data-act');
+
+/** 없어진 화면 틀을 가리키는 말(FINAL_SPEC §4.6) — course 파일과 장면 소스에 남으면 안 된다 */
+export const REMOVED_CHROME = /맨 위 탭|레슨 막대|오른쪽 위 ✋|할 일 상자|단계 표시 줄|💡 왜 배울까|할 일 맨 아래/;
+
+/** 한 장에 보이는 덩어리는 3개까지 — 단, 아래 장은 FINAL_SPEC §4.4의 고정 표가 4개로 정했다 */
+const SHOW_LIMIT_EXCEPT = new Set(['ml:knn:idea#region']);   // 5-4 영역 색칠: knn-k · knn-region · knn-chart · knn-side
+
+/** 두 check를 한 장에 둘 수 있는 짝(FINAL_SPEC §1.3) */
+const pairOk = (cs) => cs.length <= 1
+  || (cs.length === 2 && ((cs.includes('quiz') && cs.some((c) => /^right:\d+$/.test(c)))
+    || (cs.includes('act:flow-open') && cs.includes('act:flow-all'))));
+
+/**
+ * 한 문장인가 — 소수점(1.5)·이름 사이 점(df.isnull())·말줄임은 문장 끝으로 치지 않는다.
+ * 문장 끝 부호([.?!] 뒤에 빈칸이나 글 끝)가 맨 끝 "." 하나뿐이어야 한다.
+ */
+export function oneSentence(text) {
+  const t = String(text ?? '').trim();
+  if (!t.endsWith('.')) return false;
+  const masked = t.replace(/(?<=[\w)\]])\.(?=[\w(])/g, '·').replace(/\.{2,}|…/g, '·');
+  return (masked.match(/[.?!](?=\s|$)/g) ?? []).length === 1;
+}
 const TERMS = new Set(GLOSSARY.flatMap((g) => g.items.map((it) => it.term)));
 const CHECK = /^(end|back|python|colab|quiz|ask|step:\d+|right:\d+|act:[\w-]+)$/;
 const names = new Set(sceneNames());
@@ -44,7 +96,7 @@ function pageProblems(tab, sub, page) {
     if (!m.text) bad('미션 text 없음');
     else if (m.text.length > 46) bad(`미션 글이 길다(${m.text.length}자, 46자까지): "${m.text}"`);
     if (!CHECK.test(m.check ?? '')) { bad(`미션 check 낱말이 틀렸다: '${m.check}'`); continue; }
-    if (m.check.startsWith('act:') && !sceneSrc.includes(`check('${m.check.slice(4)}')`)) bad(`장면이 ctx.check('${m.check.slice(4)}')를 부르지 않는다`);
+    if (m.check.startsWith('act:') && !new RegExp(`check\\('${m.check.slice(4)}'\\)`).test(sceneSrc)) bad(`장면이 ctx.check('${m.check.slice(4)}')를 부르지 않는다`);
     if (m.check.startsWith('step:')) {
       const n = Number(m.check.slice(5));
       if (!step) bad(`'${m.check}'는 단계 실행 쪽에서만`);
@@ -63,6 +115,95 @@ function pageProblems(tab, sub, page) {
   }
   if (!page.auto && !(page.minutes > 0)) bad('minutes 없음');
   if (page.goal || page.todo) bad('옛 goal/todo가 남아 있다 — more·missions로 옮긴다');
+  out.push(...flowProblems(tab, sub, page, bad));
+  return out;
+}
+
+/** 한 장에 한 가지(FINAL_SPEC §4.1·§5.4) — 핵심 한 줄·데이터 한 줄·볼 곳·장 칩·살펴보기 쪽의 장 차례 */
+function flowProblems(tab, sub, page, bad) {
+  const kind = deckKind(page);
+  const ms = page.missions ?? [];
+  const checks = new Set(ms.map((m) => m.check));
+  if (!page.auto) {
+    const t = page.takeaway;
+    if (!t) bad('takeaway(핵심 한 줄) 없음');
+    else if (t.length < 10 || t.length > 60) bad(`takeaway는 10~60자(지금 ${t.length}자): "${t}"`);
+    else if (!oneSentence(t)) bad(`takeaway는 "."으로 끝나는 한 문장: "${t}"`);
+  }
+  if (kind === 'step') {
+    if (!page.setup) bad('setup(📦 이 쪽에서 쓰는 데이터) 없음');
+    else if (page.setup.length > 60) bad(`setup은 60자까지(지금 ${page.setup.length}자): "${page.setup}"`);
+  }
+  for (const m of ms) {
+    const c = m.check ?? '';
+    if (/^(step:\d+|end)$/.test(c)) {
+      if (!m.look) bad(`'${c}' 미션에 look(👀 볼 곳) 없음`);
+      else if (m.look.length > 24) bad(`look은 24자까지(지금 ${m.look.length}자): "${m.look}"`);
+    }
+    if (c.startsWith('act:') && kind === 'step' && !m.chip) bad(`'${c}' 미션에 chip(장 칩 이름) 없음 — 단계 실행 쪽의 act 미션`);
+    if (m.chip && m.chip.length > 8) bad(`chip은 8자까지(지금 ${m.chip.length}자): "${m.chip}"`);
+    if (c.startsWith('act:') && c !== 'act:begin' && !ACT_WORDS.has(c.slice(4))) bad(`'${c}' — 장면 소스나 slideCard에 data-act="${c.slice(4)}"가 없다(보라 고리가 갈 곳)`);
+  }
+
+  if (kind === 'view') {
+    const list = page.beats;
+    if (!Array.isArray(list) || !list.length) bad('beats(살펴보기 쪽의 장 차례) 없음');
+    else {
+      const ids = new Set();
+      for (const b of list) {
+        const at = `장 '${b.id}'`;
+        if (!b.id) bad('beats에 id 없는 장');
+        else if (ids.has(b.id)) bad(`${at} — id가 겹친다`);
+        ids.add(b.id);
+        if (!b.chip || b.chip.length > 8) bad(`${at} — chip 1~8자: "${b.chip ?? ''}"`);
+        if (!b.title || b.title.length > 28) bad(`${at} — title 1~28자(지금 ${b.title?.length ?? 0}자): "${b.title ?? ''}"`);
+        if (b.lead && b.lead.length > 50) bad(`${at} — lead는 50자까지(지금 ${b.lead.length}자)`);
+        if (b.show !== null && !Array.isArray(b.show)) bad(`${at} — show는 [data-beat id] 또는 null`);
+        for (const id of b.show ?? []) if (!BEAT_IDS.has(id)) bad(`${at} — show의 '${id}'가 장면 소스의 data-beat에 없다`);
+        const key = `${tab.id}${sub ? `:${sub.id}` : ''}:${page.id}#${b.id}`;
+        if ((b.show ?? []).length > 3 && !SHOW_LIMIT_EXCEPT.has(key)) bad(`${at} — 한 장에 보이는 덩어리는 3개까지(지금 ${b.show.length}개)`);
+        for (const c of b.checks ?? []) {
+          if (!checks.has(c)) bad(`${at} — checks의 '${c}'가 이 쪽 미션에 없다`);
+          if (c === 'ask') bad(`${at} — 'ask'는 적지 않는다(확인 장이 저절로 맡는다)`);
+        }
+        if (!pairOk(b.checks ?? [])) bad(`${at} — 한 장의 checks는 1~2개, 둘은 quiz+right:N 또는 act:flow-open+act:flow-all 짝만: ${b.checks}`);
+      }
+      // 미션마다 꼭 한 장에만
+      for (const c of checks) {
+        if (c === 'ask') continue;
+        const n = list.filter((b) => (b.checks ?? []).includes(c)).length;
+        if (n !== 1) bad(`미션 '${c}'가 장 ${n}개에 들어 있다(꼭 한 장에만)`);
+      }
+    }
+  }
+
+  // 만들어진 장 차례(beats.js) 전체로 다시 확인
+  const deck = pageBeats(tab, sub, page);
+  if (deck.length < 3 || deck.length > 8) bad(`장이 3~8개여야 한다(지금 ${deck.length}개: ${deck.map((b) => b.chip).join(' · ')})`);
+  const reads = deck.filter((b) => b.kind === 'read').length;
+  if (reads > 4) bad(`읽기 장은 4개까지(지금 ${reads}개)`);
+  if (deck.some((b) => b.id === 'rest')) bad(`어느 장에도 들지 않은 미션이 있다: ${deck.find((b) => b.id === 'rest').checks}`);
+  for (const c of checks) {
+    const n = deck.filter((b) => b.checks.includes(c)).length;
+    if (n !== 1) bad(`장 차례에서 미션 '${c}'가 ${n}개 장에 있다`);
+  }
+  for (const b of deck) if (!pairOk(b.checks.filter((c) => c !== 'ask'))) bad(`장 '${b.id}' — checks ${b.checks}`);
+  return [];
+}
+
+/** 없어진 화면 틀을 가리키는 말이 course 파일·장면 소스에 남았는가 */
+export function removedChromeProblems() {
+  const out = [];
+  const scan = (files, dir) => {
+    for (const f of files) {
+      f.text.split('\n').forEach((line, i) => {
+        const m = line.match(REMOVED_CHROME);
+        if (m) out.push(`${dir}${f.name}:${i + 1} — 없어진 화면 틀을 가리키는 말 '${m[0]}'(FINAL_SPEC §4.6)`);
+      });
+    }
+  };
+  scan(courseFiles, 'src/app/course/');
+  scan(sceneFiles, 'src/scenes/');
   return out;
 }
 
@@ -116,6 +257,7 @@ export function courseProblems(filter = null) {
       out.push(...pageProblems(tab, it.sub, it.page));
     }
   }
+  if (!want) out.push(...removedChromeProblems());
   return out;
 }
 

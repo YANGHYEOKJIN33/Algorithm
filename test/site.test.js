@@ -7,7 +7,8 @@ import { NOTEBOOKS } from '../src/app/notebooks.js';
 import { GLOSSARY } from '../src/app/glossary.js';
 import { QUIZ } from '../src/app/quiz.js';
 import { allFiles, cleanRecords, mergeParts, UNLABELED } from '../scripts/build.mjs';
-import { courseProblems } from '../scripts/check-course.mjs';
+import { courseProblems, removedChromeProblems, REMOVED_CHROME } from '../scripts/check-course.mjs';
+import { pageBeats } from '../src/app/beats.js';
 import { PERIODS, periodRows, coursePages } from '../src/app/plan.js';
 
 test('수업 내용이 약속을 지킨다 — 🎯 목표(~할 수 있다)·✋ 할 일(이룰 수 있는 확인 낱말)·학습 요소·단원 표지/정리 자료', () => {
@@ -109,4 +110,20 @@ test('전처리 끝난 데이터 — 341마리, 빈칸 없음, 이상치·겹친
 test('용어 사전·퀴즈 자료가 비어 있지 않다', () => {
   assert.ok(GLOSSARY.flatMap((g) => g.items).length >= 50);
   for (const q of QUIZ) assert.ok(q.answer >= 0 && q.answer < q.options.length && q.why);
+});
+
+test('없어진 화면 틀(맨 위 탭·레슨 막대·✋ 할 일 상자…)을 가리키는 말이 수업 내용과 장면에 남지 않았다', () => {
+  assert.ok(REMOVED_CHROME.test('맨 위 탭의 번호') && !REMOVED_CHROME.test('맨 위 줄의 단원 번호'));
+  assert.deepEqual(removedChromeProblems(), []);
+});
+
+test('모든 쪽은 장이 3~8개다(pageBeats)', () => {
+  const bad = [];
+  for (const tab of TABS) {
+    for (const it of unitPages(tab)) {
+      const n = pageBeats(tab, it.sub, it.page).length;
+      if (n < 3 || n > 8) bad.push(`${tab.id}${it.sub ? `:${it.sub.id}` : ''}:${it.page.id} — ${n}장`);
+    }
+  }
+  assert.deepEqual(bad, []);
 });

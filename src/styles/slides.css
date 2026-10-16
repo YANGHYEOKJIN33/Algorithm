@@ -138,6 +138,15 @@ button.termchip:hover:not(:disabled) { background: var(--current-bg); border-col
 .readcode__sym dt { flex: 0 0 auto; font-weight: 700; font-family: var(--font-code); font-size: calc(15px * var(--scale)); color: var(--current); }
 .readcode__sym dd { margin: 0; font-size: calc(13px * var(--scale)); color: var(--text); line-height: 1.35; }
 
+/* 줄이 많은 의사코드 — 한 화면에 들어가게 촘촘히 */
+.readcode--dense .readcode__line { padding: 2px 8px; }
+.readcode--dense .readcode__code { font-size: calc(15px * var(--scale)); line-height: 1.35; }
+.readcode--dense .readcode__note { font-size: calc(13px * var(--scale)); line-height: 1.35; }
+.readcode--xdense .readcode__line { padding: 1px 8px; }
+.readcode--xdense .readcode__code { font-size: calc(14px * var(--scale)); line-height: 1.3; }
+.readcode--xdense .readcode__note { font-size: calc(12.5px * var(--scale)); line-height: 1.3; }
+.readcode--dense, .readcode--xdense { gap: 6px; }
+
 /* ── ❓ 확인 문제 ── */
 .ask__q { font-size: calc(24px * var(--scale)); line-height: 1.35; }
 .ask__opts { display: flex; flex-direction: column; gap: 8px; }
@@ -508,4 +517,20 @@ a.nb-open__colab {
   .beat-head__title { font-size: calc(20px * var(--scale)); }
   #panel-view[data-deck="cover"][data-beats="cv-hook"] .beat-head__title { font-size: calc(22px * var(--scale)); }
   .quiz__q--one .quiz__opts--row { grid-auto-flow: row; }
+}
+
+/* 키가 낮은 화면(교실 브라우저 1280×600 등) — 읽기 장의 머리를 줄여 의사코드가 한 화면에 들어가게 */
+@media (max-height: 640px) {
+  .slide--code { padding-top: 14px; padding-bottom: 14px; gap: 8px; }
+  .slide--code .slide__title { font-size: calc(22px * var(--scale)); }
+  .readcode--xdense .readcode__note { font-size: calc(12px * var(--scale)); line-height: 1.25; }
+  .readcode--xdense .readcode__code { font-size: calc(13px * var(--scale)); line-height: 1.25; }
+}
+
+/* 1분 요약이 길면(다섯 문장 이상) 글자를 조금 줄여 한 화면에 */
+.rv-summary__list:has(li:nth-child(5)) { gap: 6px; }
+.rv-summary__list:has(li:nth-child(5)) li { font-size: calc(16px * var(--scale)) !important; line-height: 1.5 !important; }
+@media (max-height: 640px) {
+  .rv-summary__list li { font-size: calc(15px * var(--scale)) !important; line-height: 1.45 !important; }
+  .rv-summary__list { gap: 4px; }
 }

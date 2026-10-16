@@ -23,7 +23,9 @@ export function readView(def) {
     ? el('dl.readcode__legend.readcode__legend--full', {}, def.legend.map((g) => el('div.readcode__sym', {},
       el('dt', {}, g.sym), el('dd', {}, g.text))))
     : el('p.readcode__legend', {}, el('span.readcode__legendtag', {}, '기호'), LEGEND);
-  return el('div.readcode', { 'data-lines': String(lines.length) },
+  // 줄이 많으면(7줄 이상) 글자와 간격을 줄여 한 화면에 다 들어가게 한다(읽기 장은 스크롤하지 않는다)
+  const dense = lines.length >= 10 ? '.readcode--xdense' : lines.length >= 7 ? '.readcode--dense' : '';
+  return el(`div.readcode${dense}`, { 'data-lines': String(lines.length) },
     el('ol.readcode__list', {}, lines.map((p, i) => el('li.readcode__line', {},
       el('span.readcode__no', { 'aria-hidden': 'true' }, String(i + 1)),
       el('code.readcode__code', {}, p.code),

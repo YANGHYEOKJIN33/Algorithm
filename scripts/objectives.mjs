@@ -5,6 +5,7 @@
 import { TABS, unitPages } from '../src/app/lessons.js';
 import { periodRows, pageRange, coursePages } from '../src/app/plan.js';
 import { NOTEBOOKS } from '../src/app/notebooks.js';
+import { pageBeats } from '../src/app/beats.js';
 
 const cell = (t) => String(t ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
@@ -26,13 +27,14 @@ function unitSection(tab) {
     '',
     ...(u.canDo ?? []).map((c) => `- ${c.text}`),
     '',
-    '| 쪽 | 제목 | 🎯 학습 목표 | 학습 요소 | ✋ 할 일 (하면 저절로 ✅) | 시간 |',
-    '|---|---|---|---|---|---|',
+    '| 쪽 | 제목 | 🎯 학습 목표 | 핵심 한 줄 | 학습 요소 | ✋ 할 일 (하면 저절로 ✅) | 장 (장 칩 차례) | 시간 |',
+    '|---|---|---|---|---|---|---|---|',
     ...pages.map((it) => {
       const p = it.page;
       const sub = it.sub && it.sub.id !== 'review' && !p.auto ? `[${it.sub.name}] ` : '';
       const ms = (p.missions ?? []).map((m) => (m.check === 'ask' && p.ask ? `❓ ${p.ask.q} → **${p.ask.options[p.ask.answer]}**` : m.text));
-      return `| ${it.label} | ${cell(sub + p.title)}${p.level === 'challenge' ? ' 🔥' : ''}${p.level === 'optional' ? ' ➕' : ''} | ${cell(p.objective)} | ${cell((p.terms ?? []).join(', '))} | ${ms.map(cell).join('<br>')} | ${p.minutes ?? ''}분 |`;
+      const chips = pageBeats(tab, it.sub, p).map((b) => b.chip);
+      return `| ${it.label} | ${cell(sub + p.title)}${p.level === 'challenge' ? ' 🔥' : ''}${p.level === 'optional' ? ' ➕' : ''} | ${cell(p.objective)} | ${cell(p.takeaway ?? '—')} | ${cell((p.terms ?? []).join(', '))} | ${ms.map(cell).join('<br>')} | ${chips.length}장: ${cell(chips.join(' → '))} | ${p.minutes ?? ''}분 |`;
     }),
     '',
     '**1분 요약**',
@@ -79,8 +81,9 @@ export function objectivesMarkdown() {
     '',
     '> 이 파일은 `npm run build`가 수업 내용(`src/app/course/*.js`)에서 만들어요. 직접 고치지 말고 그 파일을 고친 뒤 다시 만드세요.',
     '>',
-    '> 쪽마다 🎯 학습 목표(~할 수 있다)·학습 요소·✋ 할 일이 있고, 학생이 할 일을 실제로 하면 화면에서 저절로 ✅가 됩니다.',
-    '> 단원마다 맨 앞에 🧭 표지(생각 열기·할 수 있어요·쪽 목록), 맨 뒤에 📝 정리(1분 요약·스스로 점검·확인 문제)가 붙습니다.',
+    '> 쪽마다 🎯 학습 목표(~할 수 있다)·핵심 한 줄·학습 요소·✋ 할 일이 있고, 학생이 할 일을 실제로 하면 화면에서 저절로 ✅가 됩니다.',
+    '> 한 쪽은 여러 **장**으로 나뉘어 한 장에 한 가지만 보입니다(도입 → 읽기 → 할 일 → ❓ 확인 → 정리). **장** 칸은 학생 화면 맨 위 줄의 장 칩 차례이고, **핵심 한 줄**은 쪽 끝 정리 장에 크게 나옵니다.',
+    '> 단원마다 맨 앞에 🧭 표지 3장(생각 열기 → 데이터 변화 → 목표와 길), 맨 뒤에 📝 정리 5장(요약 → 정답 공개 → 확인 문제 → 스스로 점검 → 단원 끝)이 붙습니다.',
     '> 🔥 = 도전(수학이 많은 쪽), ➕ = 더 알아보기(선택). ❓ 확인 문제 뒤의 **굵은 글씨**가 정답입니다(수업 중 확인용).',
     '',
     '| 단원 | 동사 | 생각 열기 | 쪽 | 시간 |',
