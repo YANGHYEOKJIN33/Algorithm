@@ -78,8 +78,11 @@ const features = {
     function guessBar(col) {
       const g = guesses[col];
       const btn = (keep, label) => el('button.pill.pill--sm', { type: 'button', 'aria-pressed': String(g === keep), onclick: () => pick(col, keep) }, label);
-      return el('div.featwhy', {}, el('strong', {}, '🤔 내 예상은? '), btn(true, '✅ 넣는다'), ' ', btn(false, '✖️ 뺀다'),
-        el('span.card__meta', {}, g === undefined ? '  고른 뒤 ⏭ 한 단계를 눌러 확인해요.' : '  ⏭ 한 단계를 눌러 맞았는지 확인해요.'));
+      const bar = el('div.featwhy', {}, el('strong', {}, '🤔 내 예상은? '), btn(true, '✅ 넣는다'), ' ', btn(false, '✖️ 뺀다'),
+        el('span.card__meta', {}, g === undefined ? '  예상을 고르면 다음 장면에서 맞았는지 알려 줘요.' : '  다음 장면에서 맞았는지 알려 줘요.'));
+      // 보라 고리 — '번호' 장면의 넣는다·뺀다(그 장면이 되어야 나타난다, FINAL_SPEC §1.4)
+      if (col === '번호') { bar.setAttribute('data-act', 'guess-id'); bar.setAttribute('data-act-tag', '👆 하나 골라요'); }
+      return bar;
     }
     function verdictNote(f) {
       const g = guesses[f.col];

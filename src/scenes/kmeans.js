@@ -1,5 +1,10 @@
 /**
  * 🤖 k-평균 — ① 탐험(처음 중심을 골라 끝까지 돌려 보기) · ② 의사코드 한 단계씩
+ *
+ * ① 장(beat) 덩어리(data-beat, FINAL_SPEC §4.4)
+ *   km-chart(그래프 — 처음 중심 고르기) · km-run(되풀이·끝까지 실행 + 상태) · km-compare(다른 중심에서 다시 + 돌려 본 목록)
+ * 보라 고리(data-act) — 그래프: km-pick · ⏩ 끝까지 실행: km-end · 다른 중심 단추: km-compare
+ *   (다른 중심을 고른 뒤 아직 끝까지 돌리지 않았으면 ⏩ 끝까지 실행이 km-compare도 맡는다 — 그릴 때 정한다)
  */
 import { el, fill } from '../ui/dom.js';
 import * as KM from '../core/ml/kmeans.js';
@@ -75,7 +80,10 @@ function kmeansExplore(root, ctx) {
     },
   });
   for (let j = 0; j < 3; j += 1) sc.mover(`c${j}`, () => centerMark(`cl${j}`));
-  const side = el('div.knnx__side');
+  sc.svg.setAttribute('data-act', 'km-pick');
+  sc.svg.setAttribute('data-act-tag', '👆 점을 눌러요');
+  const runBox = el('section.kmx-run', { 'data-beat': 'km-run' });
+  const compareBox = el('section.kmx-run', { 'data-beat': 'km-compare' });
   const status = el('div.kmx__status');
 
   function assignAt(stepN) {
@@ -112,34 +120,42 @@ function kmeansExplore(root, ctx) {
       ctx?.check('km-end');
       if (finished.size >= 2) ctx?.check('km-compare');
     }
+    const key = [...picked].sort((a, b) => a - b).join(',');
     fill(status,
       run ? el('div', {}, `되풀이 ${Math.min(step, run.iterations)}번 ${done ? '— 중심이 멈췄어요 ✅' : ''}`)
-        : el('div', {}, ready ? `처음 중심: ${picked.map((id) => `${id}번`).join(' · ')}. ⏭ 한 번 되풀이나 ⏩ 끝까지 실행을 눌러 보세요.` : `처음 중심이 될 점을 그래프에서 눌러 고르세요 (${picked.length}/3)`),
-        finished.size ? el('div.panel__hint', {}, `끝까지 돌려 본 처음 중심 ${finished.size}가지`) : null);
-    const counts = [0, 1, 2].map((j) => assign.filter((a) => a === j).length);
-    const mix = [0, 1, 2].map((j) => SPECIES.map((sp) => points.filter((p, i) => assign[i] === j && p.label === sp).length));
-    fill(side,
+        : el('div', {}, ready ? `처음 중심: ${picked.map((id) => `${id}번`).join(' · ')}` : `처음 중심 ${picked.length} / 3개`));
+    const endBtn = el('button.pill', { type: 'button', disabled: !ready, onclick: () => { if (!run) run = KM.runKMeans(points, picked); step = run.history.length - 1; draw(); } }, '⏩ 끝까지 실행');
+    endBtn.setAttribute('data-act', 'km-end');
+    const otherBtn = el('button.pill', { type: 'button', onclick: () => { picked = [1, 6, 14]; run = null; step = 0; draw(); } }, '🧪 아델리 3마리에서 시작');
+    // 다른 중심 — 한 번 끝까지 돌려 봤고, 지금 고른 중심이 아직 안 돌려 본 것이면 ⏩ 끝까지 실행이 다음 할 곳
+    if (finished.size >= 1 && ready && !finished.has(key)) endBtn.setAttribute('data-act', 'km-end km-compare');
+    else otherBtn.setAttribute('data-act', 'km-compare');
+    fill(runBox,
       status,
       el('div.lrx__btns', {},
         el('button.pill.ctrl--primary', { type: 'button', disabled: !ready || done, onclick: () => { if (!run) run = KM.runKMeans(points, picked); step += 1; draw(); } }, '⏭ 한 번 되풀이'),
-        el('button.pill', { type: 'button', disabled: !ready, onclick: () => { if (!run) run = KM.runKMeans(points, picked); step = run.history.length - 1; draw(); } }, '⏩ 끝까지 실행'),
-        el('button.pill', { type: 'button', onclick: () => { run = null; step = 0; draw(); } }, '↺ 처음 중심으로'),
-        el('button.pill', { type: 'button', onclick: () => { picked = [1, 6, 14]; run = null; step = 0; draw(); } }, '🧪 아델리 3마리에서 시작')),
+        endBtn,
+        el('button.pill', { type: 'button', onclick: () => { run = null; step = 0; draw(); } }, '↺ 처음 중심으로')),
       el('label.kmx__toggle', {}, el('input', { type: 'checkbox', checked: showSpecies, onchange: (e) => { showSpecies = e.target.checked; draw(); } }), ' 실제 종을 모양으로 보기 (● 아델리 ▲ 턱끈 ■ 젠투)'),
       run && step > 0 ? el('table.mini', {},
         el('thead', {}, el('tr', {}, el('th', {}, '묶음'), el('th', {}, '마리'), el('th', {}, '그 안의 실제 종'))),
         el('tbody', {}, [0, 1, 2].map((j) => el('tr', {},
           el('td', {}, el(`span.legend__mark.cl${j}`, {}, '●'), ` ${CL_NAME[j]}`), el('td', {}, String(counts[j])),
-          el('td', {}, SPECIES.map((sp, si) => (mix[j][si] ? `${SPECIES_SHAPE[si]}${sp} ${mix[j][si]} ` : '')).join('')))))) : null,
-      el('div.callout', {}, '💡 k-평균은 정답(종)을 전혀 보지 않아요. 그런데도 가까운 것끼리 묶으면 실제 종과 꽤 비슷하게 나뉘어요. 다만 처음 중심을 잘못 고르면 엉뚱하게 묶이기도 해요. 그래서 실제로는 출발점을 바꿔 가며 여러 번 돌려 보고 가장 좋은 결과를 골라요(n_init).'));
+          el('td', {}, SPECIES.map((sp, si) => (mix[j][si] ? `${SPECIES_SHAPE[si]}${sp} ${mix[j][si]} ` : '')).join('')))))) : null);
+    fill(compareBox,
+      el('div.lrx__btns', {}, otherBtn),
+      el('p.kmx__done', {}, finished.size
+        ? ['끝까지 돌려 본 처음 중심 ', el('b', {}, `${finished.size}가지`), ': ', [...finished].map((f) => f.split(',').map((id) => `${id}번`).join('·')).join(' / ')]
+        : '아직 끝까지 돌려 본 처음 중심이 없어요.'),
+      el('p.lrx__note', {}, '💡 k-평균은 정답(종)을 전혀 보지 않아요. 그런데도 가까운 것끼리 묶으면 실제 종과 꽤 비슷하게 나뉘어요. 다만 처음 중심을 잘못 고르면 엉뚱하게 묶이기도 해요. 그래서 실제로는 출발점을 바꿔 가며 여러 번 돌려 보고 가장 좋은 결과를 골라요(n_init).'));
   }
 
-  fill(root, el('div.knnx', {},
-    el('div.knnx__main', {},
+  fill(root, el('div.knnx.knnx--beats', {},
+    el('div.knnx__main', { 'data-beat': 'km-chart' },
       el('div.knnx__tools', {}, clusterLegend()),
       el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '👆 점을 눌러 처음 중심 3개를 골라요. 이미 고른 점을 다시 누르면 취소돼요.')),
-    side));
+      el('p.panel__hint', {}, '점을 누르면 처음 중심으로 골라져요(3개까지). 이미 고른 점을 다시 누르면 취소돼요.')),
+    el('div.knnx__side', {}, runBox, compareBox)));
   draw();
   return {};
 }

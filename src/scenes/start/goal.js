@@ -1,8 +1,11 @@
 /**
  * 🏁 0-1 완성품 미리 보기 — "이 수업이 끝나면 이런 인공지능을 만들어요"
  *   슬라이더(부리길이·부리깊이)를 움직이면 전처리를 마친 341마리를 기억한 k-최근접 이웃(k = 3)이
- *   그 자리에서 종을 맞힌다. 새 펭귄은 산점도의 ★, 투표한 이웃 3마리는 주황 고리.
- *   아래(오른쪽)에는 수업 전체의 "이 수업을 마치면" 4가지 · 6단계 여정 · 안심 상자.
+ *   그 자리에서 종을 맞힌다. 새 펭귄은 산점도의 ★, 투표한 이웃 3마리는 주황 고리(데이터 색).
+ *
+ * 장(beat) 덩어리(FINAL_SPEC §4.4) — 장 제목(.beat-head)이 머리말을 맡으므로 큰 머리 그림(hero)은 없다.
+ *   goal-demo  완성품(산점도 + 슬라이더 + 예측). 슬라이더 묶음에 data-act="predict three-species"(보라 고리)
+ *   goal-out   이 수업을 마치면 할 수 있는 4가지 + 안심 한 줄
  *
  * 미션 신호는 start.js가 넘겨 주는 hooks로 알린다(미션 낱말은 start.js에 모아 둔다).
  *   hooks.predicted()   학생이 직접 움직여 예측이 나왔다
@@ -15,7 +18,6 @@ import { speciesLegend, speciesIndex, SPECIES_SHAPE } from '../../viz/chart.js';
 import { SPECIES } from '../../core/data/practice.js';
 import { rankNeighbors } from '../../core/ml/knn.js';
 import { round } from '../../core/stats.js';
-import { unitStrip } from '../unit.js';
 import { demoTrain, demoPredict, DEMO_K } from './model.js';
 import { ensureStartStyle } from './style.js';
 
@@ -100,30 +102,20 @@ export function courseGoal(root, ctx, hooks = {}) {
   }
 
   fill(root, el('div.read.sg', {},
-    el('header.sg-hero', {},
-      el('div.sg-hero__emoji', { 'aria-hidden': 'true' }, '🐧🤖'),
-      el('div', {},
-        el('p.sg-hero__kicker', {}, '🏁 이 수업의 도착점'),
-        el('h3', {}, '처음 보는 펭귄의 종을 맞히는 인공지능을 만들어요'),
-        el('p', {}, '부리만 재서 알려 주면 종을 맞혀 주는 프로그램이에요. 만들기 전에 완성품부터 써 볼까요?'))),
-    el('div.sg-grid', {},
-      el('section.sg-demo', { 'aria-label': '완성품 미리 보기' },
-        el('div.sg-demo__head', {},
-          el('h4', {}, '🔮 완성품 미리 보기 — 새 펭귄(★)의 부리를 재 보세요'),
-          speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄')])),
-        el('div.sg-demo__body', {},
-          el('div.sg-chart', {}, sc.svg),
-          el('div.sg-ctrl', {}, sx.node, sy.node, pred, foundBox)),
-        el('p.sg-demo__foot', {}, `점 하나는 전처리를 마친 펭귄 ${train.length}마리 가운데 한 마리예요. k-최근접 이웃(k = ${DEMO_K})은 이 기록을 기억해 두었다가, ★과 가장 가까운 ${DEMO_K}마리(주황 고리)의 투표로 종을 정해요. 그래프를 눌러도 ★을 옮길 수 있어요. 이 모델은 5단원에서 직접 만들어요.`)),
-      el('div.sg-col', {},
-        el('section.ucard.ucard--goal', {},
-          el('h3', {}, '🎯 이 수업을 마치면 할 수 있어요'),
-          el('ul.sg-out', {}, OUTCOMES.map((o) => el('li', {}, el('span.sg-out__no', {}, `${o.no}단원`), el('span', {}, o.text))))),
-        el('section.ucard', {},
-          el('h3', {}, '🧭 6단계 여정', el('span.card__meta', {}, ' (맨 위 탭의 번호와 같아요)')),
-          unitStrip(null, (id) => ctx.go(id))),
-        el('p.sg-calm', {}, el('strong', {}, '🙂 파이썬을 몰라도 돼요. '),
-          '의사코드 읽는 법(0-5)만 익히면 충분히 따라올 수 있어요. Colab 실습에서도 ▶ 실행만 누르면 돼요.')))));
+    el('section.sg-demo', { 'data-beat': 'goal-demo', 'aria-label': '완성품 미리 보기' },
+      el('div.sg-demo__head', {},
+        el('h4', {}, '🔮 완성품 미리 보기 — 새 펭귄(★)의 부리'),
+        speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄')])),
+      el('div.sg-demo__body', {},
+        el('div.sg-chart', {}, sc.svg),
+        el('div.sg-ctrl', {},
+          el('div.sg-sliders', { role: 'group', 'aria-label': '새 펭귄의 부리 재기', 'data-act': 'predict three-species', 'data-act-tag': '↔ 움직여 보세요' }, sx.node, sy.node),
+          pred, foundBox)),
+      el('p.sg-demo__foot', {}, `점 하나는 전처리를 마친 펭귄 ${train.length}마리 가운데 한 마리예요. k-최근접 이웃(k = ${DEMO_K})은 이 기록을 기억해 두었다가, ★과 가장 가까운 ${DEMO_K}마리(주황 고리)의 투표로 종을 정해요. 그래프를 눌러도 ★이 옮겨 가요. 이 모델은 5단원에서 직접 만들어요.`)),
+    el('section.sg-outwrap', { 'data-beat': 'goal-out' },
+      el('ol.sg-out', {}, OUTCOMES.map((o) => el('li', {}, el('span.sg-out__no', {}, `${o.no}단원`), el('span', {}, o.text)))),
+      el('p.sg-calm', {}, el('strong', {}, '🙂 파이썬을 몰라도 돼요. '),
+        '의사코드 읽는 법(0-5)만 익히면 충분히 따라올 수 있어요. Colab 실습에서도 ▶ 실행만 누르면 돼요.'))));
   draw(false);
   return {};
 }

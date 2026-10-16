@@ -133,7 +133,7 @@ const merge = {
     const titleEl = data.parentElement?.querySelector('.panel__title');
     const seg = el('div.seg', { role: 'group', 'aria-label': '짝 없는 행을 어떻게 할까' },
       el('button', { type: 'button', 'aria-pressed': 'true', onclick: () => setHow('inner') }, '짝 있는 행만 (기본)'),
-      el('button', { type: 'button', 'aria-pressed': 'false', onclick: () => setHow('left') }, '짝 없는 행도 남기기'));
+      el('button', { type: 'button', 'aria-pressed': 'false', 'data-act': 'merge-left', onclick: () => setHow('left') }, '짝 없는 행도 남기기'));
     fill(dataTools, seg);
     function setHow(h) {
       if (h === mergeHow) return;
@@ -221,7 +221,7 @@ const split = {
     const flip = createFlip();
     let noShuffle = false;
     let last = null;
-    const btn = el('button.pill.pill--sm', { type: 'button', 'aria-pressed': 'false', onclick: () => {
+    const btn = el('button.pill.pill--sm', { type: 'button', 'aria-pressed': 'false', 'data-act': 'no-shuffle', onclick: () => {
       noShuffle = !noShuffle;
       btn.setAttribute('aria-pressed', String(noShuffle));
       if (noShuffle) ctx?.check('no-shuffle');

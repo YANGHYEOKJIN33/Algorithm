@@ -26,7 +26,7 @@ const emoji = (t) => String(t ?? '').replace(/\u{1F5B1}(?!️)/gu, '\u{1F5B1}️
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 /** 0-1 도입에만 붙는 한 줄 — 이 사이트를 따라가는 방법(FINAL_SPEC §2.2) */
-export const NOW_RULE_LINE = '👆 보라 고리와 파란 단추가 언제나 지금 할 일을 알려 줘요. 맨 아래 지금 할 일 줄을 읽고 따라 해요.';
+export const NOW_RULE_LINE = '👆 보라 고리와 파란 단추 하나가 언제나 지금 할 일을 알려 줘요. 맨 아래 줄을 읽고 따라 하세요.';
 
 /** 쪽 종류 — 👣 단계 실행 · 🔎 살펴보기 · 🐍 Colab 실습 */
 export function kindName(page) {
@@ -115,8 +115,8 @@ export function mountSlideCard(root, { flow, progress, missions, glossary } = {}
 
     // 기록은 예전 ❓ 말풍선(drawAsk)과 똑같이 — progress.answer가 처음 고른 답(firsts)을 남기고, 미션에는 맞았는지만
     const onPick = (oi) => {
-      if (picked === oi) return;
-      if (oi !== ask.answer) askWrongs.set(v.key, (askWrongs.get(v.key) ?? 0) + 1);
+      // 같은 보기를 다시 눌러도 예전처럼 기록·알림은 한 번 더(처음 고른 답은 바뀌지 않는다). 틀린 횟수만 늘리지 않는다
+      if (oi !== ask.answer && picked !== oi) askWrongs.set(v.key, (askWrongs.get(v.key) ?? 0) + 1);
       progress.answer(qk, 0, oi);
       missions?.emit({ type: 'ask', right: oi === ask.answer });
       draw(flow.get(), curDef);

@@ -4,6 +4,10 @@
  * 미션 신호(ctx.check)
  *   ① 'move-star' 그래프를 눌러 ★ 옮기기 · 'change-k' k 바꾸기 · 'region' 영역 색칠 켜기
  *   ② 'step-k'    그림 위의 k를 바꿔 다시 실행하기
+ *
+ * ① 장(beat) 덩어리(data-beat, FINAL_SPEC §4.4)
+ *   knn-k(k 고르기) · knn-region(🎨 영역 색칠 + 341번으로) · knn-chart(산점도) · knn-side(이웃 표·투표·예측)
+ * 보라 고리(data-act) — 그래프: move-star · k 고르기: change-k · 🎨 단추: region · ② 그림 위 k 고르기: step-k
  */
 import { el, fill } from '../ui/dom.js';
 import { createFlip } from '../ui/flip.js';
@@ -86,8 +90,11 @@ function knnExplore(root, ctx) {
   const sc = createScatter({ ...AXES, width: 620, height: 380, onClick: (x, y) => { q = { x: round(x, 1), y: round(y, 1) }; draw(); ctx?.check('move-star'); } });
   sc.mover('q', () => starPath(11));
   const ks = kSelector(() => k, (v) => { if (v === k) return; k = v; ks.sync(); draw(); ctx?.check('change-k'); });
-  const side = el('div.knnx__side');
-  const regionBtn = el('button.pill', { type: 'button', onclick: () => { region = !region; draw(); if (region) ctx?.check('region'); } });
+  ks.seg.setAttribute('data-act', 'change-k');
+  const side = el('div.knnx__side', { 'data-beat': 'knn-side' });
+  const regionBtn = el('button.pill', { type: 'button', 'data-act': 'region', onclick: () => { region = !region; draw(); if (region) ctx?.check('region'); } });
+  sc.svg.setAttribute('data-act', 'move-star');
+  sc.svg.setAttribute('data-act-tag', '👆 빈 곳을 눌러요');
 
   function drawRegion() {
     sc.clear('region');
@@ -134,13 +141,16 @@ function knnExplore(root, ctx) {
       el('p.panel__hint', {}, `점선 원은 k번째(${k}번째) 이웃까지의 거리예요. 이 안에 든 펭귄들이 투표해요.`));
   }
 
-  fill(root, el('div.knnx', {},
+  fill(root, el('div.knnx.knnx--beats', {},
     el('div.knnx__main', {},
-      el('div.knnx__tools', {}, el('span.panel__title', {}, '이웃 수'), ks.seg, regionBtn,
-        el('button.pill', { type: 'button', onclick: () => { q = { x: KNN_QUERY.x, y: KNN_QUERY.y }; draw(); } }, '↺ 341번 펭귄으로'),
+      el('div.knnx__tools', {},
+        el('div.knnx__group', { 'data-beat': 'knn-k' }, el('span.panel__title', {}, '이웃 수'), ks.seg),
+        el('div.knnx__group', { 'data-beat': 'knn-region' }, regionBtn,
+          el('button.pill', { type: 'button', onclick: () => { q = { x: KNN_QUERY.x, y: KNN_QUERY.y }; draw(); } }, '↺ 341번 펭귄으로')),
         speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄')])),
-      el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '👆 그래프의 빈 곳을 누르면 새 펭귄(★)이 그 자리로 옮겨 가요. 훈련 데이터는 18마리(종마다 6마리)예요. 341번은 이 펭귄의 원래 번호일 뿐, 341마리와는 상관없어요.')),
+      el('div.knnx__chartbox', { 'data-beat': 'knn-chart' },
+        el('div.knnx__chart', {}, sc.svg),
+        el('p.panel__hint', {}, '그래프의 빈 곳을 누르면 새 펭귄(★)이 그 자리로 옮겨 가요. 훈련 데이터는 18마리(종마다 6마리)예요. 341번은 이 펭귄의 원래 번호일 뿐, 341마리와는 상관없어요.'))),
     side));
   draw();
   return {};
@@ -165,6 +175,7 @@ const knnStep = {
     const sc = createScatter({ ...AXES, ...sizeOf(stage, { reserve: 52 }) });
     sc.mover('q', () => starPath(11));
     const ks = kSelector(() => stepK, (v) => { if (v === stepK) return; stepK = v; ks.sync(); ctx.reload(); ctx.check('step-k'); });
+    ks.seg.setAttribute('data-act', 'step-k');
     fill(stageTools, ks.seg);
     const flip = createFlip();
     fill(stage, speciesLegend([el('span.legend__item', {}, el('span.legend__mark', {}, '★'), '새 펭귄(종을 모름)')]), el('div.fit__grow', {}, sc.svg));

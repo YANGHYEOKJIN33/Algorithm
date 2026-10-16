@@ -1,5 +1,9 @@
 /**
  * 🤖 선형 회귀 — ① 탐험(직선을 손으로 맞추고, 경사 하강으로 다가가기) · ② 최소제곱법 한 단계씩
+ *
+ * ① 장(beat) 덩어리(data-beat, FINAL_SPEC §4.4)
+ *   lr-hand(w·b 손잡이 + 그래프 + 오차 점수) · lr-gd(컴퓨터가 조금씩 고치기 + 오차 기록) · lr-best(가장 좋은 직선 + 210mm 예측)
+ * 보라 고리(data-act) — 손잡이 묶음: lr-hand · 조금씩 고치기 단추: lr-gd · 가장 좋은 직선 단추: lr-best
  */
 import { el, fill } from '../ui/dom.js';
 import * as LR from '../core/ml/linreg.js';
@@ -53,7 +57,9 @@ function linregExplore(root, ctx) {
   const inX = el('input', { type: 'number', min: 160, max: 250, value: LINREG_QUERY_X, 'aria-label': '예측할 날개길이', oninput: () => draw(false) });
   const label = (plain, term) => [plain, el('small', { style: 'opacity:.75;font-weight:400' }, ` ${term}`)];
   const goLabel = () => label('▶ 컴퓨터가 조금씩 고치기', '경사 하강법');
-  const goBtn = el('button.pill.ctrl--primary', { type: 'button', onclick: () => (timer ? stop() : run()) }, goLabel());
+  const goBtn = el('button.pill.ctrl--primary', { type: 'button', 'data-act': 'lr-gd', onclick: () => (timer ? stop() : run()) }, goLabel());
+  const bestBtn = el('button.pill', { type: 'button', 'data-act': 'lr-best', onclick: () => { stop(); w = best.w; h = best.w * PIVOT + best.b; draw(true); ctx?.check('lr-best'); } }, label('📐 가장 좋은 직선 보기', '최소제곱법'));
+  const predLine = el('div.lrx__pred');
 
   const bOf = () => h - w * PIVOT;
 
@@ -97,8 +103,8 @@ function linregExplore(root, ctx) {
       el('div.lrx__err', {}, '오차 점수 ', el('b', {}, Math.round(err).toLocaleString()),
         el('span.panel__hint', {}, '  평균 제곱 오차(MSE) · 작을수록 좋아요'),
         el('div.panel__hint', {}, `가장 작은 값 ${Math.round(bestErr).toLocaleString()} · 손잡이 목표 ${HAND_GOAL.toLocaleString()} 아래`)),
-      el('div.lrx__meter', {}, el('span', { style: `width:${Math.min(100, (bestErr / err) * 100)}%` })),
-      el('div.lrx__pred', {}, '날개길이 ', inX, 'mm → 예측 몸무게 ', el('b', {}, `${Math.round(qy).toLocaleString()}g`)));
+      el('div.lrx__meter', {}, el('span', { style: `width:${Math.min(100, (bestErr / err) * 100)}%` })));
+    fill(predLine, '날개길이 ', inX, 'mm → 예측 몸무게 ', el('b', {}, `${Math.round(qy).toLocaleString()}g`));
     // 오차 기록(작아질수록 좋다)
     if (history.length > 1) {
       const W = 260; const H = 60;
@@ -110,21 +116,28 @@ function linregExplore(root, ctx) {
     } else fill(spark);
   }
 
-  fill(root, el('div.knnx', {},
-    el('div.knnx__main', {},
-      el('div.knnx__tools', {},
-        el('label.lrx__slider', {}, '기울기 w ', lw, inW),
-        el('label.lrx__slider', { title: '절편 b는 날개 0mm일 때의 높이라 그래프 밖에 있어요. 그래서 날개 200mm일 때의 높이로 b를 조절해요.' }, '절편 b ', lb, inH, lh),
-        speciesLegend()),
-      el('div.knnx__chart', {}, sc.svg),
-      el('p.panel__hint', {}, '빨간 세로선은 오차(실제 몸무게 − 직선의 예측)예요. 오차를 제곱해 평균 낸 오차 점수(MSE)가 작을수록 좋은 직선이지요. 절편 b는 날개가 0mm일 때의 높이라서 그래프 밖에 있어요. 그래서 손잡이로는 날개 200mm일 때의 높이를 움직여 b를 바꿔요.')),
-    el('div.knnx__side', {},
-      readout,
-      el('div.lrx__btns', {}, goBtn,
-        el('button.pill', { type: 'button', onclick: () => { stop(); w = best.w; h = best.w * PIVOT + best.b; draw(true); ctx?.check('lr-best'); } }, label('📐 가장 좋은 직선 보기', '최소제곱법')),
-        el('button.pill', { type: 'button', onclick: () => { stop(); w = 20; h = 3600; history.length = 0; draw(true); } }, '↺ 처음으로')),
-      spark,
-      el('div.callout', {}, '💡 여기서 "학습"은 데이터를 보고 w와 b를 정하는 일이에요. 컴퓨터는 오차 점수가 줄어드는 쪽으로 w와 b를 조금씩 고쳐 가며(경사 하강법) 가장 좋은 직선에 다가가요. 가장 좋은 직선은 공식 한 번으로 구할 수도 있는데, 이 방법(최소제곱법)은 다음 쪽에서 배워요.'))));
+  fill(root, el('div.lrx', {},
+    el('section.lrx-hand', { 'data-beat': 'lr-hand' },
+      el('div.lrx-hand__chart', {},
+        speciesLegend(),
+        el('div.knnx__chart', {}, sc.svg),
+        el('p.panel__hint', {}, '절편 b는 날개가 0mm일 때의 높이라서 그래프 밖에 있어요. 그래서 손잡이로는 날개 200mm일 때의 높이를 움직여 b를 바꿔요.')),
+      el('div.lrx-hand__side', {},
+        el('div.lrx__sliders', { role: 'group', 'aria-label': '직선의 w와 b 손잡이', 'data-act': 'lr-hand', 'data-act-tag': '↔ 움직여 보세요' },
+          el('label.lrx__slider', {}, '기울기 w ', lw, inW),
+          el('label.lrx__slider', { title: '절편 b는 날개 0mm일 때의 높이라 그래프 밖에 있어요. 그래서 날개 200mm일 때의 높이로 b를 조절해요.' }, '절편 b ', lb, inH, lh)),
+        readout,
+        el('div.lrx__btns', {},
+          el('button.pill.pill--sm', { type: 'button', onclick: () => { stop(); w = 20; h = 3600; history.length = 0; draw(true); } }, '↺ 처음으로')))),
+    el('div.lrx__more', {},
+      el('section.lrx-step', { 'data-beat': 'lr-gd' },
+        el('div.lrx__btns', {}, goBtn),
+        spark,
+        el('p.lrx__note', {}, '💡 여기서 "학습"은 데이터를 보고 w와 b를 정하는 일이에요. 컴퓨터는 오차 점수가 줄어드는 쪽으로 w와 b를 조금씩 고쳐 가요(경사 하강법).')),
+      el('section.lrx-step', { 'data-beat': 'lr-best' },
+        el('div.lrx__btns', {}, bestBtn),
+        predLine,
+        el('p.lrx__note', {}, '💡 가장 좋은 직선은 공식 한 번으로도 구할 수 있어요. 이 방법(최소제곱법)은 다음 쪽에서 한 단계씩 배워요.')))));
   draw(true);
   return { destroy: stop };
 }

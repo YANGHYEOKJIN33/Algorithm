@@ -22,6 +22,15 @@ export const KEYMAP = { ' ': 'play', ArrowRight: 'step', ArrowLeft: 'back', Home
 
 const TYPING = 'input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="slider"]';
 
+/** 단추 글자를 아이콘과 낱말로 나눠 넣는다 — 좁은 화면(태블릿)에서는 지금 할 단추 말고는 아이콘만 보인다(shell.css) */
+function setLabel(btn, label) {
+  if (btn.dataset.label === label) return;
+  btn.dataset.label = label;
+  const [icon, ...rest] = label.split(' ');
+  btn.replaceChildren(el('span.ctrl__ico', {}, icon), rest.length ? el('span.ctrl__txt', {}, ` ${rest.join(' ')}`) : '');
+  if (rest.length) btn.setAttribute('aria-label', label);
+}
+
 export function mountControls(root, store, player) {
   const handlers = {
     reset: () => player.reset(),
@@ -33,7 +42,8 @@ export function mountControls(root, store, player) {
   const buttons = new Map(BUTTONS.map((b) => [b.id, el('button.ctrl', {
     type: 'button', title: `${b.name} (${b.key === 'Space' ? 'Space' : b.key})`, 'aria-label': b.id === 'reset' ? '⏹ 처음으로' : null,
     'data-action': b.id, onclick: handlers[b.id],
-  }, b.label)]));
+  })]));
+  for (const b of BUTTONS) setLabel(buttons.get(b.id), b.label);
   const progress = el('span.progress', { 'aria-live': 'off' });
 
   fill(root, buttons.get('reset'), buttons.get('back'), buttons.get('play'), buttons.get('end'), progress, buttons.get('step'));
@@ -58,7 +68,7 @@ export function mountControls(root, store, player) {
     buttons.get('back').disabled = v.empty || v.atStart;
     buttons.get('step').disabled = v.empty || v.atEnd;
     buttons.get('end').disabled = v.empty || v.atEnd;
-    buttons.get('play').textContent = v.playing ? '⏸ 멈춤' : (!v.empty && v.atEnd ? '↻ 다시 재생' : '▶ 재생');
+    setLabel(buttons.get('play'), v.playing ? '⏸ 멈춤' : (!v.empty && v.atEnd ? '↻ 다시 재생' : '▶ 재생'));
     progress.textContent = v.empty ? '' : `${v.index + 1} / ${v.total}`;
   });
 

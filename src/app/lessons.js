@@ -113,7 +113,7 @@ function build(raw) {
   if (raw.sub) {
     const subs = raw.sub.map((s) => ({ ...s, pages: s.pages.map(withAsk) }));
     if (cover) subs[0] = { ...subs[0], pages: [coverPage(raw), ...subs[0].pages] };
-    if (review) subs.push({ id: 'review', name: '단원 정리', tag: '', pages: [reviewPage(raw)] });
+    if (review) subs.push({ id: 'review', icon: '📝', name: '단원 정리', tag: '', pages: [reviewPage(raw)] });
     tab.sub = subs;
   } else {
     tab.pages = [...(cover ? [coverPage(raw)] : []), ...raw.pages.map(withAsk), ...(review ? [reviewPage(raw)] : [])];

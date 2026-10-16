@@ -200,9 +200,7 @@ function unitReview(root, ctx) {
   }
   const endBlock = el('section.cv-block.rv-end', { 'data-beat': 'rv-end' },
     endScore,
-    terms.length ? el('details.rv-end__terms', {},
-      el('summary', {}, `📖 핵심 용어 ${terms.length}개 — 눌러서 뜻 다시 보기`),
-      el('div.termrow', {}, terms.map((t) => el('button.termchip', { type: 'button', onclick: () => ctx.glossary?.open(t) }, t)))) : null,
+    terms.length ? termDetails(terms, ctx) : null,
     u.cheats?.length ? el('details.rv-end__cheats', {},
       el('summary', {}, '🐍 파이썬 한 줄 정리 ', el('span.card__meta', {}, '— 프로젝트 때 다시 보기')),
       el('table.cheat', {}, el('tbody', {}, u.cheats.map((c) => el('tr', {}, el('th', {}, c.idea), el('td', {}, el('code', {}, c.code))))))) : null,
@@ -214,6 +212,18 @@ function unitReview(root, ctx) {
   drawSelf();
   const unsub = ctx.progress.subscribe(() => { drawEnd(); });
   return { destroy: unsub };
+}
+
+/** 📖 핵심 용어 — 접어 둔 채로 시작하고, 펼칠 때 용어 단추를 만든다(접혀 있는 동안 누를 것이 늘지 않게) */
+function termDetails(terms, ctx) {
+  const row = el('div.termrow');
+  const box = el('details.rv-end__terms', {
+    ontoggle: () => {
+      if (box.open && !row.childElementCount) fill(row, terms.map((t) => el('button.termchip', { type: 'button', onclick: () => ctx.glossary?.open(t) }, t)));
+      else if (!box.open) fill(row);
+    },
+  }, el('summary', {}, `📖 핵심 용어 ${terms.length}개 — 눌러서 뜻 다시 보기`), row);
+  return box;
 }
 
 /** 수업 마지막 — 전체 진도와 못 한 쪽, 학습 기록 복사. 내 프로젝트로 가는 단추는 지금 할 일 줄의 파란 단추 */

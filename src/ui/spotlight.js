@@ -224,16 +224,21 @@ export function mountSpotlight({ flow, store } = {}) {
     spots.push({ side: 'above', top: r.top - th - gap, left: clampX(r.left) });
     const fits = (sp) => sp.top >= minTop && sp.top + th <= maxBottom && sp.left >= 8 && sp.left + tw <= maxRight;
     // 그 자리에 단추·글·그림이 있으면(고리 안쪽 말고) 가린다고 본다
+    // 가리는 정도 — 꼬리표 자리의 점 9개 가운데 단추·글·그림 위에 놓이는 점의 수(0이면 아무것도 가리지 않는다)
     const covers = (sp) => {
-      const pts = [[sp.left + 3, sp.top + 3], [sp.left + tw - 3, sp.top + 3], [sp.left + 3, sp.top + th - 3], [sp.left + tw - 3, sp.top + th - 3], [sp.left + tw / 2, sp.top + th / 2]];
-      return pts.some(([x, y]) => {
+      const pts = [];
+      for (const fx of [0.02, 0.5, 0.98]) for (const fy of [0.15, 0.5, 0.85]) pts.push([sp.left + tw * fx, sp.top + th * fy]);
+      return pts.filter(([x, y]) => {
         const hit = document.elementFromPoint(x, y);
         if (!hit || hit === document.body || current.contains(hit) || hit.contains(current)) return false;
         return Boolean(hit.closest('button, a, input, select, textarea, label, svg, canvas, table, h1, h2, h3, h4, p, li, dt, dd, code, pre, strong, span'));
-      });
+      }).length;
     };
-    const pick = spots.find((sp) => fits(sp) && !covers(sp))
-      ?? spots.find((sp) => fits(sp) && !sp.strict)
+    // 가리지 않는 자리가 없으면 가장 덜 가리는 자리(같으면 앞 후보)
+    spots.push({ side: 'below', top: r.bottom + gap, left: clampX(r.left) });
+    const scored = spots.filter(fits).map((sp, i) => ({ sp, i, c: covers(sp) }));
+    const pick = scored.find((x) => x.c === 0)?.sp
+      ?? scored.filter((x) => !x.sp.strict).sort((a, b) => a.c - b.c || a.i - b.i)[0]?.sp
       ?? spots[spots.length > 1 ? 1 : 0];
     tag.style.top = `${Math.round(pick.top)}px`;
     tag.style.left = `${Math.round(pick.left)}px`;

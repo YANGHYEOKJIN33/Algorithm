@@ -290,7 +290,7 @@ const box = {
     let last = null;
     const seg = el('div.seg', {},
       el('button', { type: 'button', 'aria-pressed': 'true', onclick: () => { real = false; upd(); } }, '≈ 끊은 축'),
-      el('button', { type: 'button', 'aria-pressed': 'false', onclick: () => { real = true; upd(); ctx.check('real-scale'); } }, '실제 비율로'));
+      el('button', { type: 'button', 'aria-pressed': 'false', 'data-act': 'real-scale', onclick: () => { real = true; upd(); ctx.check('real-scale'); } }, '실제 비율로'));
     fill(stageTools, seg);
     function upd() {
       seg.children[0].setAttribute('aria-pressed', String(!real));

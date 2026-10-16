@@ -3,6 +3,8 @@
  *
  * 미션 신호(ctx.check) — ① 막대·그래프로 ★을 옮겨 예측이 바뀌었을 때
  *   'tree-gentoo' 젠투 잎에 닿음 · 'tree-adelie' 아델리 잎에 닿음 (처음 283번 펭귄은 턱끈)
+ *   ① 장 두 개가 모두 장면 전체(show: null)를 보므로 data-beat 덩어리는 없다.
+ *   보라 고리(data-act) — 손잡이 묶음: tree-gentoo tree-adelie
  */
 import { el, fill } from '../ui/dom.js';
 import { infoTerm } from '../ui/infoTip.js';
@@ -158,7 +160,7 @@ function treeExplore(root, ctx) {
 
   fill(root, el('div.treex', {},
     el('div.treex__left', {},
-      el('div.treex__inputs', {},
+      el('div.treex__inputs', { role: 'group', 'aria-label': '새 펭귄의 날개길이·부리길이', 'data-act': 'tree-gentoo tree-adelie', 'data-act-tag': '↔ 움직여 보세요' },
         el('label', {}, '날개길이 ', lw, inW),
         el('label', {}, '부리길이 ', lb, inB),
         el('button.pill', { type: 'button', onclick: () => { q = { 날개길이: TREE_QUERY.날개길이, 부리길이: TREE_QUERY.부리길이 }; draw(); } }, '↺ 283번 펭귄으로')),

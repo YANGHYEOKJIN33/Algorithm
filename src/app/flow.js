@@ -1,6 +1,6 @@
 /**
  * 학습 흐름 — 지금 쪽의 몇 번째 장에 있고, 지금 할 일이 무엇이며, [계속]/[이전]이 어디로 가는지.
- * 화면(DOM)을 모르는 제어기다. 위쪽 줄(장 칩)·지금 할 일 줄·무대가 모두 이것을 구독해 그린다.
+ * 화면(DOM)을 모르는 제어기다. 맨 위 줄(장 칩)·지금 할 일 줄·무대가 모두 이것을 구독해 그린다.
  *
  *   const flow = createFlow({ store, progress, missions })
  *   flow.get()      → { tab, sub, page, key, beats, index, beat, todo, open, beatDone, pageDone,

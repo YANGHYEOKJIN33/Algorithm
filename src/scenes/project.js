@@ -1,12 +1,19 @@
 /**
  * 🚀 프로젝트 — 6-1 모델 평가(정확도·틀린 예) · 6-2 전체 흐름 정리 · 6-3 이해 확인 10문제 · 6-4 나만의 프로젝트 계획
  *
- * ✋ 할 일의 act: 낱말 (ctx.check)
+ * 미션의 act: 낱말 (ctx.check)
  *   wrong-look        6-1 채점표의 ❌ 줄을 눌러 틀린 펭귄의 이웃 살펴보기
  *   improve           6-1 🔧 고쳐 보고 다시 채점 — 다시 채점해 163번을 맞혔을 때
  *   flow-open · flow-all   6-2 단원 줄을 펼쳐 보기 · 1~6단원을 모두 펼쳐 보기
  *   topic · proj-check     6-4 주제 정하기(예시 고르기·직접 적기) · 체크리스트 체크
  * 6-3은 문제 상자의 사건(quiz · right:N), 6-4의 Colab 단추는 colab 사건으로 저절로 체크된다.
+ *
+ * 장(beat) 덩어리(data-beat, FINAL_SPEC §4.4)
+ *   6-2  flow-table(단원 표 — 한 번에 한 줄만 펼친다) · flow-recap(기억할 것 세 카드)
+ *   6-3  final-quiz(한 문제씩, 단원 꼬리표) · final-result(단원별 ⭕/❌ · 아직 못 맞힌 문제)
+ *   6-4  pj-topic(주제) · pj-kind(학습 목적) · pj-nb(틀 노트북 + 데이터 구하는 곳) · pj-steps(체크리스트 + 평가 기준)
+ * 보라 고리(data-act) — 그릴 때 정한다: 6-1 첫 ❌ 줄 wrong-look · 🔧 단추/바꿔 보기 improve
+ *   6-2 아직 안 펼친 첫 단원 flow-open flow-all · 6-4 주제 예시 topic · 아직 안 한 첫 단계 proj-check
  *
  * 모양: 공용 CSS 파일을 건드리지 않으려고 장면이 처음 붙을 때 <style> 하나(.pj-*)를 머리에 넣는다.
  * 색·간격·글자 크기는 tokens.css의 토큰만 쓴다(밝은/어두운 화면이 저절로 맞는다).
@@ -102,7 +109,41 @@ const CSS = String.raw`
 .pj-final .quiz__opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 640px) { .pj-final .quiz__opts { grid-template-columns: 1fr; } }
 
+/* ── 6-3 결과 ── */
+.pj-quiznote { font-size: var(--fs-sm) !important; color: var(--text-muted); margin: 0 0 var(--sp-2); }
+.pj-result { display: flex; flex-direction: column; gap: var(--sp-2); max-width: 960px; }
+.pj-result__score { font-size: var(--fs-lg) !important; margin: 0; }
+.pj-unitgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--sp-2); }
+.pj-unitcell { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: var(--sp-2) var(--sp-3); }
+.pj-unitcell[data-wrong] { border-color: var(--warn); background: var(--warn-bg); }
+.pj-unitcell__name { font-weight: 700; font-size: var(--fs-sm); }
+.pj-unitcell__marks { display: flex; gap: 6px; font-size: var(--fs-lg); }
+.pj-mark.is-none { color: var(--text-muted); }
+.pj-left h4 { margin: 0 0 var(--sp-2); font-size: var(--fs-md); }
+.pj-left__list { list-style: none; margin: 0; padding: 0 !important; display: flex; flex-direction: column; gap: 3px; }
+.pj-left__list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--sp-2); align-items: center; font-size: var(--fs-sm) !important; line-height: 1.3 !important; }
+.pj-left__list .pill--sm { padding-block: 0; }
+.pj-left__tag { font-weight: 700; white-space: nowrap; }
+.pj-left__q { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pj-result__foot { display: flex; justify-content: flex-end; }
+
 /* ── 6-4 프로젝트 안내 ── */
+.pj-block { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
+.pj-sub { margin: 0 !important; font-size: var(--fs-md) !important; }
+.pj-topics { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 2px; border-radius: var(--radius); }
+.pj-sources { margin: 0; }
+.pj-sources li { font-size: var(--fs-sm) !important; }
+.pj-stepsbox { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(220px, 1fr); gap: var(--sp-4); align-items: start; }
+.pj-stepsbox .projsteps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 6px; }
+.pj-stepsbox .projstep { padding: 6px var(--sp-2); }
+.pj-stepsbox .projstep__body { font-size: var(--fs-xs); line-height: 1.4; }
+.pj-stepsbox .projstep__body b { font-size: var(--fs-sm); }
+.pj-stepsbox .projstep__body code { display: none; }
+.pj-criteria { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: var(--sp-2) var(--sp-3); }
+.pj-criteria ol { margin: var(--sp-2) 0 0; padding-left: 1.3em; }
+.pj-criteria li { font-size: var(--fs-sm) !important; line-height: 1.45 !important; }
+.projstep__check { padding: 2px; border-radius: 4px; }
+@media (max-width: 900px) { .pj-topics { grid-template-columns: 1fr 1fr; } .pj-stepsbox { grid-template-columns: 1fr; } }
 .pj-col { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
 .pj-plan h3 { margin: 0 !important; }
 .pj-plan label { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); font-weight: 700; }
@@ -186,9 +227,12 @@ const evaluate = {
     function drawTools(f) {
       if (!dataTools) return;
       if (!f.done) { fill(dataTools); return; }
+      const fixTab = el('button', { type: 'button', 'aria-pressed': String(Boolean(improve)), onclick: () => { if (!improve) { ipick = EV.TARGET_ID; setImprove({ k: EV.K, wing: false, scale: false }); } } }, '🔧 고쳐 보고 다시 채점');
+      // 보라 고리 — 고쳐 보기를 아직 켜지 않았으면 이 단추(켜면 바꿔 보기 줄로 옮겨 간다)
+      if (!improve) fixTab.setAttribute('data-act', 'improve');
       fill(dataTools, el('div.seg', { role: 'group', 'aria-label': '채점표 보기 고르기' },
         el('button', { type: 'button', 'aria-pressed': String(!improve), onclick: () => setImprove(null) }, '📋 처음 채점표'),
-        el('button', { type: 'button', 'aria-pressed': String(Boolean(improve)), onclick: () => { if (!improve) { ipick = EV.TARGET_ID; setImprove({ k: EV.K, wing: false, scale: false }); } } }, '🔧 고쳐 보고 다시 채점')));
+        fixTab));
     }
 
     /** 그림 — 지금 보는 테스트 펭귄과 이웃 k마리를 잇고, 이웃에 번호를 붙인다 */
@@ -241,6 +285,16 @@ const evaluate = {
       // 채점표 · 정확도 · 살펴보기
       const pct = f.accuracy !== null ? Math.round(f.accuracy * 100) : null;
       const wrongLeft = f.rows.some((r) => !r.ok);
+      let wrongMarked = false;
+      const lookBtn = (q, r) => {
+        const b = el('button.pill.pill--sm.pj-look', {
+          type: 'button', 'aria-pressed': String(pick === q.id), title: `${q.id}번 펭귄의 이웃 ${f.k}마리 살펴보기`,
+          onclick: () => look(r),
+        }, r.ok ? '⭕ 맞음 🔎' : '❌ 틀림 🔎');
+        // 보라 고리 — 채점표의 첫 ❌ 줄(아직 채점 전이면 없다 → 지금 할 일 줄이 ⏭로 안내)
+        if (!r.ok && !wrongMarked) { b.setAttribute('data-act', 'wrong-look'); wrongMarked = true; }
+        return b;
+      };
       fill(data, el('div.pj-eval', {},
         el('div.pj-eval__table', {}, el('table.mini.pj-grade', {},
           el('thead', {}, el('tr', {}, ['번호', '진짜 종 (y_test)', '예측 (pred)', '채점'].map((h) => el('th', {}, h)))),
@@ -251,10 +305,7 @@ const evaluate = {
               el('td', {}, `${q.id}번`),
               el('td', {}, r ? [el(`span.legend__mark.sp${si}`, {}, SPECIES_SHAPE[si]), ` ${q.label}`] : '(가림)'),
               el('td', {}, r ? r.pred : q.id === f.focus ? '…' : ''),
-              el('td', {}, r ? el('button.pill.pill--sm.pj-look', {
-                type: 'button', 'aria-pressed': String(pick === q.id), title: `${q.id}번 펭귄의 이웃 ${f.k}마리 살펴보기`,
-                onclick: () => look(r),
-              }, r.ok ? '⭕ 맞음 🔎' : '❌ 틀림 🔎') : ''));
+              el('td', {}, r ? lookBtn(q, r) : ''));
           })))),
         el('div.evalds__score', {},
           el('div.calcgrid__k', {}, '맞힌수 ÷ 테스트 수'),
@@ -271,10 +322,10 @@ const evaluate = {
         return el('div.pj-why', {},
           el('div.pj-why__head', {}, '🔎 살펴보기'),
           f.rows.length === 0
-            ? el('span', {}, '⏭ 한 단계를 눌러 채점을 시작해요. 채점이 끝난 줄은 단추를 누르면 이웃을 볼 수 있어요.')
+            ? el('span', {}, '아직 채점 전이에요. 채점이 끝난 줄은 🔎 단추로 그 펭귄의 이웃을 볼 수 있어요.')
             : f.done && wrongLeft
-              ? [el('span', {}, '👆 채점표의 ', el('b', {}, '❌ 틀림'), ' 단추를 눌러 왜 틀렸는지 살펴보세요. 그다음 모델을 고쳐서 다시 채점해 봐요.'), fixBtn()]
-              : el('span', {}, '👆 채점한 줄의 단추(⭕/❌ 🔎)를 누르면 그 펭귄과 가까운 이웃 3마리, 그리고 다수결 결과를 볼 수 있어요.'));
+              ? [el('span', {}, '채점이 끝났어요. ', el('b', {}, '❌ 틀림'), ' 줄의 🔎 단추로 왜 틀렸는지 볼 수 있고, 🔧로 모델을 고쳐 다시 채점할 수 있어요.'), fixBtn()]
+              : el('span', {}, '채점한 줄의 단추(⭕/❌ 🔎)를 누르면 그 펭귄과 가까운 이웃 3마리, 그리고 다수결 결과가 나와요.'));
       }
       const votes = {};
       for (const n of nbs) votes[n.label] = (votes[n.label] ?? 0) + 1;
@@ -315,8 +366,14 @@ const evaluate = {
       const votes = {};
       for (const n of cur.neighbors) votes[n.label] = (votes[n.label] ?? 0) + 1;
 
+      // 보라 고리 — 아직 163번을 못 맞혔으면 바꿔 보기 줄(k · 날개길이 · 크기 맞추기)
+      const ctl = el('div.pj-imp__ctl', { role: 'group', 'aria-label': '모델 바꿔 보기' });
+      if (!res.rows.find((r) => r.id === EV.TARGET_ID)?.ok) {
+        ctl.setAttribute('data-act', 'improve');
+        ctl.setAttribute('data-act-tag', '👆 바꿔 보세요');
+      }
       fill(data, el('div.pj-imp', {},
-        el('div.pj-imp__ctl', {},
+        fill(ctl,
           el('strong', {}, '🔧 바꿔 보기'),
           el('span.pj-imp__k', {}, 'k =', el('span.seg', { role: 'group', 'aria-label': '이웃 수 k' },
             EV.IMPROVE_KS.map((k) => el('button', { type: 'button', 'aria-pressed': String(improve.k === k), onclick: () => set({ k }) }, String(k))))),
@@ -408,20 +465,24 @@ function summary(root, ctx) {
   }
 
   function draw() {
+    const next = units.find((u) => !seen.has(u.id));
     fill(body, units.map((t) => {
       const r = FLOW[t.id] ?? { did: t.tip ?? '', pseudo: '', py: '' };
       const pr = unitProgress(ctx.progress, t);
       const done = pr.total > 0 && pr.done === pr.total;
       const isOpen = open.has(t.id);
+      const unitBtn = el('button.pj-unit', {
+        type: 'button', 'aria-expanded': String(isOpen), title: `${t.unit.no}단원 ${t.label} — 파이썬 한 줄 정리 ${isOpen ? '접기' : '펼치기'}`,
+        onclick: () => toggle(t),
+      },
+      el('span.pj-unit__caret', { 'aria-hidden': 'true' }, isOpen ? '▼' : '▶'),
+      el('span.pj-no', {}, String(t.unit.no)),
+      el('span.pj-unit__name', {}, `${t.icon} ${t.label}`),
+      el('span.pj-unit__verb', {}, t.verb ?? ''));
+      // 보라 고리 — 아직 펼쳐 보지 않은 첫 단원(다 펼치면 없다)
+      if (t === next) unitBtn.setAttribute('data-act', 'flow-open flow-all');
       const row = el('tr', { 'data-open': isOpen ? 'true' : null },
-        el('td', {}, el('button.pj-unit', {
-          type: 'button', 'aria-expanded': String(isOpen), title: `${t.unit.no}단원 ${t.label} — 파이썬 한 줄 정리 ${isOpen ? '접기' : '펼치기'}`,
-          onclick: () => toggle(t),
-        },
-        el('span.pj-unit__caret', { 'aria-hidden': 'true' }, isOpen ? '▼' : '▶'),
-        el('span.pj-no', {}, String(t.unit.no)),
-        el('span.pj-unit__name', {}, `${t.icon} ${t.label}`),
-        el('span.pj-unit__verb', {}, t.verb ?? ''))),
+        el('td', {}, unitBtn),
         el('td', {}, r.did),
         el('td', {}, el('code', {}, r.pseudo)),
         el('td', {}, el('code.flowtable__py', {}, r.py)),
@@ -432,17 +493,18 @@ function summary(root, ctx) {
     }));
     countLine.textContent = seen.size === units.length
       ? '🎉 1~6단원을 모두 펼쳐 봤어요. 프로젝트도 이 순서를 그대로 따라가요.'
-      : `펼쳐 본 단원 ${seen.size} / ${units.length} · 단원 이름(▶)을 누르면 그 단원에서 데이터가 바뀐 모습과 파이썬 한 줄 정리를 볼 수 있어요.`;
+      : `펼쳐 본 단원 ${seen.size} / ${units.length} · 단원 이름(▶)을 펼치면 데이터가 바뀐 모습과 파이썬 한 줄 정리가 나와요(한 번에 한 단원).`;
   }
 
   fill(root, el('div.read.read--wide', {},
-    el('div.pj-head', {},
-      el('p.pj-intro', {}, '🗺 펭귄 데이터가 거쳐 온 6단계예요. 번호는 맨 위 탭의 번호와 같아요. [다시 보기 →]를 누르면 그 단원의 표지로 가요.'),
-      countLine),
-    el('div.pj-scroll', {}, el('table.mini.flowtable.pj-flow', {},
-      el('thead', {}, el('tr', {}, ['단원', '우리가 한 일', '의사코드 핵심', '파이썬', '진도'].map((h) => el('th', {}, h)))),
-      body)),
-    el('div.cards', {},
+    el('section.pj-flowbox', { 'data-beat': 'flow-table' },
+      el('div.pj-head', {},
+        el('p.pj-intro', {}, '🗺 펭귄 데이터가 거쳐 온 6단계예요. 번호는 맨 위 줄의 단원 번호와 같아요. [다시 보기 →]는 그 단원의 표지로 가요.'),
+        countLine),
+      el('div.pj-scroll', {}, el('table.mini.flowtable.pj-flow', {},
+        el('thead', {}, el('tr', {}, ['단원', '우리가 한 일', '의사코드 핵심', '파이썬', '진도'].map((h) => el('th', {}, h)))),
+        body))),
+    el('div.cards.pj-recap', { 'data-beat': 'flow-recap' },
       el('div.card.card--current', {}, el('div.card__title', {}, '🔁 데이터가 바뀐 모습'), el('p.card__text', {}, 'HTML 글자 → 345줄 표(빈칸·이상치·겹친 행) → 깨끗한 341줄 표 → X(속성 4개)·y(종) → 훈련 272줄 · 테스트 69줄 → 모델 → 예측')),
       el('div.card.card--result', {}, el('div.card__title', {}, '🧠 자료구조가 한 일'), el('p.card__text', {}, '리스트(행목록·거리목록·위치목록), 사전(세기표·바꿈표), 큐(트리의 할일 큐), 표(데이터프레임), 점수표(Q)를 썼어요. 알고리즘은 결국 자료구조를 한 단계씩 바꿔 가는 절차예요.')),
       el('div.card.card--add', {}, el('div.card__title', {}, '✅ 기억할 것 세 가지'), el('p.card__text', {}, '① 데이터가 나쁘면 결과도 나빠요. ② 테스트 데이터는 학습에 쓰지 않아요. ③ 알고리즘은 분류·회귀·군집 가운데 목적에 맞춰 골라요.')))));
@@ -457,53 +519,66 @@ const QUIZ_KEY = FINAL_KEY;
 
 function quiz(root, ctx) {
   ensureProjectStyle();
-  // 문제 앞에 그 개념을 배운 단원을 붙인다 — 틀리면 어느 단원을 다시 볼지 바로 보이게
-  const questions = QUIZ.map((q) => {
+  const units = new Map();   // 단원 → [문제 번호]
+  QUIZ.forEach((q, i) => {
     const t = tabById(q.page?.tab);
-    return t ? { ...q, q: `[${t.unit.no} ${t.label}] ${q.q}` } : q;
+    if (!t) return;
+    if (!units.has(t)) units.set(t, []);
+    units.get(t).push(i);
   });
-  const box = el('div');
-  const tally = el('div.pj-tally', { 'aria-label': '단원별 결과' });
-
-  function drawTally() {
-    const saved = ctx.progress.answers(QUIZ_KEY);
-    const byUnit = new Map();
-    QUIZ.forEach((q, i) => {
-      const t = tabById(q.page?.tab);
-      if (!t) return;
-      const v = saved[i];
-      const mark = v === undefined || v === null ? '·' : v === q.answer ? '⭕' : '❌';
-      byUnit.set(t, `${byUnit.get(t) ?? ''}${mark}`);
-    });
-    fill(tally, el('b', {}, '단원별 (⭕ 맞음 · ❌ 틀림 · 아직)'), [...byUnit].map(([t, marks]) => el('span', {
-      title: `${t.unit.no}단원 ${t.label}`, 'data-wrong': marks.includes('❌') ? 'true' : null,
-    }, `${t.unit.no} ${t.label} ${marks}`)));
-  }
+  // 문제 앞 꼬리표 — 그 개념을 배운 단원("[2 가공]"). 틀리면 어느 단원을 다시 볼지 바로 보이게
+  const tagOf = (q) => { const t = tabById(q.page?.tab); return t ? `[${t.unit.no} ${t.label}]` : ''; };
+  const review = (ref) => (ctx.visit ? ctx.visit(ref.tab, ref.page, ref.sub) : ctx.go(ref.tab, ref.page, ref.sub));
+  const box = el('div.quizbeat', { 'data-beat': 'final-quiz' });
+  const result = el('section.pj-result', { 'data-beat': 'final-result', 'aria-live': 'polite' });
+  let section = null;
 
   function drawBox() {
-    fill(box, quizBox(questions, {
-      title: '📝 수업 전체 이해 확인',
+    section = quizBox(QUIZ, {
+      one: true,
+      tagOf,
       saved: ctx.progress.answers(QUIZ_KEY),
       firsts: ctx.progress.firsts(QUIZ_KEY),
-      onPick: (qi, oi) => { ctx.progress.answer(QUIZ_KEY, qi, oi); drawTally(); },
-      onReview: (ref) => ctx.go(ref.tab, ref.page, ref.sub),
-    }));
+      onPick: (qi, oi) => { ctx.progress.answer(QUIZ_KEY, qi, oi); drawResult(); },
+      onReview: review,
+    });
+    fill(box, el('p.pj-quiznote', {}, '처음 고른 답은 "처음에 맞힘"으로 따로 기록돼요. 찍지 말고 잘 생각해서 골라요.'), section);
+  }
+
+  /** ② 결과 — 단원별 ⭕/❌ 격자와 아직 못 맞힌 문제 */
+  function drawResult() {
+    const saved = ctx.progress.answers(QUIZ_KEY);
+    const mark = (i) => { const v = saved[i]; return v === undefined || v === null ? 'none' : v === QUIZ[i].answer ? 'right' : 'wrong'; };
+    const left = QUIZ.map((q, i) => ({ q, i })).filter(({ i }) => mark(i) !== 'right');
+    const right = QUIZ.length - left.length;
+    fill(result,
+      el('p.pj-result__score', {}, `맞힌 문제 `, el('b', {}, `${right} / ${QUIZ.length}`), right === QUIZ.length ? ' — 🎉 모두 맞혔어요!' : ''),
+      el('div.pj-unitgrid', { role: 'list', 'aria-label': '단원별 결과' }, [...units].map(([t, idx]) => el('div.pj-unitcell', {
+        role: 'listitem', 'data-wrong': idx.some((i) => mark(i) === 'wrong') ? 'true' : null,
+      },
+      el('span.pj-unitcell__name', {}, `${t.unit.no} ${t.icon} ${t.label}`),
+      el('span.pj-unitcell__marks', {}, idx.map((i) => el(`span.pj-mark.is-${mark(i)}`, { title: `Q${i + 1}` }, mark(i) === 'right' ? '⭕' : mark(i) === 'wrong' ? '❌' : '·')))))),
+      left.length
+        ? el('div.pj-left', {},
+          el('h4', {}, `아직 못 맞힌 문제 ${left.length}개`),
+          el('ul.pj-left__list', {}, left.map(({ q, i }) => el('li', {},
+            el('span.pj-left__tag', {}, `Q${i + 1} ${tagOf(q)}`),
+            el('span.pj-left__q', {}, q.q),
+            q.page ? el('button.pill.pill--sm', { type: 'button', onclick: () => review(q.page) }, '📖 다시 보기 →') : null))))
+        : el('p.callout.callout--add', {}, '단원마다 다시 볼 곳이 없어요. 6-4에서 나만의 프로젝트를 시작해요.'),
+      el('div.pj-result__foot', {},
+        el('button.pill.pill--sm', { type: 'button', onclick: reset }, '🔄 처음부터 다시 풀기')));
   }
 
   function reset() {
     QUIZ.forEach((_, i) => ctx.progress.answer(QUIZ_KEY, i, null));
     drawBox();
-    drawTally();
+    drawResult();
   }
 
-  fill(root, el('div.read.pj-final', {},
-    el('div.pj-quizhead', {},
-      el('p', {}, '1~5단원에서 단원마다 2문제씩 골랐어요. 처음 고른 답은 "처음에 맞힘"으로 따로 기록되니, 찍지 말고 잘 생각해서 골라요. 틀리면 ', el('b', {}, '[📖 그 쪽 다시 보기 →]'), '를 눌러 그 개념을 배운 쪽에 다녀온 뒤 다시 골라 보세요. 고른 답은 이 브라우저에 저장돼요.'),
-      el('button.pill.pill--sm', { type: 'button', onclick: reset }, '🔄 처음부터 다시 풀기')),
-    tally,
-    box));
+  fill(root, el('div.read.read--wide.pj-final', {}, box, result));
   drawBox();
-  drawTally();
+  drawResult();
   return {};
 }
 
@@ -586,7 +661,7 @@ function project(root, ctx) {
   }
 
   /* 주제 예시 — 누르면 내 계획에 들어간다 */
-  const topicBox = el('div.cards');
+  const topicBox = el('div.cards.pj-topics', { role: 'group', 'aria-label': '주제 예시', 'data-act': 'topic', 'data-act-tag': '👆 하나 골라요' });
   function drawTopics() {
     fill(topicBox, TOPICS.map((t) => el('button.card.pj-topic', {
       type: 'button', 'aria-pressed': String(plan.topic === t.title),
@@ -607,10 +682,10 @@ function project(root, ctx) {
   /* 단계별 체크리스트 */
   const list = el('ol.projsteps');
   function drawSteps() {
+    const next = STEPS.find((st) => !checked[st.id]);
     fill(list, STEPS.map((st, i) => {
       const tab = st.go ? tabById(st.go[0]) : null;
-      return el(`li.projstep${checked[st.id] ? '.is-done' : ''}`, {},
-        el('label.projstep__check', {}, el('input', {
+      const box = el('label.projstep__check', {}, el('input', {
           type: 'checkbox', checked: Boolean(checked[st.id]),
           onchange: (e) => {
             checked[st.id] = e.target.checked;
@@ -618,7 +693,11 @@ function project(root, ctx) {
             if (e.target.checked) ctx.check('proj-check');
             drawSteps();
           },
-        }), el('span.sr-only', {}, `${st.name} 마쳤어요`)),
+        }), el('span.sr-only', {}, `${st.name} 마쳤어요`));
+      // 보라 고리 — 아직 체크하지 않은 첫 단계
+      if (st === next) { box.setAttribute('data-act', 'proj-check'); box.setAttribute('data-act-tag', '☑ 하나씩 체크해요'); }
+      return el(`li.projstep${checked[st.id] ? '.is-done' : ''}`, {},
+        box,
         el('span.projstep__icon', {}, st.icon),
         el('div.projstep__body', {},
           el('b', {}, `${i + 1}. ${st.name}`), el('span', {}, st.todo), st.py ? el('code.flowtable__py', {}, st.py) : null,
@@ -629,30 +708,35 @@ function project(root, ctx) {
   drawPlan();
   drawTopics();
   drawSteps();
-  fill(root, el('div.read.read--wide', {},
-    el('div.nb__top', {},
-      el('p', {}, '📒 ', el('b', {}, '프로젝트 틀 노트북'), ' — 펭귄 데이터로 수집부터 평가까지 한 번에 돌아가는 완성 예시예요. "✏️ 여기를 바꿔요" 표시가 있는 DATA_URL·TARGET·FEATURES만 내 데이터와 목표에 맞게 바꾸면 돼요.'),
-      el('a.pill.pill--colab', { href: colabUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
-      el('a.pill', { href: notebookUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
-    el('div.projgrid', {},
-      el('div.pj-col', {},
-        el('section.card.card--current.pj-plan', {},
-          el('h3', {}, '📝 내 프로젝트 계획', el('span.card__meta', {}, ' · 이 브라우저에만 저장돼요')),
-          el('label', {}, '주제 — 무엇을 맞힐까?', topicInput),
-          kindRow,
-          algoLine),
-        el('section', {}, el('h3', {}, '✅ 단계별 체크리스트'), el('p.panel__hint', {}, '단계를 하나 끝낼 때마다 체크해요. 막히면 [다시 보기 →]를 눌러 그 단원에 다녀와요.'), list)),
-      el('div.pj-col', {},
-        el('section', {}, el('h3', {}, '💡 주제 예시 — 눌러서 내 주제로'), topicBox),
-        el('section', {},
-          el('h3', {}, '🔎 데이터 구하는 곳'),
-          el('ul', {},
-            el('li', {}, '공공데이터포털 data.go.kr · 서울 열린데이터광장 data.seoul.go.kr · 기상자료개방포털 data.kma.go.kr'),
-            el('li', {}, 'scikit-learn 내장 데이터: load_iris(), load_wine(), load_diabetes() — 내려받지 않고 바로 쓸 수 있어요'),
-            el('li', {}, 'Kaggle Datasets(kaggle.com/datasets) — 회원가입이 필요해요'),
-            el('li', {}, '직접 크롤링 — 🕸 수집 단원에서 배운 예절(robots.txt 확인·천천히 요청·개인정보 빼기)을 꼭 지켜요'),
-            el('li', {}, '이 수업의 펭귄 데이터: ', el('a', { href: DATA_CSV_URL, target: '_blank', rel: 'noopener' }, 'penguins.csv')))))),
-    el('div.callout', {}, '🧭 평가 기준 예시 — ① 문제가 분명한가(무엇을 맞히나) ② 데이터 출처와 수집 방법을 밝혔나 ③ 결측치·이상치를 확인하고 처리한 근거가 있나 ④ 목적에 맞는 알고리즘을 골랐나 ⑤ 테스트 데이터로 공정하게 평가하고, 틀린 예를 보고 모델을 고쳐 봤나 ⑥ 개인정보·편향을 점검했나 ⑦ 모둠원이 역할을 나눠 함께 해결했나 ⑧ 한계와 개선점을 말할 수 있나')));
+  const CRITERIA = ['문제가 분명한가(무엇을 맞히나)', '데이터 출처와 수집 방법을 밝혔나', '결측치·이상치를 확인하고 처리한 근거가 있나', '목적에 맞는 알고리즘을 골랐나',
+    '테스트 데이터로 공정하게 평가하고, 틀린 예를 보고 모델을 고쳐 봤나', '개인정보·편향을 점검했나', '모둠원이 역할을 나눠 함께 해결했나', '한계와 개선점을 말할 수 있나'];
+  fill(root, el('div.read.read--wide.pj-guide', {},
+    el('section.pj-block', { 'data-beat': 'pj-topic' },
+      el('div.card.card--current.pj-plan', {},
+        el('label', {}, el('span', {}, '📝 내 주제 — 무엇을 맞힐까?', el('span.card__meta', {}, ' · 이 브라우저에만 저장돼요')), topicInput)),
+      el('h3.pj-sub', {}, '💡 주제 예시 — 고르면 내 주제가 돼요'),
+      topicBox),
+    el('section.pj-block.pj-plan', { 'data-beat': 'pj-kind' },
+      kindRow,
+      algoLine,
+      el('p.panel__hint', {}, '헷갈리면 정답(y)이 있는지, 그 정답이 숫자인지부터 따져 봐요. 정답이 없으면 군집, 숫자면 회귀, 이름표면 분류예요.')),
+    el('section.pj-block', { 'data-beat': 'pj-nb' },
+      el('div.nb__top', {},
+        el('p', {}, '📒 ', el('b', {}, '프로젝트 틀 노트북'), ' — 펭귄 데이터로 수집부터 평가까지 한 번에 돌아가는 완성 예시예요. "✏️ 여기를 바꿔요" 표시가 있는 DATA_URL·TARGET·FEATURES만 내 데이터와 목표에 맞게 바꾸면 돼요.'),
+        el('a.pill.pill--colab', { href: colabUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
+        el('a.pill', { href: notebookUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
+      el('h3.pj-sub', {}, '🔎 데이터 구하는 곳'),
+      el('ul.pj-sources', {},
+        el('li', {}, '공공데이터포털 data.go.kr · 서울 열린데이터광장 data.seoul.go.kr · 기상자료개방포털 data.kma.go.kr'),
+        el('li', {}, 'scikit-learn 내장 데이터: load_iris(), load_wine(), load_diabetes() — 내려받지 않고 바로 쓸 수 있어요'),
+        el('li', {}, 'Kaggle Datasets(kaggle.com/datasets) — 회원가입이 필요해요'),
+        el('li', {}, '직접 크롤링 — 🕸 수집 단원에서 배운 예절(robots.txt 확인·천천히 요청·개인정보 빼기)을 꼭 지켜요'),
+        el('li', {}, '이 수업의 펭귄 데이터: ', el('a', { href: DATA_CSV_URL, target: '_blank', rel: 'noopener' }, 'penguins.csv')))),
+    el('section.pj-block.pj-stepsbox', { 'data-beat': 'pj-steps' },
+      list,
+      el('aside.pj-criteria', {},
+        el('h3.pj-sub', {}, '🧭 평가 기준 예시'),
+        el('ol', {}, CRITERIA.map((c) => el('li', {}, c)))))));
   return {};
 }
 

@@ -1,5 +1,10 @@
 /**
  * 🕸 수집 — 웹 페이지의 구조(HTML) · 크롤링 한 단계씩 · 크롤링 예절
+ *
+ * 장(beat) 덩어리(data-beat, FINAL_SPEC §4.4)
+ *   1-1  web-why(왜 + 요청·응답 띠) · web-task(찾아보기 질문) · web-panes(브라우저 | HTML) · web-path(태그 길) · web-cards(태그 정리)
+ *   1-3  rules(여섯 약속) · cases(O/X 한 문제씩 — quizBox one)
+ * 보라 고리(data-act) — 1-1 브라우저 표: web-cell · HTML 칸: web-td
  */
 import { el, fill } from '../ui/dom.js';
 import { createFlip } from '../ui/flip.js';
@@ -54,10 +59,10 @@ function webExplore(root, ctx) {
   const goalValue = String(page.rows[goal.row - 1][CRAWL_COLUMNS[goal.cell]]);
   let sel = { row: 1, cell: 3 };
   let found = false;
-  const left = el('div.browser');
-  const right = el('div.webx__src');
-  const path = el('div.webx__path');
-  const quest = el('p.callout');
+  const left = el('div.browser', { 'data-act': 'web-cell', 'data-act-tag': '👆 칸을 눌러요' });
+  const right = el('div.webx__src', { 'data-act': 'web-td', 'data-act-tag': '👆 <td>를 눌러요' });
+  const path = el('div.webx__path', { 'data-beat': 'web-path' });
+  const quest = el('p.callout', { 'data-beat': 'web-task' });
 
   /** from: 'screen'(왼쪽 화면의 칸) | 'html'(오른쪽 HTML의 <td>) */
   function pick(row, cell, from) {
@@ -82,7 +87,7 @@ function webExplore(root, ctx) {
             }, String(r[c]))))))),
         el('a.browser__link', {}, '다음 쪽 →')));
     fill(right,
-      el('div.webx__cap', {}, '💻 컴퓨터가 받은 HTML (페이지 소스). <td>를 눌러 보세요'),
+      el('div.webx__cap', {}, '💻 컴퓨터가 받은 HTML (페이지 소스)'),
       htmlSource(page, 1, { rowState: (i) => (i === sel.row ? 'is-row' : ''), selRow: sel.row, selCell: sel.cell, onCell: (row, ci) => pick(row, ci, 'html') }));
     const value = String(page.rows[sel.row - 1][CRAWL_COLUMNS[sel.cell]]);
     fill(path,
@@ -93,29 +98,30 @@ function webExplore(root, ctx) {
     quest.className = found ? 'callout callout--add' : 'callout';
     fill(quest, found
       ? `✅ 찾았어요! ${goalValue}은 ${goal.row + 1}번째 <tr>의 ${goal.cell + 1}번째 <td> 안에 있어요. 제목 줄 다음 ${goal.row}번째 펭귄 줄이지요. 크롤러도 이렇게 태그 위치로 칸을 찾아요.`
-      : `🔎 찾아보기: ${goal.row}번 펭귄의 ${CRAWL_COLUMNS[goal.cell]} ${goalValue}은 HTML의 어디에 있을까요? 오른쪽 HTML에서 그 <td>를 찾아 눌러 보세요.`);
+      : `🔎 찾아보기: ${goal.row}번 펭귄의 ${CRAWL_COLUMNS[goal.cell]} ${goalValue}은 오른쪽 HTML의 어느 <td> 안에 있을까요?`);
   }
 
   fill(root, el('div.read.read--wide', {},
-    el('div.card.card--soft', {}, el('p.card__text', {}, el('strong', {}, '🐧 왜 웹 페이지를 볼까? '),
-      `펭귄 기록 ${total}줄이 웹 페이지 ${pages.length}쪽에 나뉘어 있어요. 손으로 베끼려면 몇 시간은 걸리지요. 프로그램에게 대신 읽히려면 먼저 웹 페이지가 무엇으로 만들어졌는지 알아야 해요.`)),
-    el('div.netline', {},
-      el('span.netline__box', {}, '💻 내 컴퓨터'),
-      el('span.netline__arrow', {}, '요청 →', el('small', {}, 'page1.html 주세요')),
-      el('span.netline__box', {}, '🖥 서버'),
-      el('span.netline__arrow.netline__arrow--back', {}, '← 응답', el('small', {}, 'HTML 글자')),
-      el('span.netline__box', {}, '🖼 브라우저가 그림으로')),
-    el('div.webx', {},
-      el('div.webx__col', {}, el('div.webx__cap', {}, '👀 사람이 보는 화면. 칸을 눌러 보세요'), left),
+    el('section.webx-why', { 'data-beat': 'web-why' },
+      el('div.card.card--soft', {}, el('p.card__text', {},
+        `펭귄 기록 ${total}줄이 웹 페이지 ${pages.length}쪽에 나뉘어 있어요. 손으로 베끼려면 몇 시간은 걸리지요. 프로그램에게 대신 읽히려면 먼저 웹 페이지가 무엇으로 만들어졌는지 알아야 해요.`)),
+      el('div.netline.netline--big', {},
+        el('span.netline__box', {}, '💻 내 컴퓨터'),
+        el('span.netline__arrow', {}, '요청 →', el('small', {}, 'page1.html 주세요')),
+        el('span.netline__box', {}, '🖥 서버'),
+        el('span.netline__arrow.netline__arrow--back', {}, '← 응답', el('small', {}, 'HTML 글자')),
+        el('span.netline__box', {}, '🖼 브라우저가 그림으로')),
+      el('p.card__meta', {}, '직접 보기: ', el('a', { href: `${PRACTICE_URL}page1.html`, target: '_blank', rel: 'noopener' }, '연습 사이트 1쪽 열기 ↗'),
+        '. 열린 쪽에서 마우스 오른쪽 단추를 누르고 "페이지 소스 보기"(Ctrl+U)를 고르면 HTML이 보여요. 다음 장의 화면은 1쪽 가운데 앞 3줄과 4열만 줄여서 보여 줘요.')),
+    quest,
+    el('div.webx', { 'data-beat': 'web-panes' },
+      el('div.webx__col', {}, el('div.webx__cap', {}, '👀 사람이 보는 화면'), left),
       el('div.webx__col', {}, right)),
     path,
-    quest,
-    el('div.cards', {},
+    el('div.cards', { 'data-beat': 'web-cards' },
       el('div.card', {}, el('div.card__title', {}, infoTerm('태그', { strong: true }), ' — 이름표'), el('p.card__text', {}, '<td>3750</td>처럼 꺾쇠로 된 이름표로 내용을 감싸요. 여는 태그 <td>와 닫는 태그 </td> 사이에 내용이 들어가요.')),
       el('div.card', {}, el('div.card__title', {}, '<table> · <tr> · <td>'), el('p.card__text', {}, '표는 table, 줄(행)은 tr(table row), 칸은 td(table data)예요. 제목 칸은 th(table header)로 적어요.')),
       el('div.card', {}, el('div.card__title', {}, '크롤러가 하는 일'), el('p.card__text', {}, '"<tr>을 모두 찾아서, 그 안에 든 <td>의 글자를 꺼낸다." 사람이 눈으로 표를 읽는 일을 크롤러는 태그 위치를 보고 해요. 다음 쪽에서 한 단계씩 살펴봐요.'))),
-    el('p.card__meta', {}, '직접 보기: ', el('a', { href: `${PRACTICE_URL}page1.html`, target: '_blank', rel: 'noopener' }, '연습 사이트 1쪽 열기 ↗'),
-      '. 열린 쪽에서 마우스 오른쪽 단추를 누르고 "페이지 소스 보기"(Ctrl+U)를 고르면 HTML이 보여요. 이 화면은 1쪽 가운데 앞 3줄과 4열만 줄여서 보여 줘요.'),
   ));
   draw();
   return {};
@@ -263,13 +269,14 @@ const MANNERS_QUIZ = [
 ];
 
 function manners(root) {
-  fill(root, el('div.read', {},
-    el('div.cards.cards--3', {}, MANNERS.map((m) => el('div.card', {},
-      el('div.card__icon', {}, m.icon), el('div.card__title', {}, m.title),
-      el('p.card__text', {}, m.text),
-      m.code ? el('p.card__meta', {}, '(파이썬: ', el('code', {}, m.code), ')') : null))),
-    el('div.callout', {}, '💡 이 수업의 연습 사이트(', el('a', { href: PRACTICE_URL, target: '_blank', rel: 'noopener' }, 'practice/'), ')는 크롤링을 연습하라고 만든 곳이라 안심하고 써도 돼요. 다른 사이트를 크롤링할 때는 위의 여섯 가지를 꼭 확인하세요.'),
-    quizBox(MANNERS_QUIZ, { row: true, title: '✅ O/X로 확인해요' })));
+  fill(root, el('div.read.read--wide', {},
+    el('section.manners', { 'data-beat': 'rules' },
+      el('div.cards.cards--3', {}, MANNERS.map((m) => el('div.card', {},
+        el('div.card__icon', {}, m.icon), el('div.card__title', {}, m.title),
+        el('p.card__text', {}, m.text),
+        m.code ? el('p.card__meta', {}, '(파이썬: ', el('code', {}, m.code), ')') : null))),
+      el('div.callout', {}, '💡 이 수업의 연습 사이트(', el('a', { href: PRACTICE_URL, target: '_blank', rel: 'noopener' }, 'practice/'), ')는 크롤링을 연습하라고 만든 곳이라 안심하고 써도 돼요. 다른 사이트를 크롤링할 때는 위의 여섯 가지를 꼭 확인하세요.')),
+    el('div.quizbeat', { 'data-beat': 'cases' }, quizBox(MANNERS_QUIZ, { row: true, one: true, title: 'O/X' }))));
   return {};
 }
 

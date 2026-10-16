@@ -2,8 +2,12 @@
  * 🏁 시작 — 0-1 완성품 미리 보기 · 0-2 수업 지도 · 0-3 화면 사용법 · 0-4 펭귄 표 · 0-5 의사코드 읽는 법
  *
  * 긴 장면(완성품·화면 사용법)은 start/ 폴더에 있고, 이 파일에서 미션 신호(ctx.check)를 이어 준다.
- * ✋ 할 일의 act: 낱말이 모두 이 파일에 모여 있다:
- *   predict · three-species (0-1) · stages (0-2) · tour-all (0-3) · cell · nan (0-4)
+ * 미션의 act: 낱말이 모두 이 파일에 모여 있다:
+ *   predict · three-species (0-1) · hook · stages (0-2) · tour-all (0-3) · cell · nan (0-4)
+ *
+ * 장(beat) 덩어리 — 살펴보기 쪽은 맨 위 덩어리마다 data-beat를 단다(course 파일의 beats.show와 같은 이름, FINAL_SPEC §4.4).
+ *   0-2  map-hook · map-steps · map-detail          0-4  data-species · data-count · data-table · data-cell · data-terms-a · data-terms-b
+ * 보라 고리가 찾아갈 곳에는 data-act(미션 낱말)를 단다 — 0-2 생각 열기 보기: hook · 아직 안 연 첫 단계 카드: stages · 0-4 표: cell nan
  */
 import { el, fill } from '../ui/dom.js';
 import { createFlip } from '../ui/flip.js';
@@ -52,20 +56,23 @@ function pipeline(root, ctx) {
     if (!h) { fill(hookBox); hookBox.hidden = true; return; }
     const mine = ctx.progress.hook(home.id);
     fill(hookBox,
-      el('span.smap-hook__q', {}, `🤔 생각 열기 — ${h.q}`),
-      h.options.map((op, i) => el('button.quiz__opt', {
-        type: 'button', 'aria-pressed': String(mine === i), 'data-state': mine === i ? 'mine' : null,
-        onclick: () => { ctx.progress.setHook(home.id, i); drawHook(); },
-      }, op)),
+      el('p.smap-hook__label', {}, '🤔 생각 열기'),
+      el('p.smap-hook__q', {}, h.q),
+      el('div.smap-hook__opts', { role: 'group', 'aria-label': '생각 열기 — 내 생각 고르기', 'data-act': 'hook' },
+        h.options.map((op, i) => el('button.quiz__opt', {
+          type: 'button', 'aria-pressed': String(mine === i), 'data-state': mine === i ? 'mine' : null,
+          onclick: () => { ctx.progress.setHook(home.id, i); ctx.check('hook'); drawHook(); },
+        }, op))),
       el('p.smap-hook__note', {}, mine === null
-        ? '정답을 맞히라는 게 아니에요. 내 생각을 먼저 정해 두는 거예요. 아래 지도에 힌트가 있어요.'
-        : `내 생각: "${h.options[mine]}". 정답은 0단원 정리에서 확인해요. 🔒`));
+        ? '맞히는 문제가 아니에요. 내 생각을 먼저 정해 두는 거예요. 다음 장의 6단계 지도에 힌트가 있어요. 정답은 0단원 정리에서 열려요 🔒'
+        : `내 생각: "${h.options[mine]}". 정답은 0단원 정리에서 확인해요 🔒`));
   }
 
   function drawSteps() {
+    const firstClosed = units.findIndex((_, i) => !opened.has(i));
     const parts = units.map((t, i) => {
       const pr = unitProgress(ctx.progress, t);
-      return el('button.smap-step', {
+      const card = el('button.smap-step', {
         type: 'button', 'aria-pressed': String(i === pick), title: `${t.unit.no}단원 ${t.label}${t.verb ? ` — ${t.verb}` : ''} · 진도 ${pr.done}/${pr.total}쪽`,
         onclick: () => openStage(i),
       },
@@ -74,11 +81,14 @@ function pipeline(root, ctx) {
       el('span.smap-step__verb', {}, t.verb || ' '),
       opened.has(i) ? el('span.smap-step__seen', { 'aria-label': '열어 봤어요' }, '✓') : null,
       el('span.smap-step__bar', { style: `--p:${pr.total ? pr.done / pr.total : 0}`, 'aria-hidden': 'true' }));
+      // 보라 고리 — 아직 열어 보지 않은 첫 카드(다 열면 없다)
+      if (i === firstClosed) card.setAttribute('data-act', 'stages');
+      return card;
     });
     fill(stepsBox, parts.flatMap((b, i) => (i < parts.length - 1 ? [b, el('span.smap-to', { 'aria-hidden': 'true' }, '→')] : [b])));
     countLine.textContent = opened.size === units.length
-      ? `🎉 여섯 단계를 모두 열어 봤어요. 맨 위 탭의 1~6이 바로 이 순서예요.`
-      : `열어 본 단계 ${opened.size} / ${units.length}. 번호 카드를 눌러 보세요. 맨 위 탭의 번호와 같은 번호예요.`;
+      ? '🎉 여섯 단계를 모두 열어 봤어요. 맨 위 줄의 단원 번호 1~6이 바로 이 순서예요.'
+      : `열어 본 단계 ${opened.size} / ${units.length} · 카드의 번호는 맨 위 줄의 단원 번호와 같아요.`;
   }
 
   function drawDetail() {
@@ -92,7 +102,7 @@ function pipeline(root, ctx) {
       el('header.smap-card__head', {},
         el('span.smap-card__icon', { 'aria-hidden': 'true' }, t.icon),
         el('div', {},
-          el('p.smap-card__kicker', {}, `${u.no}단원 · 맨 위 탭의 ${u.no}번`),
+          el('p.smap-card__kicker', {}, `단원 번호 ${u.no}`),
           el('h3', {}, `${t.label}`, t.verb ? el('span', {}, ` — ${t.verb}`) : null)),
         el('span.smap-meter', { style: `--p:${pr.total ? pr.done / pr.total : 0}`, 'aria-label': `진도 ${pr.done} / ${pr.total}쪽` }, '진도 ', el('span'), ` ${pr.done}/${pr.total}쪽`)),
       el('div.smap-card__grid', {},
@@ -107,7 +117,7 @@ function pipeline(root, ctx) {
           el('h4', {}, '🎯 이 단원을 마치면 할 수 있어요'),
           el('ul.cando', {}, u.canDo.map((c) => el('li', { 'data-done': canDoDone(ctx.progress, t, c) ? 'true' : null }, c.text)))) : null),
       el('div.smap-card__foot', {},
-        el('button.pill', { type: 'button', onclick: () => ctx.go(t.id) }, `${t.icon} ${u.no}단원 표지 보기 →`)));
+        el('button.pill.pill--sm', { type: 'button', onclick: () => ctx.go(t.id) }, `${t.icon} ${u.no}단원 표지 보기 →`)));
   }
 
   function openStage(i) {
@@ -120,16 +130,15 @@ function pipeline(root, ctx) {
   }
 
   fill(root, el('div.read.smap', {},
-    el('div.hero', {},
-      el('div.hero__emoji', { 'aria-hidden': 'true' }, '🐧❓'),
-      el('div', {},
-        el('h3', {}, home.unit.question ?? '처음 보는 펭귄의 종을 컴퓨터가 맞힐 수 있을까?'),
-        el('p', {}, '사람은 사진만 보고도 알아보지만, 컴퓨터는 숫자로 된 데이터에서 규칙을 배워야 해요. 그 규칙을 배우기까지 데이터는 여섯 단계를 거쳐요.'))),
-    hookBox,
-    stepsBox,
-    countLine,
-    detail,
-    el('div.callout', {}, '💡 실제 인공지능 프로젝트에서는 흔히 시간의 70~80%를 수집, 가공, 전처리에 써요. 데이터가 나쁘면 아무리 좋은 알고리즘도 엉뚱한 것을 배우기 때문이지요(Garbage in, garbage out).'),
+    el('section.smap-open', { 'data-beat': 'map-hook' },
+      el('div.hero', {},
+        el('div.hero__emoji', { 'aria-hidden': 'true' }, '🐧❓'),
+        el('div', {},
+          el('h3', {}, home.unit.question ?? '처음 보는 펭귄의 종을 컴퓨터가 맞힐 수 있을까?'),
+          el('p', {}, '사람은 사진만 보고도 알아보지만, 컴퓨터는 숫자로 된 데이터에서 규칙을 배워야 해요. 그 규칙을 배우기까지 데이터는 여섯 단계를 거쳐요.'))),
+      hookBox),
+    el('section.smap-map', { 'data-beat': 'map-steps' }, stepsBox, countLine),
+    el('section', { 'data-beat': 'map-detail' }, detail),
   ));
   drawHook();
   const unsub = ctx.progress.subscribe(() => { drawSteps(); drawDetail(); });
@@ -204,32 +213,43 @@ function dataIntro(root, ctx) {
   }
 
   const total = counts.reduce((a, b) => a + b, 0);
-  fill(root, el('div.read', {},
-    el('div.cards', {}, SPECIES_INFO.map((s, i) => el('div.card', {},
-      el('div.card__title', {}, el(`span.legend__mark.sp${i}`, {}, SPECIES_SHAPE[i]), ` ${s.name}펭귄`, el('span.card__meta', {}, ` · ${counts[i]}마리`)),
-      el('p.card__text', {}, s.look))),
-    el('div.card.card--soft', {}, billFigure())),
-    el('p.di-count', { 'aria-label': '줄 수 맞추기' },
-      '🧮 ', el('span', {}, `원본 펭귄 ${SPECIES.map((sp, i) => `${sp} ${counts[i]}`).join(' + ')} = `), el('b', {}, `${total}마리`),
-      el('span.di-count__eq', {}, ' + '),
-      el('span.di-count__dup', {}, `수업을 위해 한 번 더 넣은 ${DUPLICATE_ID}번 펭귄 1줄`),
-      el('span.di-count__eq', {}, ' = '), el('b', {}, `연습 표 ${all.length}줄`),
-      el('span.card__meta', {}, ' (겹친 줄은 3단원 🧹 전처리에서 찾아서 지워요)')),
+  const term = (...kids) => el('li', {}, ...kids);
+  fill(root, el('div.read.di', {},
+    el('section.di-species', { 'data-beat': 'data-species' },
+      el('div.cards', {}, SPECIES_INFO.map((sp, i) => el('div.card', {},
+        el('div.card__title', {}, el(`span.legend__mark.sp${i}`, {}, SPECIES_SHAPE[i]), ` ${sp.name}펭귄`, el('span.card__meta', {}, ` · ${counts[i]}마리`)),
+        el('p.card__text', {}, sp.look))),
+      el('div.card.card--soft', {}, billFigure()))),
+    el('section.di-count', { 'data-beat': 'data-count', 'aria-label': '줄 수 맞추기' },
+      el('div.di-count__sum', {},
+        SPECIES.map((sp, i) => [
+          i ? el('span.di-count__op', { 'aria-hidden': 'true' }, '+') : null,
+          el('span.di-count__term', {}, el('b', {}, String(counts[i])), el('small', {}, `${sp}`))]),
+        el('span.di-count__op', { 'aria-hidden': 'true' }, '='),
+        el('span.di-count__term.di-count__term--total', {}, el('b', {}, String(total)), el('small', {}, '원본 펭귄'))),
+      el('div.di-count__sum', {},
+        el('span.di-count__term', {}, el('b', {}, String(total)), el('small', {}, '원본')),
+        el('span.di-count__op', { 'aria-hidden': 'true' }, '+'),
+        el('span.di-count__term.di-count__term--dup', {}, el('b', {}, '1'), el('small', {}, `한 번 더 넣은 ${DUPLICATE_ID}번 펭귄`)),
+        el('span.di-count__op', { 'aria-hidden': 'true' }, '='),
+        el('span.di-count__term.di-count__term--total', {}, el('b', {}, String(all.length)), el('small', {}, '연습 표 줄 수'))),
+      el('p.di-count__note', {}, `겹친 ${DUPLICATE_ID}번 줄은 3단원 🧹 전처리에서 찾아서 지워요.`),
+      el('p.card__meta', {}, '데이터 출처: palmerpenguins. Gorman 박사 연구팀이 2007~2009년에 남극 파머 기지에서 관측했어요(CC0). 수업을 위해 빈칸 1칸, 잘못 적은 값 1칸, 겹친 행 1줄을 일부러 넣었어요.')),
     el('div.datawrap', {},
-      el('div.datawrap__table', {},
-        el('div.datawrap__cap', {}, `연습 표의 처음 8줄 (전체 ${all.length}줄 × ${COLUMNS.length}열). 칸을 눌러 보세요. 빨간 NaN은 빈칸이에요.`),
+      el('div.datawrap__table', { 'data-beat': 'data-table', 'data-act': 'cell nan', 'data-act-tag': '👆 칸을 눌러요' },
+        el('div.datawrap__cap', {}, `연습 표의 처음 8줄 (전체 ${all.length}줄 × ${COLUMNS.length}열) · 빨간 NaN은 빈칸이에요.`),
         tableBox),
       el('div.datawrap__side', {},
-        info,
-        el('ul.termlist', {},
-          el('li', {}, infoTerm('행', { strong: true }), ' = 관측 하나(펭귄 한 마리)'),
-          el('li', {}, infoTerm('열', { strong: true }), ' = ', infoTerm('속성'), ' 하나(부리길이, 몸무게 …)'),
-          el('li', {}, infoTerm('인덱스', { strong: true }), ' = 왼쪽의 회색 번호. 0부터 세고, 펭귄 번호와 달라요'),
-          el('li', {}, infoTerm('결측치', { strong: true, label: 'NaN' }), ' = 비어 있는 칸'),
-          el('li', {}, infoTerm('데이터프레임', { strong: true }), ' = 판다스(파이썬 도구)에서 이런 표를 부르는 이름'),
-          el('li', {}, el('strong', {}, el('code', {}, 'df')), ' = 이 표에 붙인 이름(변수). 코드에서 df가 보이면 "이 펭귄 표"라고 읽으면 돼요'),
-          el('li', {}, el('strong', {}, el('code', {}, "df.loc[인덱스, '열']")), ' = 그 행과 그 열이 만나는 칸 하나. 지금 누른 칸이 바로 이런 칸이에요. 예: ', el('code', {}, "df.loc[2, '몸무게']"))))),
-    el('p.card__meta', {}, '데이터 출처: palmerpenguins. Gorman 박사 연구팀이 2007~2009년에 남극 파머 기지에서 관측했어요(CC0). 수업을 위해 빈칸 1칸, 잘못 적은 값 1칸, 겹친 행 1줄을 일부러 넣었어요.'),
+        el('div', { 'data-beat': 'data-cell' }, info),
+        el('ul.termlist', { 'data-beat': 'data-terms-a' },
+          term(infoTerm('행', { strong: true }), ' = 관측 하나(펭귄 한 마리)'),
+          term(infoTerm('열', { strong: true }), ' = ', infoTerm('속성'), ' 하나(부리길이, 몸무게 …)'),
+          term(infoTerm('인덱스', { strong: true }), ' = 왼쪽의 회색 번호. 0부터 세고, 펭귄 번호와 달라요')),
+        el('ul.termlist', { 'data-beat': 'data-terms-b' },
+          term(infoTerm('결측치', { strong: true, label: 'NaN' }), ' = 비어 있는 칸(결측치)'),
+          term(infoTerm('데이터프레임', { strong: true }), ' = 판다스(파이썬 도구)에서 이런 표를 부르는 이름'),
+          term(el('strong', {}, el('code', {}, 'df')), ' = 이 표에 붙인 이름(변수). 코드에서 df가 보이면 "이 펭귄 표"라고 읽으면 돼요'),
+          term(el('strong', {}, el('code', {}, "df.loc[인덱스, '열']")), ' = 그 행과 그 열이 만나는 칸 하나. 방금 누른 칸이 바로 이런 칸이에요. 예: ', el('code', {}, "df.loc[2, '몸무게']"))))),
   ));
   draw();
   return {};
@@ -246,6 +266,13 @@ const pseudoIntro = {
   dataTitle: '변수(상자)',
   dataHint: '← 로 새 값을 넣으면 상자 속 값이 바뀌어요',
   rows: ['1.2fr', '0.8fr'],
+  // 기호 풀이 — 읽기 슬라이드(의사코드 미리 읽기)의 범례 자리에 나온다(FINAL_SPEC §2.3)
+  legend: [
+    { sym: '의사(擬似)코드', text: '프로그램의 순서를 사람 말로 적은 글. 위에서부터 한 줄씩 실행해요.' },
+    { sym: '←', text: '오른쪽 값을 왼쪽 상자(변수)에 넣어요. 예전 값은 사라져요.' },
+    { sym: '반복', text: '들여 쓴 줄을 되풀이해요.' },
+    { sym: '만약', text: '조건이 참일 때만 들여 쓴 줄을 실행해요.' },
+  ],
   frames: () => BASICS.maxFrames(),
   mount({ stage, data }) {
     const flip = createFlip();
@@ -270,11 +297,7 @@ const pseudoIntro = {
         fill(data, el('div.varrow', {},
           varBox('최고', `${f.best}g`, { hot: f.line === 1 || f.line === 4, sub: `${f.bestId}번 펭귄` }),
           varBox('p', cur ? `${cur.w}g` : '—', { sub: cur ? `${cur.id}번 펭귄` : '' }),
-          el('div.varrow__note', {},
-            el('p', {}, el('strong', {}, '의사(擬似)코드 '), '= 진짜 코드를 흉내 내어 프로그램의 순서를 사람 말로 적은 글이에요. 왼쪽 줄을 위에서부터 한 줄씩 실행해요.'),
-            el('p', {}, el('strong', {}, '← '), '오른쪽 값을 왼쪽 상자(변수)에 넣어요. 넣으면 예전 값은 사라져요.'),
-            el('p', {}, el('strong', {}, '반복 '), '같은 일을 되풀이해요. 그 아래 들여 쓴 줄이 반복할 때마다 하는 일이에요.'),
-            el('p', {}, el('strong', {}, '만약 '), '조건이 참일 때만 그 아래 줄을 실행해요.'))));
+          el('p.varrow__note', {}, el('strong', {}, '← '), '로 새 값을 넣으면 상자 속 예전 값은 사라져요.')));
       },
     };
   },

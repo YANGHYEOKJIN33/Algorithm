@@ -3,6 +3,10 @@
  *
  * 미션 신호: ctx.check('algo-map') — 알고리즘 지도에서 "몸무게 예측"에 맞는 알고리즘(선형 회귀)을 골랐을 때
  * (학습 방법·목적 쪽의 문제 상자는 'quiz:answer' 사건을 스스로 올려 보낸다 → 미션 'quiz'·'right:N')
+ *
+ * 장(beat) 덩어리(data-beat, FINAL_SPEC §4.4)
+ *   5-1  lt-sup · lt-unsup · lt-rl(카드 셋 — auto-fit 격자라 한 장만 보이면 가로를 다 쓴다) · lt-key(가르는 질문 그림) · lt-cases(한 문제씩)
+ *   5-3  pp-cards(분류·회귀·군집) · pp-cases(한 문제씩) · pp-map(알고리즘 지도 — 표에 data-act="algo-map")
  */
 import { el, fill } from '../ui/dom.js';
 import { quizBox } from '../ui/quizBox.js';
@@ -70,30 +74,51 @@ const TYPE_QUIZ = [
 ];
 
 function learnTypes(root) {
-  const card = (cls, icon, title, label, svg, rows) => el(`div.card.typecard${cls}`, {},
+  const card = (attrs, cls, icon, title, label, svg, rows) => el(`div.card.typecard${cls}`, attrs,
     el('div.typecard__head', {}, el('span.card__icon', {}, icon), el('div', {}, el('div.card__title', {}, title), el('div.card__meta', {}, label))),
-    el('div.typecard__fig', {}, svg),
-    el('ul.typecard__list', {}, rows.map((r) => el('li', {}, r))));
+    el('div.typecard__body', {},
+      el('div.typecard__fig', {}, svg),
+      el('ul.typecard__list', {}, rows.map((r) => el('li', {}, r)))));
   fill(root, el('div.read.read--wide', {},
-    el('div.cards.cards--3', {},
-      card('.card--current', '👩‍🏫', '지도학습', '정답(레이블)이 있는 데이터로 배워요', miniScatter('labeled'), [
+    el('div.cards.typecards', {},
+      card({ 'data-beat': 'lt-sup' }, '.card--current', '👩‍🏫', '지도학습', '정답(레이블)이 있는 데이터로 배워요', miniScatter('labeled'), [
         el('span', {}, el('b', {}, '데이터: '), '문제(부리·날개) + 정답(종 또는 몸무게)'),
         el('span', {}, el('b', {}, '배우는 것: '), '문제에서 정답으로 가는 규칙'),
         el('span', {}, el('b', {}, '예: '), '펭귄 종 분류, 스팸 메일 거르기, 몸무게 회귀(숫자 예측)'),
         el('span', {}, el('b', {}, '이 수업: '), 'k-최근접 이웃 · 의사결정 트리 · 선형 회귀')]),
-      card('.card--add', '🧭', '비지도학습', '정답 없이 데이터 속 구조를 찾아요', miniScatter('cluster'), [
+      card({ 'data-beat': 'lt-unsup' }, '.card--add', '🧭', '비지도학습', '정답 없이 데이터 속 구조를 찾아요', miniScatter('cluster'), [
         el('span', {}, el('b', {}, '데이터: '), '문제(부리길이·부리깊이)만, 정답 없음'),
         el('span', {}, el('b', {}, '배우는 것: '), '비슷한 것끼리 모인 무리(군집)'),
         el('span', {}, el('b', {}, '예: '), '고객 무리 나누기, 비슷한 뉴스 묶기'),
         el('span', {}, el('b', {}, '이 수업: '), 'k-평균')]),
-      card('.card--result', '🎮', '강화학습', '직접 해 보고 받은 보상으로 익혀요', rlLoop(), [
+      card({ 'data-beat': 'lt-rl' }, '.card--result', '🎮', '강화학습', '직접 해 보고 받은 보상으로 익혀요', rlLoop(), [
         el('span', {}, el('b', {}, '데이터: '), '정답 대신 행동의 결과(보상)'),
         el('span', {}, el('b', {}, '배우는 것: '), '보상을 가장 많이 받는 행동'),
         el('span', {}, el('b', {}, '예: '), '게임·바둑 AI, 로봇 걷기, 자율주행'),
         el('span', {}, el('b', {}, '이 수업: '), '다음 쪽 "강화학습 맛보기"')])),
-    el('div.callout', {}, '💡 가르는 질문은 하나예요. "데이터에 ', infoTerm('레이블', { strong: true, label: '정답(레이블)' }), '이 있나?" 있으면 지도학습, 없으면 비지도학습이에요. 정답 대신 ', infoTerm('보상', { strong: true }), '을 받으며 배우면 강화학습이고요.'),
-    quizBox(TYPE_QUIZ, { row: true, title: '✅ 어떤 학습일까요?' })));
+    keyDiagram(),
+    el('div.quizbeat', { 'data-beat': 'lt-cases' }, quizBox(TYPE_QUIZ, { row: true, one: true, title: '어떤 학습일까요?' }))));
   return {};
+}
+
+/** 가르는 질문 두 개 — 정답(레이블)이 있나? → 지도 / 보상으로 배우나? → 강화 / 둘 다 아니면 → 비지도 */
+function keyDiagram() {
+  const ask = (n, ...q) => el('div.ltkey__ask', {}, el('span.ltkey__no', {}, n), el('span', {}, ...q));
+  const yes = (cls, icon, name, sub) => el(`div.ltkey__yes${cls}`, {},
+    el('span.ltkey__arrow', { 'aria-hidden': 'true' }, '예 →'),
+    el('div.ltkey__out', {}, el('span.ltkey__icon', { 'aria-hidden': 'true' }, icon), el('b', {}, name), el('small', {}, sub)));
+  const no = () => el('div.ltkey__no-arrow', { 'aria-hidden': 'true' }, '↓ 아니요');
+  return el('div.ltkey', { 'data-beat': 'lt-key', role: 'group', 'aria-label': '학습 방법을 가르는 질문' },
+    el('div.ltkey__row', {},
+      ask('1', '데이터에 ', infoTerm('레이블', { strong: true, label: '정답(레이블)' }), '이 있나?'),
+      yes('.ltkey__yes--sup', '👩‍🏫', '지도학습', '정답으로 가는 규칙을 배워요')),
+    no(),
+    el('div.ltkey__row', {},
+      ask('2', '정답 대신 ', infoTerm('보상', { strong: true }), '을 받으며 배우나?'),
+      yes('.ltkey__yes--rl', '🎮', '강화학습', '보상이 큰 행동을 익혀요')),
+    no(),
+    el('div.ltkey__row', {},
+      el('div.ltkey__out.ltkey__out--unsup', {}, el('span.ltkey__icon', { 'aria-hidden': 'true' }, '🧭'), el('b', {}, '비지도학습'), el('small', {}, '정답 없이 비슷한 것끼리 묶어요'))));
 }
 
 /* ═════════════ 강화학습 맛보기 (단계 실행) ═════════════ */
@@ -186,7 +211,7 @@ const ALGO_MAP = [
 
 function purposes(root, ctx) {
   // 지도를 "읽기"만 하지 않고 직접 골라 보게 — 다른 쪽으로 떠나지 않고 이 쪽에서 미션을 이룬다
-  const pickNote = el('p.callout', { 'aria-live': 'polite' }, '🎯 문제: 날개길이로 펭귄의 ', el('b', {}, '몸무게(숫자)'), '를 맞히고 싶어요. 아래 지도에서 알맞은 알고리즘의 [✋ 고르기]를 눌러 보세요.');
+  const pickNote = el('p.callout', { 'aria-live': 'polite' }, '🎯 문제: 날개길이로 펭귄의 ', el('b', {}, '몸무게(숫자)'), '를 맞히고 싶어요. 어떤 알고리즘이 알맞을까요?');
   const pick = (a) => {
     const ok = a.sub === 'linreg';
     pickNote.className = `callout ${ok ? 'callout--add' : 'callout--warn'}`;
@@ -199,24 +224,26 @@ function purposes(root, ctx) {
     el('div.typecard__head', {}, el('div', {}, el('div.card__title', {}, title), el('div.card__meta', {}, sub))),
     el('div.typecard__fig', {}, svg),
     el('div.typecard__out', {}, out));
-  // 그림을 조금 낮게 그려 알고리즘 지도가 첫 화면에 들어오게 한다
-  const H = 150;
+  const mapTable = el('table.mini.algomap', { 'data-act': 'algo-map', 'data-act-tag': '👆 하나 골라요' },
+    el('thead', {}, el('tr', {}, ['알고리즘', '학습 방법', '학습 목적', '한 줄 아이디어', '이 단원에서 해 볼 일', ''].map((h) => el('th', {}, h)))),
+    el('tbody', {}, ALGO_MAP.map((a) => el('tr', {},
+      el('td', {}, el('b', {}, a.name)), el('td', {}, a.how),
+      el('td', {}, el(`span.tag.tag--${a.tag}`, {}, a.purpose), a.more ?? ''),
+      el('td', {}, a.idea), el('td', {}, a.task),
+      el('td.algomap__btns', {}, el('button.pill.pill--sm', { type: 'button', onclick: () => pick(a) }, '고르기'), ' ',
+        el('button.pill.pill--sm', { type: 'button', onclick: () => ctx.go('ml', null, a.sub) }, '배우러 가기 →'))))));
+  // 장마다 덩어리 하나만 보이므로 그림을 넉넉히
+  const H = 200;
   fill(root, el('div.read.read--wide', {},
-    el('div.cards.cards--3', {},
+    el('div.cards.cards--3', { 'data-beat': 'pp-cards' },
       card('.card--current', '🏷 분류 (classification)', '정해진 무리 가운데 하나를 골라요', miniScatter('classify', { height: H }), ['내놓는 것: ', el('b', {}, '이름표(종)'), ' — "턱끈"']),
       card('.card--result', '📈 회귀 (regression)', '숫자를 내놓는 예측이에요', miniRegression({ height: H }), ['내놓는 것: ', el('b', {}, '숫자'), ' — "4653g"']),
       card('.card--add', '🫧 군집 (clustering)', '정답 없이 비슷한 것끼리 묶어요', miniScatter('cluster', { height: H }), ['내놓는 것: ', el('b', {}, '무리 번호'), ' — "묶음 2"'])),
-    el('h3', {}, '🗺 이 단원의 알고리즘 지도', el('span.card__meta', {}, ' — 무엇을 맞힐지 정하면, 이 표에서 알고리즘을 골라요')),
-    pickNote,
-    el('table.mini.algomap', {},
-      el('thead', {}, el('tr', {}, ['알고리즘', '학습 방법', '학습 목적', '한 줄 아이디어', '이 단원에서 해 볼 일', ''].map((h) => el('th', {}, h)))),
-      el('tbody', {}, ALGO_MAP.map((a) => el('tr', {},
-        el('td', {}, el('b', {}, a.name)), el('td', {}, a.how),
-        el('td', {}, el(`span.tag.tag--${a.tag}`, {}, a.purpose), a.more ?? ''),
-        el('td', {}, a.idea), el('td', {}, a.task),
-        el('td', {}, el('button.pill.pill--sm', { type: 'button', onclick: () => pick(a) }, '✋ 고르기'), ' ',
-          el('button.pill.pill--sm', { type: 'button', onclick: () => ctx.go('ml', null, a.sub) }, '배우러 가기 →')))))),
-    quizBox(PURPOSE_QUIZ, { row: true, title: '✅ 분류·회귀·군집 중 무엇일까요?' })));
+    el('div.quizbeat', { 'data-beat': 'pp-cases' }, quizBox(PURPOSE_QUIZ, { row: true, one: true, title: '분류·회귀·군집 중 무엇일까요?' })),
+    el('section.ppmap', { 'data-beat': 'pp-map' },
+      el('h3', {}, '🗺 이 단원의 알고리즘 지도', el('span.card__meta', {}, ' — 무엇을 맞힐지 정하면, 이 표에서 알고리즘을 골라요')),
+      pickNote,
+      mapTable)));
   return {};
 }
 
