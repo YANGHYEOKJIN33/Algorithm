@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { allPages, TABS, currentLesson, goPatch, unitPages } from '../src/app/lessons.js';
 import { NOTEBOOKS } from '../src/app/notebooks.js';
-import { ASSESS_STUDENT, ASSESS_TEACHER, ASSESS_DATASETS, CONDITION_PY } from '../src/app/assessment.js';
+import { ASSESS_STUDENT, ASSESS_TEACHER, ASSESS_DATASETS, CONDITION_PY, CATALOG_PY, PIPELINE_PY, ANSWER_TEMPLATES } from '../src/app/assessment.js';
 import { GLOSSARY } from '../src/app/glossary.js';
 import { QUIZ } from '../src/app/quiz.js';
 import { allFiles, cleanRecords, mergeParts, UNLABELED } from '../scripts/build.mjs';
@@ -129,14 +129,18 @@ test('모든 쪽은 장이 3~8개다(pageBeats)', () => {
   assert.deepEqual(bad, []);
 });
 
-test('수행평가 — 6-4 데이터 카드와 노트북 1-1의 데이터 목록이 같고, 두 노트북이 같은 나만의 조건 함수를 쓴다', () => {
-  const nbCode = ASSESS_STUDENT.cells.filter((c) => c.type === 'code').map((c) => c.code).join('\n');
-  const keys = [...nbCode.matchAll(/^ {4}'([a-z_]+)': dict\(/gm)].map((m) => m[1]);
+test('수행평가 — 6-4 데이터 카드와 노트북 1-1의 데이터 목록이 같고, 두 노트북이 같은 파이썬 함수(조건·데이터·전처리~원리 보기)를 쓴다', () => {
+  const keys = [...CATALOG_PY.matchAll(/^ {4}'([a-z_]+)': dict\(/gm)].map((m) => m[1]);
   assert.deepEqual(keys, ASSESS_DATASETS.map((d) => d.code));
   for (const nb of [ASSESS_STUDENT, ASSESS_TEACHER]) {
     const src = nb.cells.filter((c) => c.type === 'code').map((c) => c.code).join('\n');
-    assert.ok(src.includes(CONDITION_PY.trim()), `${nb.id}에 나만의 조건 함수가 그대로 있어야 한다`);
+    for (const [name, py] of [['조건', CONDITION_PY], ['데이터', CATALOG_PY], ['전처리~원리 보기', PIPELINE_PY]]) {
+      assert.ok(src.includes(py.trim()), `${nb.id}에 ${name} 코드가 그대로 있어야 한다`);
+    }
   }
+  // 📝 답 칸마다 열쇠가 하나씩 — 교사용 점검이 빈 답과 비슷한 답을 가려낸다
+  const keysOf = ASSESS_STUDENT.cells.filter((c) => c.type === 'md' && /📝 \*\*/.test(c.text)).length;
+  assert.equal(Object.keys(ANSWER_TEMPLATES).length, keysOf, '📝 답 칸은 셀마다 하나씩, 셀 맨 앞에서 시작해야 한다');
   // 평가 요소 배점 ①30 ②30 ③25 ④15 — 가장 낮은 수준의 합이 기본점수 30
   const title = ASSESS_STUDENT.cells[0].text;
   for (const [no, pts] of [['①', 30], ['②', 30], ['③', 25], ['④', 15]]) assert.match(title, new RegExp(`\\| ${no} \\| [^|]+ \\| ${pts} \\|`));

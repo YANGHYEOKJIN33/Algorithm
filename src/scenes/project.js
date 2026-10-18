@@ -127,6 +127,8 @@ const CSS = String.raw`
 .pj-left__list .pill--sm { padding-block: 0; }
 .pj-left__tag { font-weight: 700; white-space: nowrap; }
 .pj-left__q { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pj-left__todo { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+.pj-left__more summary { cursor: pointer; font-size: var(--fs-sm); color: var(--current); margin-top: 4px; }
 .pj-result__foot { display: flex; justify-content: flex-end; }
 
 /* ── 6-4 프로젝트 안내 ── */
@@ -152,8 +154,12 @@ const CSS = String.raw`
 .pj-taskfoot { display: flex; flex-direction: column; gap: 4px; }
 .pj-taskfoot p { margin: 0; }
 .pj-datas { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 2px; border-radius: var(--radius); }
-.pj-data { text-align: left; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; }
-.pj-data[aria-pressed="true"] { border-color: var(--current); box-shadow: 0 0 0 2px var(--current); background: var(--current-bg); }
+.pj-data { display: flex; flex-direction: column; gap: 1px; padding: 5px 9px; }
+.pj-data[aria-current="true"] { border-color: var(--current); box-shadow: 0 0 0 2px var(--current); background: var(--current-bg); }
+.pj-data code { font-size: var(--fs-xs); }
+.pj-pickrow { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: var(--fs-sm); font-weight: 700; }
+.pj-pick { font: inherit; font-weight: 400; padding: 4px var(--sp-2); border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); }
+.pj-pickrow .pj-picked { font-weight: 400; flex: 1 1 320px; }
 .pj-data__field { font-weight: 700; font-size: var(--fs-sm); }
 .pj-data .card__text { font-size: var(--fs-xs); line-height: 1.35; }
 .pj-data .card__meta { font-size: var(--fs-xs); }
@@ -576,13 +582,23 @@ function quiz(root, ctx) {
       left.length
         ? el('div.pj-left', {},
           el('h4', {}, `아직 못 맞힌 문제 ${left.length}개`),
-          el('ul.pj-left__list', {}, left.map(({ q, i }) => el('li', {},
-            el('span.pj-left__tag', {}, `Q${i + 1} ${tagOf(q)}`),
-            el('span.pj-left__q', {}, q.q),
-            q.page ? el('button.pill.pill--sm', { type: 'button', onclick: () => review(q.page) }, '📖 다시 보기 →') : null))))
-        : el('p.callout.callout--add', {}, '단원마다 다시 볼 곳이 없어요. 6-4에서 나만의 프로젝트를 시작해요.'),
+          // 틀린 문제만 [다시 보기] — 아직 안 푼 문제는 앞 장에서 풀면 돼요. 여섯 개 넘게는 접어 둬요(한 장에 단추가 넘치지 않게)
+          leftList(left.slice(0, 6)),
+          left.length > 6 ? el('details.pj-left__more', {}, el('summary', {}, `나머지 ${left.length - 6}문제 더 보기`), leftList(left.slice(6))) : null)
+        : el('p.callout.callout--add', {}, '단원마다 다시 볼 곳이 없어요. 6-4에서 수행평가를 시작해요.'),
       el('div.pj-result__foot', {},
         el('button.pill.pill--sm', { type: 'button', onclick: reset }, '🔄 처음부터 다시 풀기')));
+  }
+
+  function leftList(items) {
+    const saved = ctx.progress.answers(QUIZ_KEY);
+    return el('ul.pj-left__list', {}, items.map(({ q, i }) => {
+      const tried = saved[i] !== undefined && saved[i] !== null;
+      return el('li', {},
+        el('span.pj-left__tag', {}, `Q${i + 1} ${tagOf(q)}`),
+        el('span.pj-left__q', {}, q.q),
+        tried && q.page ? el('button.pill.pill--sm', { type: 'button', onclick: () => review(q.page) }, '📖 다시 보기 →') : el('span.pj-left__todo', {}, tried ? '' : '아직 안 풂'));
+    }));
   }
 
   function reset() {
@@ -607,14 +623,14 @@ const PARTS = [
   { no: '④', name: '결과 표현 및 개발 과정 설명', pts: 15, nb: '4-1 ~ 4-4', what: '그래프 설명 · 확인 행으로 원리 설명 · 개발 과정 · 🤖 AI 활용 기록' },
 ];
 
-/** 채점 방법 — 인공지능을 써도, 점수는 학생 자신의 결과와 설명에서 나온다 */
+/** 채점 방법 — AI 챗봇을 써도, 점수는 학생 자신의 결과와 설명에서 나온다 */
 const FAIR = [
   { icon: '🔑', title: '나만의 조건', text: '학번으로 SEED·TEST_SIZE·꼭 할 실험·확인 행이 정해져요. 같은 데이터를 골라도 친구와 숫자가 달라요.' },
   { icon: '🔢', title: '내 숫자로 근거', text: '📝 답마다 내 실행 결과의 숫자를 넣어요. 그 숫자가 출력과 맞는지 선생님이 바로 견줘 봐요.' },
-  { icon: '🧪', title: '가설을 먼저', text: '실험은 가설을 적어야 돌아가요. 예상과 결과가 다를 때 까닭을 따지는 것이 점수가 돼요.' },
-  { icon: '🔎', title: '확인 행 설명', text: '내 확인 행을 모델이 어떻게 판단했는지 출력의 숫자로 한 단계씩 설명해요.' },
-  { icon: '🤖', title: 'AI 활용 기록', text: '무엇을 물었고, 무엇으로 확인해 어떻게 고쳤는지 적어요. AI가 틀렸던 경우도 하나 찾아요.' },
-  { icon: '🗣', title: '구술 확인', text: '수업 중에 선생님이 노트북을 보며 물어봐요. 내가 설명하지 못하는 내용은 점수로 인정받기 어려워요.' },
+  { icon: '🧪', title: '가설을 먼저', text: '실험은 가설을 적어야 돌아가고, 가설은 제출 요약에 그대로 남아요. 예상과 결과가 다를 때 까닭을 따지는 것이 점수가 돼요.' },
+  { icon: '🔎', title: '확인 행 설명', text: '먼저 답을 가린 채 내 모델이 확인 행을 어떻게 판단할지 손으로 따라가고, 그다음에 답을 보고 견줘요.' },
+  { icon: '🤖', title: 'AI 활용 기록', text: '무엇을 물었고, 무엇으로 확인해 어떻게 고쳤는지 적어요. AI를 쓰지 않았다면 내가 찾아 고친 오류 하나를 적어요.' },
+  { icon: '🧑‍🏫', title: '현장 확인', text: '마지막 차시에 AI 챗봇 없이 10분, 내 노트북만 보며 네 문제에 답해요. 여기서 설명하지 못한 요소는 가장 높은 점수를 받을 수 없어요.' },
 ];
 
 /** 진행표 — 노트북의 질문 번호 그대로. go: [탭, 쪽, 하위탭] — "다시 보기" 단추가 데려갈 곳 */
@@ -624,8 +640,9 @@ const STEPS = [
   { id: 'part2a', icon: '🔍', name: '② 2-1 ~ 2-2 살피기·전처리', todo: '결측치·이상치를 숫자로 · 전처리를 고르고 까닭 적기', go: ['inspect'] },
   { id: 'part2b', icon: '🤖', name: '② 2-3 ~ 2-5 학습·작동 확인', todo: '나누기와 학습 · 새 입력 직접 넣기 · 알고리즘을 고른 까닭', go: ['ml'] },
   { id: 'part3a', icon: '📊', name: '③ 3-1 ~ 3-2 성능·틀린 예', todo: '"찍기"·성공 기준과 비교 · 틀린 예 2개를 행 번호와 값으로', go: ['project', 'eval'] },
-  { id: 'part3b', icon: '🧪', name: '③ 3-3 ~ 3-4 실험·개선', todo: '가설 먼저 실험 3개(꼭 할 실험 포함) · 한계 3가지와 개선 방안', go: null },
-  { id: 'part4', icon: '🖼', name: '④ 4-1 ~ 4-4 표현·설명', todo: '그래프 설명 · 확인 행 원리 · 개발 과정 · 🤖 AI 활용 기록', go: null },
+  { id: 'part3b', icon: '🧪', name: '③ 3-3 ~ 3-4 실험·개선', todo: '가설 먼저 실험 3개(꼭 할 실험 포함) · 결과는 내 숫자로, 예상과 다르면 그 까닭까지 · 한계 3가지와 개선 방안', go: null },
+  { id: 'part4', icon: '🖼', name: '④ 4-1 ~ 4-4 표현·설명', todo: '그래프 설명 · 사용 대상에게 보여 줄 결과 · 확인 행 (가)→(나) · 개발 과정 · 🤖 AI 활용 기록', go: null },
+  { id: 'field', icon: '🧑‍🏫', name: '현장 확인', todo: 'AI 챗봇 없이 10분 · 내 노트북만 보며 네 문제 · 선생님이 알려 준 숫자를 현장_행에 적고 실행', go: null },
   { id: 'submit', icon: '📮', name: '제출', todo: '런타임 → 모두 실행 → 제출 요약 확인 → 선생님이 알려 준 방법으로 내기', go: null },
 ];
 
@@ -646,26 +663,32 @@ function project(root, ctx) {
   const plan = { dataset: '', ...readJSON(PLAN_KEY) };
   const goBtn = (go, label) => el('button.pill.pill--sm.projstep__go', { type: 'button', onclick: () => ctx.go(...go) }, label);
 
-  /* 데이터 고르기 — 누르면 노트북에 적을 코드가 나온다 */
-  const dataBox = el('div.cards.pj-datas', { role: 'group', 'aria-label': '데이터 고르기', 'data-act': 'topic', 'data-act-tag': '👆 하나 골라요' });
+  /* 데이터 고르기 — 카드는 읽기만, 고르기는 목록 상자 하나로(한 장에 조작 요소가 넘치지 않게) */
+  const dataBox = el('div.cards.pj-datas', { role: 'list', 'aria-label': '고를 수 있는 데이터' });
   const picked = el('p.pj-picked', { 'aria-live': 'polite' });
+  const pickSel = el('select.pj-pick', {
+    'aria-label': '내 데이터 고르기', 'data-act': 'topic', 'data-act-tag': '👆 하나 골라요',
+    onchange: (e) => {
+      plan.dataset = e.target.value;
+      writeJSON(PLAN_KEY, plan);
+      if (plan.dataset) ctx.check('topic');
+      drawData();
+    },
+  },
+  el('option', { value: '' }, '— 내 진로와 가까운 데이터를 골라요 —'),
+  ASSESS_DATASETS.map((d) => el('option', { value: d.code }, `${d.icon} ${d.field} — ${d.code}`)));
   function drawData() {
-    fill(dataBox, ASSESS_DATASETS.map((d) => el('button.card.pj-data', {
-      type: 'button', 'aria-pressed': String(plan.dataset === d.code),
-      onclick: () => {
-        plan.dataset = d.code;
-        writeJSON(PLAN_KEY, plan);
-        ctx.check('topic');
-        drawData();
-      },
+    pickSel.value = plan.dataset || '';
+    fill(dataBox, ASSESS_DATASETS.map((d) => el('div.card.pj-data', {
+      role: 'listitem', 'aria-current': plan.dataset === d.code ? 'true' : null,
     },
     el('span.pj-data__field', {}, `${d.icon} ${d.field}`),
     el('span.card__text', {}, d.desc),
-    el('span.card__meta', {}, `🎯 ${d.example}`))));
+    el('span.card__meta', {}, `🎯 ${d.example} · `, el('code', {}, d.code)))));
     const d = ASSESS_DATASETS.find((x) => x.code === plan.dataset);
     fill(picked, d
       ? ['✏️ 노트북 1-1에 이렇게 적어요: ', el('code', {}, `DATASET = '${d.code}'`), ' — 1-1 답에는 이 분야를 고른 까닭을 내 진로와 이어서 적어요.']
-      : '카드를 누르면 노트북에 적을 코드가 나와요. 목록에 없는 데이터를 쓰고 싶으면 먼저 선생님께 확인받아요(개인정보가 든 데이터는 안 돼요).');
+      : '목록에 없는 데이터를 쓰고 싶으면 먼저 선생님께 확인받아요(개인정보가 든 데이터는 안 돼요).');
   }
 
   /* 진행표 */
@@ -704,15 +727,16 @@ function project(root, ctx) {
         el('p.card__meta', {}, `📒 노트북 ${pt.nb}`)))),
       el('div.callout.pj-taskfoot', {},
         el('p', {}, '✅ 내면 기본점수 ', el('b', {}, '30점'), '부터 시작해요(① ~ ④ 가장 낮은 수준의 합). 스스로 내지 않으면 ', el('b', {}, '20점'), '이에요.'),
-        el('p', {}, '📮 ', el('b', {}, '사이트에서 내지 않아요.'), ' 노트북을 다 풀고 선생님이 알려 준 방법(클래스룸 등)으로 내요.'))),
+        el('p', {}, '🧑‍🏫 마지막 차시에는 AI 챗봇 없이 10분 동안 ', el('b', {}, '현장 확인'), '을 해요. 여기서 설명하지 못한 요소는 가장 높은 점수를 받을 수 없어요.'),
+        el('p', {}, '📮 ', el('b', {}, '사이트에서 내지 않아요.'), ' 노트북을 다 풀고 저장한 뒤 선생님이 알려 준 방법(클래스룸 등)으로 내요.'))),
     el('section.pj-block', { 'data-beat': 'pj-data' },
-      dataBox,
-      picked),
+      el('div.pj-pickrow', {}, el('label', { for: 'pj-pick' }, '📂 내 데이터'), Object.assign(pickSel, { id: 'pj-pick' }), picked),
+      dataBox),
     el('section.pj-block', { 'data-beat': 'pj-fair' },
       el('div.cards.pj-fairs', {}, FAIR.map((f) => el('div.card', {},
         el('div.card__title', {}, `${f.icon} ${f.title}`),
         el('p.card__text', {}, f.text)))),
-      el('p.callout.callout--add.pj-fairnote', {}, '💡 인공지능이 써 준 것도 ', el('b', {}, '내 숫자와 맞고, 내가 설명할 수 있어야'), ' 내 것이 돼요. 그래서 더 좋은 인공지능을 쓴다고 점수가 저절로 오르지 않아요.')),
+      el('p.callout.callout--add.pj-fairnote', {}, '💡 AI 챗봇이 써 준 것도 ', el('b', {}, '내 숫자와 맞고, AI 없이 내가 설명할 수 있어야'), ' 내 것이 돼요. 그래서 더 좋은 AI 챗봇을 쓴다고 점수가 저절로 오르지 않아요.')),
     el('section.pj-block', { 'data-beat': 'pj-nb' },
       el('div.nb__top', {},
         el('p', {}, '📒 ', el('b', {}, '수행평가 노트북'), ' — 평가 요소 ① ~ ④의 질문이 차례로 들어 있어요. ✏️ 줄만 고치고 📝 답 칸을 채우면 완성돼요.'),
@@ -722,7 +746,7 @@ function project(root, ctx) {
         ['파일 → 드라이브에 사본 저장', '사본이 아니면 고친 내용이 저장되지 않아요'],
         ['맨 위 셀에 학번·이름을 적고 ▶', '나만의 조건 네 가지가 나와요'],
         ['위에서부터 차례로 ▶ · 📝 답 채우기', '✏️ 줄만 고쳐요 · 답에는 내 숫자를 넣어요'],
-        ['런타임 → 모두 실행', '맨 아래 제출 요약(요약코드·지문)이 오류 없이 나와야 해요'],
+        ['런타임 → 모두 실행 → 저장(Ctrl+S)', '맨 아래 제출 요약(요약코드·지문)이 오류 없이 나와야 해요'],
         ['선생님이 알려 준 방법으로 내기', '이 사이트에서는 내지 않아요'],
       ].map(([a, b]) => el('li', {}, el('b', {}, a), ` — ${b}`))),
       el('p.panel__hint', {}, '참고: 펭귄 데이터로 처음부터 끝까지 돌아가는 완성 예시는 ',
@@ -732,7 +756,7 @@ function project(root, ctx) {
       el('aside.pj-criteria', {},
         el('h3.pj-sub', {}, '🧭 평가 요소와 배점'),
         el('ol.pj-partlist', {}, PARTS.map((pt) => el('li', {}, el('b', {}, `${pt.no} ${pt.name}`), ` ${pt.pts}점 · 노트북 ${pt.nb}`))),
-        el('p.panel__hint', {}, '응시 기본점수 30점 · 미제출 20점')))));
+        el('p.panel__hint', {}, '응시 기본점수 30점 · 미제출 20점 · 현장 확인 △면 중간, ×면 가장 낮은 수준까지')))));
   return {};
 }
 

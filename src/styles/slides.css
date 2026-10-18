@@ -561,10 +561,17 @@ a.nb-open__colab {
 
 /* 키가 낮은 화면(교실 브라우저 1280×600 등) — 읽기 장의 머리를 줄여 의사코드가 한 화면에 들어가게 */
 @media (max-height: 640px) {
-  .slide--code { padding-top: 14px; padding-bottom: 14px; gap: 8px; }
+  .slide--code { padding-top: 14px; padding-bottom: 14px; gap: 8px; max-width: 1120px; }
+  .slide--code .slide__setup { padding-top: 6px; padding-bottom: 6px; font-size: calc(15px * var(--scale)); }
   .slide--code .slide__title { font-size: calc(22px * var(--scale)); }
   .readcode--xdense .readcode__note { font-size: calc(12px * var(--scale)); line-height: 1.25; }
   .readcode--xdense .readcode__code { font-size: calc(13px * var(--scale)); line-height: 1.25; }
+  .readcode--dense .readcode__line { padding: 1px 8px; }
+  .readcode--dense .readcode__code { font-size: calc(14px * var(--scale)); line-height: 1.28; }
+  .readcode--dense .readcode__note { font-size: calc(12.5px * var(--scale)); line-height: 1.28; }
+  .readcode--dense, .readcode--xdense { gap: 4px; }
+  #panel-view[data-deck="cover"][data-beats="cv-hook"] .beat-head__title { font-size: calc(24px * var(--scale)); }
+  .cv-hook__card { padding: 12px 16px; }
 }
 
 /* 1분 요약이 길면(다섯 문장 이상) 글자를 조금 줄여 한 화면에 */
@@ -572,6 +579,7 @@ a.nb-open__colab {
 .rv-summary__list:has(li:nth-child(5)) li { font-size: calc(16px * var(--scale)) !important; line-height: 1.5 !important; }
 @media (max-height: 640px) {
   .rv-summary__list li { font-size: calc(15px * var(--scale)) !important; line-height: 1.45 !important; }
+  .rv-summary__list:has(li:nth-child(5)) li { font-size: calc(14.5px * var(--scale)) !important; line-height: 1.4 !important; }
   .rv-summary__list { gap: 4px; }
 }
 
