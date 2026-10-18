@@ -20,6 +20,25 @@ import { SITE_URL } from './links.js';
 const md = (text) => ({ type: 'md', text: text.trim().replace(/\\`/g, '`') });
 const code = (src, explain = [], out = null) => ({ type: 'code', code: src.trim(), explain, out });
 
+/** 6-4 쪽의 데이터 고르기 카드 — 학생용 노트북 1-1의 데이터_목록과 코드가 같아야 한다(test/site.test.js) */
+export const ASSESS_DATASETS = [
+  { code: 'penguins', icon: '🐧', field: '생명과학·환경', desc: '남극 펭귄 344마리의 몸 측정값', example: '종 분류 · 몸무게 회귀' },
+  { code: 'iris', icon: '🌸', field: '생명과학·농업', desc: '붓꽃 150송이의 꽃잎·꽃받침 크기', example: '품종 분류' },
+  { code: 'wine', icon: '🍷', field: '화학·식품', desc: '와인 178병의 화학 성분 13가지', example: '품종 분류' },
+  { code: 'breast_cancer', icon: '🩺', field: '의학·보건', desc: '종양 569개의 세포핵 측정값과 진단', example: '악성·양성 분류' },
+  { code: 'diabetes', icon: '💊', field: '의학·약학·간호', desc: '당뇨 환자 442명의 검사값', example: '1년 뒤 진행 정도 회귀' },
+  { code: 'tips', icon: '🍽', field: '경영·서비스', desc: '식당 계산서 244장과 팁', example: '팁 회귀 · 점심/저녁 분류' },
+  { code: 'diamonds', icon: '💎', field: '경제·디자인', desc: '다이아몬드 53,940개의 품질과 가격', example: '가격 회귀' },
+  { code: 'mpg', icon: '🚗', field: '기계·자동차 공학', desc: '자동차 398대의 엔진·무게·연비', example: '연비 회귀 · 생산 지역 분류' },
+  { code: 'taxis', icon: '🚕', field: '교통·도시', desc: '뉴욕 택시 6,433번의 운행 기록', example: '요금 회귀 · 결제 수단 분류' },
+  { code: 'titanic', icon: '🚢', field: '역사·사회', desc: '타이타닉호 승객 891명', example: '생존 분류' },
+  { code: 'geyser', icon: '🌋', field: '지구과학', desc: '간헐천의 분출 272번', example: '분출 종류 분류 · 기다린 시간 회귀' },
+  { code: 'planets', icon: '🪐', field: '천문·우주', desc: '발견된 외계 행성 1,035개', example: '발견 방법 분류' },
+  { code: 'healthexp', icon: '🏥', field: '보건 정책·국제', desc: '6개 나라의 의료비와 기대수명', example: '기대수명 회귀' },
+  { code: 'digits', icon: '🔢', field: '컴퓨터·인공지능', desc: '8×8 손글씨 숫자 그림 1,797장', example: '숫자(0~9) 분류' },
+  { code: 'car_crashes', icon: '🚦', field: '법·사회 안전', desc: '미국 51개 주의 교통사고와 원인', example: '사고율 회귀' },
+];
+
 /** 학번 → 나만의 조건. 학생용·교사용 노트북이 글자 하나 다르지 않게 같은 함수를 쓴다 */
 export const CONDITION_PY = String.raw`
 import hashlib, json
