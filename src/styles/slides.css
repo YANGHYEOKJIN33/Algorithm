@@ -534,3 +534,40 @@ a.nb-open__colab {
   .rv-summary__list li { font-size: calc(15px * var(--scale)) !important; line-height: 1.45 !important; }
   .rv-summary__list { gap: 4px; }
 }
+
+/* ── 확인 문제 + 📖 근거(좌우 견주기) — 왼쪽: 그 문제를 배운 쪽의 핵심 · 오른쪽: 문제 ── */
+.quizwrap--ref {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.quizwrap__main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.quiz__refbox {
+  min-width: 0;
+  max-height: calc(100dvh - var(--top-h) - var(--bar-h) - 150px);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  padding: 14px 16px;
+}
+/* 근거가 붙은 문제 묶음은 가운데 860px 틀보다 넓게 쓴다 */
+.quizbeat:has(.quizwrap--ref), .cv-block:has(.quizwrap--ref) { max-width: 1180px; width: 100%; }
+.ref { display: flex; flex-direction: column; gap: 8px; font-size: calc(14px * var(--scale)); }
+.ref__kicker { margin: 0; font-size: calc(13px * var(--scale)); font-weight: 700; color: var(--current); }
+.ref__title { margin: 0; font-size: calc(17px * var(--scale)); line-height: 1.35; }
+.ref__take { margin: 0; padding: 8px 10px; border-left: 4px solid var(--add); background: var(--add-bg); border-radius: 6px; font-weight: 700; line-height: 1.5; }
+.ref__take-tag { font-size: calc(12px * var(--scale)); color: var(--add); }
+.ref__setup, .ref__goal { margin: 0; color: var(--text-muted); line-height: 1.5; }
+.ref__sub { margin: 4px 0 4px; font-weight: 700; }
+.ref__code .readcode__line { grid-template-columns: 1.6em minmax(0, 1fr); }
+.ref__code .readcode__note { grid-column: 2; font-size: calc(12.5px * var(--scale)); color: var(--text-muted); }
+.ref__code .readcode__code { font-size: calc(13.5px * var(--scale)); }
+.ref__code .readcode__legend { display: none; }
+.ref__more summary { cursor: pointer; font-weight: 700; color: var(--current); }
+.ref__more p { margin: 6px 0 0; line-height: 1.6; }
+@media (max-width: 900px) {
+  .quizwrap--ref { grid-template-columns: minmax(0, 1fr); }
+  .quiz__refbox { max-height: none; }
+}

@@ -19,6 +19,7 @@
  * 색·간격·글자 크기는 tokens.css의 토큰만 쓴다(밝은/어두운 화면이 저절로 맞는다).
  */
 import { el, fill } from '../ui/dom.js';
+import { refCard } from '../ui/refCard.js';
 import { quizBox } from '../ui/quizBox.js';
 import * as EV from '../core/ml/evaluate.js';
 import { rankNeighbors } from '../core/ml/knn.js';
@@ -541,6 +542,7 @@ function quiz(root, ctx) {
       firsts: ctx.progress.firsts(QUIZ_KEY),
       onPick: (qi, oi) => { ctx.progress.answer(QUIZ_KEY, qi, oi); drawResult(); },
       onReview: review,
+      ref: (q) => refCard(null, q.page),
     });
     fill(box, el('p.pj-quiznote', {}, '처음 고른 답은 "처음에 맞힘"으로 따로 기록돼요. 찍지 말고 잘 생각해서 골라요.'), section);
   }
