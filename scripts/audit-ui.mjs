@@ -19,7 +19,7 @@
  *   C5  #topnav 48±2px, #nowbar 72±4px
  *   C6  슬라이드·표지·정리·Colab·읽기 장은 스크롤이 없다(1280×720과 1280×600)
  *   C7  장면 덩어리 장: 보이는 [data-beat]가 3개까지이고 그 장의 show와 같다(5-4 영역 색칠 장은 고정 표대로 4개)
- *   C8  보이는 조작 요소 — 슬라이드·읽기 장 18개까지, 할 일 장 26개까지(장 칩·1-1 HTML 글자 칸은 빼고 센다)
+ *   C8  보이는 조작 요소 — 슬라이드·읽기 장 18개까지, 할 일 장·그림과 나란히 보는 ❓ 장 26개까지(장 칩·1-1 HTML 글자 칸은 빼고 센다)
  *   C9  콘솔 오류 없음 · 390×844에서 가로 스크롤 없음 · 휴대폰에서 장을 바꾸면 .is-now가 화면 안에
  *   C10 어두운 테마·움직임 줄이기(§6.2 표본): C1·C2, 고리 대비 3:1 이상, 움직임 없음
  *   C11 동작: 2-2 → 아홉 번이면 뒤로 보기 장 · 5-4 ★ 옮기면 파란 [계속] · 새로 고쳐도 같은 장 · PageDown은 ☐로 남기고 넘김
@@ -190,6 +190,7 @@ function measure() {
     blues, openText, outside, inBar, removed, topH, barH, scroll, beatsVisible,
     ctrlCount: ctrls.length, ctrlSample: ctrls.slice(0, 40).map(desc), hscroll, ring, running,
     overlay: ws?.getAttribute('data-overlay') ?? null,
+    split: Boolean(ws?.hasAttribute('data-split')),
   };
 }
 
@@ -251,7 +252,7 @@ function judge(s, m, vp, { full = true } = {}) {
     if (want.join() !== got.join()) bad('C7', `보이는 덩어리 [${got.join(', ')}] ≠ show [${want.join(', ')}]`);
   }
   // C8
-  const cap = s.beat.overlay || s.beat.kind === 'read' ? 18 : 26;
+  const cap = (s.beat.overlay && !m.split) || s.beat.kind === 'read' ? 18 : 26;
   if (m.ctrlCount > cap) bad('C8', `조작 요소 ${m.ctrlCount}개(${cap}개까지)${VERBOSE ? `: ${m.ctrlSample.join(' | ')}` : ''}`);
   return f;
 }

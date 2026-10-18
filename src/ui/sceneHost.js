@@ -30,7 +30,7 @@ import { currentLesson, goPatch, unitPages } from '../app/lessons.js';
 import { nextPlace, visitPatch } from '../app/nav.js';
 import { deckKind } from '../app/beats.js';
 import { getScene } from '../scenes/index.js';
-import { mountSlideCard } from './slideCard.js';
+import { mountSlideCard, lookBackBeat } from './slideCard.js';
 
 function panel(root) {
   const title = el('span.panel__title');
@@ -67,7 +67,7 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
   const view = qs('#panel-view');
   let slideRoot = document.getElementById('slidecard');
   if (!slideRoot) { slideRoot = el('section.slidecard', { id: 'slidecard', 'aria-label': '장' }); workspace.append(slideRoot); }
-  const slides = mountSlideCard(slideRoot, { flow, progress, missions, glossary, codePanel });
+  const slides = mountSlideCard(slideRoot, { flow, progress, missions, glossary, codePanel, player });
   let filterStyle = document.getElementById('beat-filter');
   if (!filterStyle) { filterStyle = document.createElement('style'); filterStyle.id = 'beat-filter'; document.head.append(filterStyle); }
 
@@ -136,15 +136,15 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
   }
 
   /** 장 제목 — h2 + 한 줄(lead). 표지 첫 장에는 단원 머리 줄 */
-  function drawHead(v) {
+  function drawHead(v, b = v.beat, look = false) {
     if (!current?.head) return;
-    const b = v.beat;
-    const kicker = v.page.auto === 'cover' && v.index === 0 ? coverKicker(v.tab) : null;
-    if (!b.title && !b.lead) { fill(current.head); current.head.hidden = true; return; }
+    const kicker = look ? '👀 앞 장 그대로 — 이 그림을 보며 오른쪽 문제를 풀어요'
+      : v.page.auto === 'cover' && v.index === 0 ? coverKicker(v.tab) : null;
+    if (!b.title && !b.lead && !kicker) { fill(current.head); current.head.hidden = true; return; }
     fill(current.head,
       kicker ? el('p.beat-head__kicker', {}, kicker) : null,
       b.title ? el('h2.beat-head__title', { tabindex: '-1' }, b.title) : null,
-      b.lead ? el('p.beat-head__lead', {}, b.lead) : null);
+      b.lead && !look ? el('p.beat-head__lead', {}, b.lead) : null);
     current.head.hidden = false;
   }
 
@@ -229,21 +229,28 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
     const moved = sig !== beatSig;
     beatSig = sig;
     const overlay = b.overlay ? b.kind : null;
+    // ❓ 확인 장은 덮지 않고 나란히 — 왼쪽에 앞 장의 그림(장면)을 그대로 두고 오른쪽에 문제(§ 확인 문제 좌우 비교)
+    const split = overlay === 'check' && Boolean(v.page.ask);
+    const look = split ? v.beats[lookBackBeat(v.beats, v.index)] ?? null : null;
 
     if (overlay) workspace.dataset.overlay = overlay; else workspace.removeAttribute('data-overlay');
+    workspace.toggleAttribute('data-split', split);
     workspace.dataset.beatKind = b.kind;
-    // 슬라이드가 덮는 동안 장면은 붙은 채로 손댈 수 없게(초점·클릭·화면 읽기에서 빠진다)
-    for (const p of [caption, codeRoot, stage.root, data.root, view]) if (p) p.inert = Boolean(overlay);
+    // 슬라이드가 덮는 동안 장면은 붙은 채로 손댈 수 없게(초점·클릭·화면 읽기에서 빠진다). 나란히 보는 ❓ 장은 그대로 만질 수 있다
+    for (const p of [caption, codeRoot, stage.root, data.root, view]) if (p) p.inert = Boolean(overlay) && !split;
     slideRoot.inert = !overlay;
 
     if (overlay) slides.show(v, current.def);
     else slides.hide();
 
     if (!current.step) {
-      view.dataset.beatKind = b.kind;
+      view.dataset.beatKind = look ? look.kind : b.kind;
       if (!overlay) {
         setFilter(b.show);
         if (moved) drawHead(v);
+      } else if (split) {
+        setFilter(look ? look.show : null);
+        if (moved) drawHead(v, look ?? b, true);
       }
     }
 

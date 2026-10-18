@@ -4,13 +4,15 @@
  *   intro 도입(§2.2)   🎯 이 쪽을 마치면 · 💡 왜 · 학습 요소 · 할 일 수     (0-1에는 보라 고리·파란 단추 한 줄)
  *   code  읽기(§2.3)   📝 이번에 따라갈 의사코드 — 모든 줄의 설명을 펼친 읽기 모드 + 📦 이 쪽의 데이터(page.setup)
  *   check ❓(§2.7)     확인 문제 하나. 처음 고른 답이 📋 학습 기록에 남는다(progress.firsts). 두 번 틀리면 정답 칸을 연다
+ *                     덮지 않고 오른쪽 칸에 선다 — 왼쪽에는 앞 할 일 장의 그림이 그대로 있다(#workspace[data-split], layout.css).
+ *                     단계 실행 쪽이면 카드 안의 ⏮ ◀ ▶ ⏭로 그림을 다시 넘겨 본다
  *   wrap  정리(§2.8)   핵심 한 줄(page.takeaway) · 🎯 목표 ✓ · 이 쪽에서 한 일 ✅/☐ [다시 하기 →] · 💡 더 알아보기
  *
  * 할 일 문장은 지금 할 일 줄에만 나온다(N1). 예외는 정리의 "이 쪽에서 한 일" 기록뿐.
  * 파란 단추도 지금 할 일 줄에만 있다(N3) — 슬라이드 안의 단추는 모두 흰 바탕(보조)이다.
  * 장이 바뀌면 초점을 슬라이드 제목으로 옮긴다(Enter = 파란 [계속 →], nowBar.js).
  *
- *   const slides = mountSlideCard(root, { flow, progress, missions, glossary, codePanel })
+ *   const slides = mountSlideCard(root, { flow, progress, missions, glossary, codePanel, player })
  *   slides.show(v, def)   v = flow.get(), def = 지금 장면 정의(읽기 장의 의사코드)
  *   slides.hide()
  */
@@ -58,7 +60,7 @@ export function lookBackBeat(beats, from) {
   return -1;
 }
 
-export function mountSlideCard(root, { flow, progress, missions, glossary } = {}) {
+export function mountSlideCard(root, { flow, progress, missions, glossary, player } = {}) {
   let lastSig = '';
   let lastBeat = '';
   /** 쪽마다 이번에 ❓를 틀린 횟수 — 두 번 틀리면 정답 칸을 연다(저장하지 않는다) */
@@ -111,7 +113,6 @@ export function mountSlideCard(root, { flow, progress, missions, glossary } = {}
     const right = answered && picked === ask.answer;
     const reveal = right || wrongs >= 2;
     const grid = ask.options.length === 4 && ask.options.every((o) => String(o).length <= 18);
-    const back = lookBackBeat(v.beats, v.index);
 
     // 기록은 예전 ❓ 말풍선(drawAsk)과 똑같이 — progress.answer가 처음 고른 답(firsts)을 남기고, 미션에는 맞았는지만
     const onPick = (oi) => {
@@ -144,17 +145,36 @@ export function mountSlideCard(root, { flow, progress, missions, glossary } = {}
     } else if (answered && wrongs >= 2) {
       fb = el('p.ask__fb.callout.callout--warn', { 'aria-live': 'polite' }, '❌ 정답은 초록 칸이에요. ', ask.why);
     } else if (answered) {
-      fb = el('div.ask__fb.callout.callout--warn', { 'aria-live': 'polite' },
-        el('span', {}, '❌ 아직이에요. 그림을 다시 살펴보고 다른 답을 골라요.'),
-        back >= 0 ? el('button.pill.pill--sm.ask__back', { type: 'button', onclick: () => flow.go(back) }, '← 그림 다시 보기') : null);
+      fb = el('p.ask__fb.callout.callout--warn', { 'aria-live': 'polite' },
+        `❌ 아직이에요. ${stepDef() ? '아래 ⏮ ◀ ▶ 단추로 그림을 한 단계씩 다시 보고' : '그림을 다시 살펴보고'} 다른 답을 골라요.`);
     }
 
     return el('article.slide.slide--check', { 'aria-labelledby': 'slide-h' },
-      el('p.slide__kicker', {}, '❓ 확인 문제 · 처음 고른 답이 📋 학습 기록에 남아요'),
+      el('p.slide__kicker', {},
+        el('span.ask__look', {}, el('span.ask__look-wide', {}, '👈 왼쪽 그림을 보며 풀어요'), el('span.ask__look-narrow', {}, '👇 아래 그림을 보며 풀어요')),
+        el('span', {}, '❓ 처음 고른 답이 📋 학습 기록에 남아요')),
       Object.assign(heading('h2', ask.q, '.ask__q'), { id: 'slide-h' }),
       opts,
-      fb);
+      fb,
+      stepDef() ? miniPlayer() : null);
   }
+
+  /** 단계 실행 쪽이면 ❓ 장에서도 그림을 한 단계씩 다시 볼 수 있게 — 재생기 단추 넷과 "단계 i / n" */
+  const stepDef = () => curDef?.kind === 'step' && Boolean(player);
+  let stepLabel = null;
+  const stepText = (pv) => (pv.empty ? '' : `그림 ${pv.index + 1} / ${pv.total}단계`);
+  function miniPlayer() {
+    const btn = (label, title, fn) => el('button.pill.pill--sm.ask__pbtn', { type: 'button', title, 'aria-label': title, onclick: fn }, label);
+    stepLabel = el('span.ask__pstep', { 'aria-live': 'polite' }, stepText(player.view()));
+    return el('div.ask__player', { role: 'group', 'aria-label': '왼쪽 그림 다시 보기' },
+      el('span.ask__plabel', {}, '🔁 그림 다시 보기'),
+      btn('⏮', '처음 단계로', () => player.reset()),
+      btn('◀', '한 단계 뒤로', () => player.step(-1)),
+      btn('▶', '한 단계 앞으로', () => player.step(1)),
+      btn('⏭', '마지막 단계로', () => player.toEnd()),
+      stepLabel);
+  }
+  player?.subscribe((pv) => { if (stepLabel?.isConnected) stepLabel.textContent = stepText(pv); });
 
   /* ── 정리 ── */
   function wrap(v, def) {

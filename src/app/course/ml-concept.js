@@ -24,7 +24,7 @@ export default {
         { id: 'unsup', chip: '비지도', title: '비지도학습 — 정답 없이 묶어요', lead: '정답 없이, 비슷한 것끼리 모인 무리를 스스로 찾아요.', show: ['lt-unsup'], checks: [] },
         { id: 'rl', chip: '강화', title: '강화학습 — 보상으로 배워요', lead: '직접 해 보고 받은 보상으로 더 나은 행동을 익혀요.', show: ['lt-rl'], checks: [] },
         { id: 'key', chip: '가르는 질문', title: '가르는 질문 — 정답(레이블)이 있나?', lead: '정답이 있으면 지도, 보상으로 배우면 강화, 둘 다 아니면 비지도예요.', show: ['lt-key'], checks: [] },
-        { id: 'cases', chip: '사례 6', title: '어떤 학습일까? — 한 문제씩', lead: '사례마다 정답이 있는지, 보상을 받는지 따져 봐요.', show: ['lt-cases'], checks: ['quiz', 'right:6'] },
+        { id: 'cases', chip: '사례 6', title: '어떤 학습일까? — 한 문제씩', lead: '왼쪽 가르는 질문으로 사례마다 정답이 있는지, 보상을 받는지 따져 봐요.', show: ['lt-cases'], checks: ['quiz', 'right:6'] },
       ],
       ask: {
         q: '세 가지 학습을 가르는 첫 질문은 무엇일까요?',
@@ -74,7 +74,7 @@ export default {
       ],
       beats: [
         { id: 'compare', chip: '세 목적', title: '분류 · 회귀 · 군집', lead: '내놓는 것이 이름표(종)인지, 숫자인지, 무리 번호인지로 갈려요.', show: ['pp-cards'], checks: [] },
-        { id: 'cases', chip: '사례', title: '어떤 목적일까? — 한 문제씩', lead: '답이 이름표인지, 숫자인지, 정답 없는 무리인지 봐요.', show: ['pp-cases'], checks: ['quiz'] },
+        { id: 'cases', chip: '사례', title: '어떤 목적일까? — 한 문제씩', lead: '왼쪽처럼 답이 이름표인지, 숫자인지, 정답 없는 무리인지 봐요.', show: ['pp-cases'], checks: ['quiz'] },
         { id: 'map', chip: '알고리즘', title: '몸무게 예측엔 어떤 알고리즘?', lead: '목적을 정하면 알고리즘 지도에서 알맞은 것을 고를 수 있어요.', show: ['pp-map'], checks: ['act:algo-map'] },
       ],
       ask: {
