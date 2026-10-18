@@ -199,6 +199,18 @@ div.ask__fb { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .ask__pbtn { min-width: 40px; justify-content: center; }
 .ask__pstep { font-size: calc(13.5px * var(--scale)); color: var(--text-muted); margin-left: 4px; }
 
+/* ── 🧭 알고리즘의 목표(5단원) ── */
+.slide__aim { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--result); background: var(--result-bg); }
+.slide__aim p { margin: 0; line-height: 1.5; }
+.slide__aimhead { font-size: calc(13px * var(--scale)); font-weight: 700; color: var(--result); }
+.slide__aimgoal { font-size: calc(19px * var(--scale)); font-weight: 700; }
+.slide__aimio, .slide__aimhow { font-size: calc(15px * var(--scale)); }
+.slide__aimtag { display: inline-block; padding: 0 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); font-size: calc(12.5px * var(--scale)); color: var(--text-muted); }
+.slide__aimarrow { color: var(--text-muted); font-weight: 700; }
+.slide__aimact { font-size: calc(14.5px * var(--scale)); color: var(--text); padding-top: 4px; border-top: 1px dashed var(--border); }
+.slide__aimline { margin: 0; font-size: calc(15px * var(--scale)); line-height: 1.5; }
+.wrap__aim { margin: 0; padding: 8px 12px; border-left: 4px solid var(--result); background: var(--result-bg); border-radius: 6px; font-size: calc(15px * var(--scale)); line-height: 1.5; }
+
 /* ── 정리 ── */
 .wrap__key { display: flex; flex-direction: column; gap: 4px; padding: 14px 18px; border-radius: 12px; border: 1.5px solid var(--add); background: var(--add-bg); }
 .wrap__takeaway { margin: 0; font-size: calc(22px * var(--scale)); font-weight: 700; line-height: 1.45; }
@@ -511,6 +523,14 @@ a.nb-open__colab {
   .workspace[data-split] .ask__opt { min-height: 40px; padding: 4px 10px; font-size: calc(15px * var(--scale)); }
   .workspace[data-split] .ask__fb { font-size: calc(14px * var(--scale)); line-height: 1.45; }
   .ask__player { margin-top: 10px; padding-top: 6px; }
+  .slide__aim { padding: 8px 12px; gap: 3px; }
+  .slide__aimgoal { font-size: calc(17px * var(--scale)); }
+  .slide__aimio, .slide__aimhow { font-size: calc(14px * var(--scale)); }
+  .slide__aimact { font-size: calc(13.5px * var(--scale)); line-height: 1.4; }
+  .slide--intro:has(.slide__aim) { gap: 8px; }
+  .slide--intro:has(.slide__aim) .slide__title { font-size: calc(22px * var(--scale)); }
+  .slide--wrap:has(.wrap__aim) { gap: 8px; }
+  .wrap__aim { padding: 5px 10px; font-size: calc(14px * var(--scale)); line-height: 1.4; }
 }
 
 /* ============================================================

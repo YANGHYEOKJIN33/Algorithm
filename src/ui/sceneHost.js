@@ -30,7 +30,7 @@ import { currentLesson, goPatch, unitPages } from '../app/lessons.js';
 import { nextPlace, visitPatch } from '../app/nav.js';
 import { deckKind } from '../app/beats.js';
 import { getScene } from '../scenes/index.js';
-import { mountSlideCard, lookBackBeat } from './slideCard.js';
+import { mountSlideCard, lookBackBeat, aimOf } from './slideCard.js';
 
 function panel(root) {
   const title = el('span.panel__title');
@@ -138,8 +138,11 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
   /** 장 제목 — h2 + 한 줄(lead). 표지 첫 장에는 단원 머리 줄 */
   function drawHead(v, b = v.beat, look = false) {
     if (!current?.head) return;
+    // 알고리즘을 처음 만나는 쪽(5단원 ① 아이디어)은 할 일 장마다 맨 위에 그 알고리즘의 목표를 한 줄로
+    const a = b.kind === 'work' ? aimOf(v.sub, v.page) : null;
     const kicker = look ? '👀 앞 장 그대로 — 이 그림을 보며 오른쪽 문제를 풀어요'
-      : v.page.auto === 'cover' && v.index === 0 ? coverKicker(v.tab) : null;
+      : v.page.auto === 'cover' && v.index === 0 ? coverKicker(v.tab)
+        : a?.full ? `🧭 목표: ${a.aim.goal}` : null;
     if (!b.title && !b.lead && !kicker) { fill(current.head); current.head.hidden = true; return; }
     fill(current.head,
       kicker ? el('p.beat-head__kicker', {}, kicker) : null,

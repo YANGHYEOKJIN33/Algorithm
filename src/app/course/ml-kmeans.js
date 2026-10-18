@@ -5,6 +5,15 @@ export default {
   name: 'k-평균',
   tag: '군집 · 비지도학습',
   question: '정답(종)을 모르는 펭귄들을 비슷한 것끼리 묶을 수 있을까?',
+  aim: {
+    goal: '종(정답)을 지운 펭귄 18마리를 비슷한 것끼리 3묶음으로 나눠요.',
+    input: '부리길이 · 부리깊이 (정답 없음)',
+    output: '묶음 번호 (1 · 2 · 3)',
+    how: '가까운 중심에 배정하고, 중심을 평균 자리로 옮기기를 되풀이해요.',
+    act: '중심을 왜 고르나요?',
+    actWhy: '중심(⊗)은 묶음의 한가운데예요. 처음 중심을 골라 돌려 보는 건 "어디서 출발하면 어떻게 묶일까?"를 시험해 보는 거예요. 출발점에 따라 묶음이 달라질 수 있다는 것을 직접 확인해요.',
+    done: '중심이 멈추면 18마리가 3묶음으로 나뉘어요. 처음 중심에 따라 묶음이 달라질 수 있어요.',
+  },
   pages: [
     {
       id: 'idea',
@@ -21,7 +30,7 @@ export default {
         { text: '🖱️ 처음 중심을 바꿔 한 번 더 끝까지 돌리기', check: 'act:km-compare' },
       ],
       beats: [
-        { id: 'pick', chip: '중심 고르기', title: '처음 중심 3개를 골라요', lead: '중심은 묶음의 한가운데예요. 처음에는 아무 점이나 골라도 돼요.', show: ['km-chart'], checks: ['act:km-pick'] },
+        { id: 'pick', chip: '중심 고르기', title: '처음 중심 3개를 골라요', lead: '정답 없이 묶기 시작할 출발점이에요. 처음 중심은 아무 점이나 골라도 돼요.', show: ['km-chart'], checks: ['act:km-pick'] },
         { id: 'run', chip: '끝까지', title: '중심이 멈출 때까지 돌려요', lead: '가까운 중심에 배정하고, 중심을 평균 자리로 옮기기를 되풀이해요.', show: ['km-chart', 'km-run'], checks: ['act:km-end'] },
         { id: 'compare', chip: '다시 해 보기', title: '다른 중심에서 시작하면?', lead: '같은 18마리라도 출발점이 다르면 어떻게 묶일까요?', show: ['km-chart', 'km-run', 'km-compare'], checks: ['act:km-compare'] },
       ],

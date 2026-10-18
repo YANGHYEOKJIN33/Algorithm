@@ -5,6 +5,15 @@ export default {
   name: '선형 회귀',
   tag: '회귀 · 지도학습',
   question: '날개 길이만 알면 펭귄의 몸무게를 예측할 수 있을까?',
+  aim: {
+    goal: '날개길이만 재고 펭귄의 몸무게(g)를 예측해요.',
+    input: '날개길이 (mm)',
+    output: '몸무게 (g) — 숫자',
+    how: '점들 사이로 오차가 가장 작은 직선을 그어요.',
+    act: 'w·b 손잡이를 왜 움직이나요?',
+    actWhy: '손잡이를 움직이면 직선이 바뀌어요. 빨간 오차선이 짧아질수록 예측이 실제 몸무게에 가까워져요. 컴퓨터가 할 일, 곧 "오차가 가장 작은 직선 찾기"를 손으로 먼저 해 보는 거예요.',
+    done: '가장 좋은 직선(몸무게 = 42.35 × 날개길이 − 4241)으로 날개 210mm 펭귄을 약 4,653g으로 예측해요.',
+  },
   pages: [
     {
       id: 'idea',
@@ -21,7 +30,7 @@ export default {
         { text: '🖱️ "가장 좋은 직선 보기"로 내 직선과 견주기', check: 'act:lr-best' },
       ],
       beats: [
-        { id: 'hand', chip: '손으로', title: '손잡이로 직선을 맞춰 봐요', lead: '빨간 세로선이 오차예요. 오차 점수가 작을수록 좋은 직선이에요.', show: ['lr-hand'], checks: ['act:lr-hand'] },
+        { id: 'hand', chip: '손으로', title: '손잡이로 직선을 맞춰 봐요', lead: '빨간 세로선이 오차예요. 오차 점수가 작을수록 몸무게를 잘 맞히는 직선이에요.', show: ['lr-hand'], checks: ['act:lr-hand'] },
         { id: 'gd', chip: '조금씩', title: '컴퓨터가 조금씩 고쳐요', lead: '오차 점수가 줄어드는 쪽으로 w와 b를 조금씩 고쳐 가요(경사 하강법).', show: ['lr-hand', 'lr-gd'], checks: ['act:lr-gd'] },
         { id: 'best', chip: '가장 좋은', title: '가장 잘 맞는 직선과 견줘요', lead: '공식 한 번으로 구한 가장 좋은 직선은 오차 점수가 42,010이에요.', show: ['lr-hand', 'lr-gd', 'lr-best'], checks: ['act:lr-best'] },
       ],

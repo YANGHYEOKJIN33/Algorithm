@@ -5,6 +5,15 @@ export default {
   name: '의사결정 트리',
   tag: '분류 · 지도학습',
   question: '스무고개처럼 예/아니오 질문 몇 개로 펭귄의 종을 맞힐 수 있을까?',
+  aim: {
+    goal: '새 펭귄(★ 283번)의 종을 예/아니오 질문 몇 개로 맞히고 까닭을 대요.',
+    input: '날개길이 · 부리길이',
+    output: '종 + 그렇게 답한 질문들(규칙)',
+    how: '불순도가 가장 낮아지는 질문부터 차례로 물어요.',
+    act: '손잡이를 왜 움직이나요?',
+    actWhy: '손잡이는 ★ 펭귄의 날개길이와 부리길이예요. "어떤 펭귄이면 젠투가 될까? 아델리가 될까?"를 찾다 보면 트리가 어떤 질문, 어떤 기준값으로 종을 가르는지 알 수 있어요.',
+    done: '★ 283번은 날개가 짧고(≤ 203.5) 부리가 길어서(> 42.35) 턱끈이에요.',
+  },
   pages: [
     {
       id: 'idea',
@@ -20,8 +29,8 @@ export default {
         { text: '🖱️ 손잡이(슬라이더)로 예측을 아델리로 바꿔 보기', check: 'act:tree-adelie' },
       ],
       beats: [
-        { id: 'gentoo', chip: '젠투로', title: '손잡이로 예측을 젠투로 바꿔 봐요', lead: '뿌리의 질문부터 차례로 답하며 잎까지 내려가요.', show: null, checks: ['act:tree-gentoo'] },
-        { id: 'adelie', chip: '아델리로', title: '이번엔 아델리로 바꿔 봐요', lead: '날개가 짧은 쪽에서는 부리길이로 아델리와 턱끈을 가려요.', show: null, checks: ['act:tree-adelie'] },
+        { id: 'gentoo', chip: '젠투로', title: '손잡이로 예측을 젠투로 바꿔 봐요', lead: '손잡이는 ★ 펭귄의 날개길이·부리길이예요. 어떤 펭귄이면 젠투가 되는지 찾아요.', show: null, checks: ['act:tree-gentoo'] },
+        { id: 'adelie', chip: '아델리로', title: '이번엔 아델리로 바꿔 봐요', lead: '날개가 짧은 쪽에서는 부리길이로 아델리와 턱끈을 가려요. 기준값이 어디인지 찾아요.', show: null, checks: ['act:tree-adelie'] },
       ],
       ask: {
         q: '날개길이 215mm, 부리길이 40mm인 새 펭귄은 트리를 따라가면 어떤 종일까요?',

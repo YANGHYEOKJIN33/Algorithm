@@ -5,6 +5,16 @@ export default {
   name: 'k-최근접 이웃',
   tag: '분류 · 지도학습',
   question: '처음 보는 펭귄의 종을 가장 가까운 이웃들에게 물어보면 맞힐 수 있을까?',
+  // 🧭 이 알고리즘으로 이룰 목표 — ① 아이디어 쪽의 도입·장 제목 위·정리에, ②·③ 쪽 도입에 한 줄로 나온다
+  aim: {
+    goal: '종을 모르는 새 펭귄(★ 341번)이 어느 종인지 맞혀요.',
+    input: '부리길이 · 부리깊이',
+    output: '종 (아델리 · 턱끈 · 젠투)',
+    how: '종을 아는 펭귄 18마리 가운데 가장 가까운 k마리가 투표해요.',
+    act: '★을 왜 옮기나요?',
+    actWhy: '★은 종을 모르는 새 펭귄이에요. 옮기는 건 "부리가 이런 펭귄이 오면 무엇이라고 답할까?"를 시험해 보는 거예요. 답이 바뀌는 자리를 찾으면 모델이 종을 가르는 경계가 보여요.',
+    done: '★ 341번은 k = 1이면 아델리로 틀리고, k = 3이면 턱끈으로 맞혀요.',
+  },
   pages: [
     {
       id: 'idea',
@@ -21,9 +31,9 @@ export default {
         { text: '🖱️ 🎨 영역 색칠을 켜서 종의 경계 보기', check: 'act:region' },
       ],
       beats: [
-        { id: 'star', chip: '★ 옮기기', title: '가장 가까운 3마리가 투표해요', lead: '★이 자리를 옮기면 가장 가까운 이웃과 예측이 바뀌어요.', show: ['knn-chart', 'knn-side'], checks: ['act:move-star'] },
-        { id: 'k', chip: 'k 바꾸기', title: '이웃을 몇 마리 부를까?', lead: 'k를 바꾸면 투표에 참여하는 이웃 수가 바뀌어요.', show: ['knn-k', 'knn-chart', 'knn-side'], checks: ['act:change-k'] },
-        { id: 'region', chip: '영역 색칠', title: '종의 경계를 색칠해 봐요', lead: '★이 어디에 놓이면 어떤 종이 되는지 색으로 보여요.', show: ['knn-k', 'knn-region', 'knn-chart', 'knn-side'], checks: ['act:region'] },
+        { id: 'star', chip: '★ 옮기기', title: '가장 가까운 3마리가 투표해요', lead: '★은 종을 모르는 새 펭귄이에요. 옮기며 "이런 펭귄이면 무슨 종일까?"를 시험해요.', show: ['knn-chart', 'knn-side'], checks: ['act:move-star'] },
+        { id: 'k', chip: 'k 바꾸기', title: '이웃을 몇 마리 부를까?', lead: 'k는 투표할 이웃 수예요. 341번 자리에서 k를 바꾸면 답이 맞았다 틀렸다 해요.', show: ['knn-k', 'knn-chart', 'knn-side'], checks: ['act:change-k'] },
+        { id: 'region', chip: '영역 색칠', title: '종의 경계를 색칠해 봐요', lead: '★이 놓인 곳마다 예측한 종을 색으로 칠해요. 색의 경계가 종을 가르는 선이에요.', show: ['knn-k', 'knn-region', 'knn-chart', 'knn-side'], checks: ['act:region'] },
       ],
       ask: {
         q: '★을 341번 펭귄 자리(↺)에 두고 k = 1로 하면 무엇으로 예측할까요?',
