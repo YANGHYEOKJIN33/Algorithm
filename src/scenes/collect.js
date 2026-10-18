@@ -10,6 +10,7 @@ import { el, fill } from '../ui/dom.js';
 import { createFlip } from '../ui/flip.js';
 import { infoTerm } from '../ui/infoTip.js';
 import { quizBox } from '../ui/quizBox.js';
+import { refNote, refItem } from '../ui/refCard.js';
 import { CRAWL_PAGES, CRAWL_COLUMNS } from '../core/data/sets.js';
 import { practicePages } from '../core/data/practice.js';
 import * as CRAWL from '../core/crawl.js';
@@ -276,7 +277,11 @@ function manners(root) {
         el('p.card__text', {}, m.text),
         m.code ? el('p.card__meta', {}, '(파이썬: ', el('code', {}, m.code), ')') : null))),
       el('div.callout', {}, '💡 이 수업의 연습 사이트(', el('a', { href: PRACTICE_URL, target: '_blank', rel: 'noopener' }, 'practice/'), ')는 크롤링을 연습하라고 만든 곳이라 안심하고 써도 돼요. 다른 사이트를 크롤링할 때는 위의 여섯 가지를 꼭 확인하세요.')),
-    el('div.quizbeat', { 'data-beat': 'cases' }, quizBox(MANNERS_QUIZ, { row: true, one: true, title: 'O/X' }))));
+    el('div.quizbeat', { 'data-beat': 'cases' }, quizBox(MANNERS_QUIZ, {
+      row: true, one: true, title: 'O/X',
+      // 왼쪽에 여섯 약속을 펼쳐 두고 견주며 푼다
+      ref: () => refNote('크롤링 예절 여섯 가지', el('ul.ref__list', {}, MANNERS.map((m) => refItem(m.icon, m.title, m.text)))),
+    }))));
   return {};
 }
 

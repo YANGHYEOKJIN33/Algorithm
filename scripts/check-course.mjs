@@ -15,6 +15,7 @@
  *   - 모든 쪽(pageBeats): 장 3~8개, 읽기 장 4개까지, 어느 장에도 들지 않은 미션 없음
  *   - act:<이름>(begin 말고)은 장면 소스나 src/ui/slideCard.js에 data-act 글자로 있어야 한다(보라 고리가 갈 곳)
  *   - 없어진 화면 틀을 가리키는 말(REMOVED_CHROME)이 course 파일·장면 소스에 없어야 한다
+ *   - 🧭 aim(알고리즘의 목표): 5단원 알고리즘 하위 탭마다(+ 쪽에 단 aim) goal·input·output·how·act·actWhy·done을 모두, goal 45자까지
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { TABS, unitPages } from '../src/app/lessons.js';
@@ -240,6 +241,17 @@ function unitProblems(tab) {
   }
   if ((u.quiz ?? []).length >= 3 && new Set(u.quiz.map((q) => q.answer)).size === 1) bad('단원 확인 문제의 정답 자리가 모두 같다');
   if (tab.sub) for (const s of tab.sub) if (s.id !== 'review' && !s.tag) out.push(`${tab.id}:${s.id} 하위 탭 — tag(예: 분류 · 지도학습) 없음`);
+  // 🧭 알고리즘의 목표 — 알고리즘 하위 탭(개념·정리 말고)과 쪽의 aim은 칸을 모두 채운다
+  const AIM_KEYS = ['goal', 'input', 'output', 'how', 'act', 'actWhy', 'done'];
+  const aims = [
+    ...(tab.sub ?? []).filter((s) => !['review', 'concept'].includes(s.id)).map((s) => [`${tab.id}:${s.id} 하위 탭`, s.aim]),
+    ...unitPages(tab).filter((it) => it.page.aim).map((it) => [`${tab.id}:${it.sub?.id}:${it.page.id}`, it.page.aim]),
+  ];
+  for (const [at, aim] of aims) {
+    if (!aim) { out.push(`${at} — aim(알고리즘의 목표) 없음`); continue; }
+    for (const k of AIM_KEYS) if (!String(aim[k] ?? '').trim()) out.push(`${at} — aim.${k} 없음`);
+    if (String(aim.goal ?? '').length > 45) out.push(`${at} — aim.goal은 45자까지(지금 ${aim.goal.length}자)`);
+  }
   return out;
 }
 

@@ -1,31 +1,33 @@
 /**
- * 🚀 프로젝트 — 6-1 모델 평가(정확도·틀린 예) · 6-2 전체 흐름 정리 · 6-3 이해 확인 10문제 · 6-4 나만의 프로젝트 계획
+ * 🚀 프로젝트 — 6-1 모델 평가(정확도·틀린 예) · 6-2 전체 흐름 정리 · 6-3 이해 확인 10문제 · 6-4 수행평가 안내
  *
  * 미션의 act: 낱말 (ctx.check)
  *   wrong-look        6-1 채점표의 ❌ 줄을 눌러 틀린 펭귄의 이웃 살펴보기
  *   improve           6-1 🔧 고쳐 보고 다시 채점 — 다시 채점해 163번을 맞혔을 때
  *   flow-open · flow-all   6-2 단원 줄을 펼쳐 보기 · 1~6단원을 모두 펼쳐 보기
- *   topic · proj-check     6-4 주제 정하기(예시 고르기·직접 적기) · 체크리스트 체크
+ *   topic · proj-check     6-4 데이터 카드 고르기 · 진행표 체크
  * 6-3은 문제 상자의 사건(quiz · right:N), 6-4의 Colab 단추는 colab 사건으로 저절로 체크된다.
  *
  * 장(beat) 덩어리(data-beat, FINAL_SPEC §4.4)
  *   6-2  flow-table(단원 표 — 한 번에 한 줄만 펼친다) · flow-recap(기억할 것 세 카드)
  *   6-3  final-quiz(한 문제씩, 단원 꼬리표) · final-result(단원별 ⭕/❌ · 아직 못 맞힌 문제)
- *   6-4  pj-topic(주제) · pj-kind(학습 목적) · pj-nb(틀 노트북 + 데이터 구하는 곳) · pj-steps(체크리스트 + 평가 기준)
+ *   6-4  pj-task(평가 요소·배점·제출) · pj-data(15개 분야 데이터) · pj-fair(채점 방법) · pj-nb(수행평가 노트북 여는 법) · pj-steps(진행표)
  * 보라 고리(data-act) — 그릴 때 정한다: 6-1 첫 ❌ 줄 wrong-look · 🔧 단추/바꿔 보기 improve
- *   6-2 아직 안 펼친 첫 단원 flow-open flow-all · 6-4 주제 예시 topic · 아직 안 한 첫 단계 proj-check
+ *   6-2 아직 안 펼친 첫 단원 flow-open flow-all · 6-4 데이터 카드 topic · 아직 안 한 첫 단계 proj-check
  *
  * 모양: 공용 CSS 파일을 건드리지 않으려고 장면이 처음 붙을 때 <style> 하나(.pj-*)를 머리에 넣는다.
  * 색·간격·글자 크기는 tokens.css의 토큰만 쓴다(밝은/어두운 화면이 저절로 맞는다).
  */
 import { el, fill } from '../ui/dom.js';
+import { refCard } from '../ui/refCard.js';
 import { quizBox } from '../ui/quizBox.js';
 import * as EV from '../core/ml/evaluate.js';
 import { rankNeighbors } from '../core/ml/knn.js';
 import { s, marker } from '../viz/svg.js';
 import { createScatter, starPath, sizeOf } from '../viz/scatter.js';
 import { speciesLegend, speciesIndex, SPECIES_SHAPE } from '../viz/chart.js';
-import { colabUrl, notebookUrl, DATA_CSV_URL } from '../app/links.js';
+import { colabUrl, notebookUrl } from '../app/links.js';
+import { ASSESS_DATASETS } from '../app/assessment.js';
 import { QUIZ } from '../app/quiz.js';
 import { TABS } from '../app/lessons.js';
 import { unitProgress } from '../app/missions.js';
@@ -130,9 +132,6 @@ const CSS = String.raw`
 /* ── 6-4 프로젝트 안내 ── */
 .pj-block { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
 .pj-sub { margin: 0 !important; font-size: var(--fs-md) !important; }
-.pj-topics { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 2px; border-radius: var(--radius); }
-.pj-sources { margin: 0; }
-.pj-sources li { font-size: var(--fs-sm) !important; }
 .pj-stepsbox { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(220px, 1fr); gap: var(--sp-4); align-items: start; }
 .pj-stepsbox .projsteps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 6px; }
 .pj-stepsbox .projstep { padding: 6px var(--sp-2); }
@@ -140,18 +139,33 @@ const CSS = String.raw`
 .pj-stepsbox .projstep__body b { font-size: var(--fs-sm); }
 .pj-stepsbox .projstep__body code { display: none; }
 .pj-criteria { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: var(--sp-2) var(--sp-3); }
-.pj-criteria ol { margin: var(--sp-2) 0 0; padding-left: 1.3em; }
+.pj-criteria ol { margin: var(--sp-2) 0; padding-left: 1.3em; }
 .pj-criteria li { font-size: var(--fs-sm) !important; line-height: 1.45 !important; }
 .projstep__check { padding: 2px; border-radius: 4px; }
-@media (max-width: 900px) { .pj-topics { grid-template-columns: 1fr 1fr; } .pj-stepsbox { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .pj-stepsbox { grid-template-columns: 1fr; } }
+.pj-parts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+.pj-part { display: flex; flex-direction: column; gap: 4px; padding: var(--sp-2) var(--sp-3); }
+.pj-part p { margin: 0; }
+.pj-part__head { display: flex; align-items: center; gap: 8px; }
+.pj-part__no { font-size: var(--fs-lg); font-weight: 700; color: var(--current); }
+.pj-part__pts { margin-left: auto; font-weight: 700; border-radius: 999px; padding: 0 10px; background: var(--current-bg); color: var(--current); white-space: nowrap; }
+.pj-taskfoot { display: flex; flex-direction: column; gap: 4px; }
+.pj-taskfoot p { margin: 0; }
+.pj-datas { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 2px; border-radius: var(--radius); }
+.pj-data { text-align: left; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; }
+.pj-data[aria-pressed="true"] { border-color: var(--current); box-shadow: 0 0 0 2px var(--current); background: var(--current-bg); }
+.pj-data__field { font-weight: 700; font-size: var(--fs-sm); }
+.pj-data .card__text { font-size: var(--fs-xs); line-height: 1.35; }
+.pj-data .card__meta { font-size: var(--fs-xs); }
+.pj-picked { margin: 0; font-size: var(--fs-sm); }
+.pj-fairs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.pj-fairnote { margin: 0; }
+.pj-howto { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; }
+.pj-howto li { font-size: var(--fs-sm); line-height: 1.45; }
+.pj-partlist li { font-size: var(--fs-sm) !important; }
+@media (max-width: 1100px) { .pj-datas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .pj-parts, .pj-fairs { grid-template-columns: 1fr; } .pj-datas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .pj-col { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
-.pj-plan h3 { margin: 0 !important; }
-.pj-plan label { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); font-weight: 700; }
-.pj-plan input[type="text"] { font-weight: 400; width: 100%; padding: 6px var(--sp-2); border-color: var(--border-strong); }
-.pj-kinds { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; font-size: var(--fs-sm); font-weight: 700; }
-.pj-algo { font-size: var(--fs-sm) !important; margin: 0; }
-.pj-topic { text-align: left; font: inherit; color: inherit; }
-.pj-topic[aria-pressed="true"] { border-color: var(--current); box-shadow: 0 0 0 2px var(--current); background: var(--current-bg); }
 .projstep__go { align-self: flex-start; margin-top: 2px; }
 @media (max-width: 760px) { .pj-detail { grid-template-columns: 1fr; } }
 `;
@@ -541,6 +555,7 @@ function quiz(root, ctx) {
       firsts: ctx.progress.firsts(QUIZ_KEY),
       onPick: (qi, oi) => { ctx.progress.answer(QUIZ_KEY, qi, oi); drawResult(); },
       onReview: review,
+      ref: (q) => refCard(null, q.page),
     });
     fill(box, el('p.pj-quiznote', {}, '처음 고른 답은 "처음에 맞힘"으로 따로 기록돼요. 찍지 말고 잘 생각해서 골라요.'), section);
   }
@@ -582,161 +597,142 @@ function quiz(root, ctx) {
   return {};
 }
 
-/* ═════════════ 6-4 프로젝트 안내 ═════════════ */
+/* ═════════════ 6-4 수행평가 안내 ═════════════ */
 
-/** go: [탭, 쪽, 하위탭] — "다시 보기" 단추가 데려갈 곳 */
+/** 평가 요소 — 학교 수행평가 기준(docs/ASSESSMENT.md)과 같은 순서·배점, 노트북의 질문 번호 */
+const PARTS = [
+  { no: '①', name: '문제 정의 및 개발 계획 수립', pts: 30, nb: '1-1 ~ 1-4', what: '누가·언제·무엇을 · 입력 → 출력 · 숫자로 정한 성공 기준 · 개발 계획표' },
+  { no: '②', name: '데이터 준비 및 인공지능 기능 구현', pts: 30, nb: '2-1 ~ 2-5', what: '결측치·이상치를 숫자로 · 전처리를 고른 까닭 · 오류 없이 학습 · 새 입력으로 작동 확인' },
+  { no: '③', name: '성능 점검 및 개선 방안', pts: 25, nb: '3-1 ~ 3-4', what: '"찍기"·성공 기준과 비교 · 틀린 예 2개 · 가설을 먼저 적은 실험 3개 · 한계와 개선 방안' },
+  { no: '④', name: '결과 표현 및 개발 과정 설명', pts: 15, nb: '4-1 ~ 4-4', what: '그래프 설명 · 확인 행으로 원리 설명 · 개발 과정 · 🤖 AI 활용 기록' },
+];
+
+/** 채점 방법 — 인공지능을 써도, 점수는 학생 자신의 결과와 설명에서 나온다 */
+const FAIR = [
+  { icon: '🔑', title: '나만의 조건', text: '학번으로 SEED·TEST_SIZE·꼭 할 실험·확인 행이 정해져요. 같은 데이터를 골라도 친구와 숫자가 달라요.' },
+  { icon: '🔢', title: '내 숫자로 근거', text: '📝 답마다 내 실행 결과의 숫자를 넣어요. 그 숫자가 출력과 맞는지 선생님이 바로 견줘 봐요.' },
+  { icon: '🧪', title: '가설을 먼저', text: '실험은 가설을 적어야 돌아가요. 예상과 결과가 다를 때 까닭을 따지는 것이 점수가 돼요.' },
+  { icon: '🔎', title: '확인 행 설명', text: '내 확인 행을 모델이 어떻게 판단했는지 출력의 숫자로 한 단계씩 설명해요.' },
+  { icon: '🤖', title: 'AI 활용 기록', text: '무엇을 물었고, 무엇으로 확인해 어떻게 고쳤는지 적어요. AI가 틀렸던 경우도 하나 찾아요.' },
+  { icon: '🗣', title: '구술 확인', text: '수업 중에 선생님이 노트북을 보며 물어봐요. 내가 설명하지 못하는 내용은 점수로 인정받기 어려워요.' },
+];
+
+/** 진행표 — 노트북의 질문 번호 그대로. go: [탭, 쪽, 하위탭] — "다시 보기" 단추가 데려갈 곳 */
 const STEPS = [
-  { id: 'problem', icon: '🎯', name: '문제 정하기', todo: '무엇을 맞힐지(정답 y) 정하고, 분류·회귀·군집 가운데 어느 것인지 골라요. 모둠이라면 데이터·코드·발표 역할도 나눠요.', py: '', go: ['ml', 'purpose', 'concept'] },
-  { id: 'collect', icon: '🕸', name: '데이터 모으기', todo: '공개 데이터를 내려받거나 크롤링해요. 출처와 이용 조건을 적어 둬요.', py: 'pd.read_csv · requests · BeautifulSoup', go: ['collect'] },
-  { id: 'inspect', icon: '🔍', name: '데이터 살펴보기', todo: '행·열 수와 결측치, 이상치, 겹친 행을 확인해요. 그래프로 그려 보면 더 잘 보여요.', py: 'shape · isnull().sum() · duplicated() · describe() · boxplot', go: ['inspect'] },
-  { id: 'prep', icon: '🧹', name: '전처리', todo: '핵심 속성을 고르고, 잘못된 행은 지우고, 빈칸은 지우거나 채워요. 글자는 숫자로 바꿔요.', py: 'drop_duplicates · dropna · fillna · map', go: ['prep'] },
-  { id: 'split', icon: '🧩', name: '나누기', todo: '표를 X와 y로 나누고, 다시 훈련 데이터와 테스트 데이터로 나눠요.', py: 'train_test_split', go: ['ready'] },
-  { id: 'train', icon: '🤖', name: '모델 학습', todo: '목적에 맞는 알고리즘을 골라 fit()으로 학습시켜요. 두 가지 이상을 견줘 보면 더 좋아요.', py: 'KNeighborsClassifier · DecisionTreeClassifier · LinearRegression · KMeans', go: ['ml'] },
-  { id: 'eval', icon: '📊', name: '평가와 개선', todo: '테스트 데이터로 정확도(분류)나 오차(회귀)를 재요. 틀린 예를 살펴보고, 모델을 고친 뒤 다시 재요.', py: 'accuracy_score · mean_squared_error', go: ['project', 'eval'] },
-  { id: 'impact', icon: '⚖️', name: '사회적 영향 점검', todo: '개인정보가 들어 있지 않은지, 데이터가 한쪽으로 치우치지(편향) 않았는지, 틀린 예측으로 피해를 볼 사람은 없는지 점검해요.', py: '', go: ['collect', 'manners'] },
-  { id: 'present', icon: '🎤', name: '발표', todo: '문제, 데이터, 전처리 근거, 모델을 고른 이유, 결과, 한계와 개선점 순서로 발표해요.', py: '', go: null },
-];
-/** 예전 판은 체크를 순서 번호로 저장했다 — 번호를 단계 id로 옮겨 읽는다 */
-const OLD_ORDER = ['problem', 'collect', 'inspect', 'prep', 'split', 'train', 'eval', 'present'];
-
-const KINDS = {
-  분류: { what: '종·품종처럼 정해진 무리 가운데 하나를 골라요', algo: 'k-최근접 이웃 · 의사결정 트리', py: 'KNeighborsClassifier · DecisionTreeClassifier', go: ['ml', 'idea', 'knn'] },
-  회귀: { what: '몸무게·기온처럼 숫자를 예측해요', algo: '선형 회귀', py: 'LinearRegression', go: ['ml', 'idea', 'linreg'] },
-  군집: { what: '정답 없이 비슷한 것끼리 묶어요', algo: 'k-평균', py: 'KMeans', go: ['ml', 'idea', 'kmeans'] },
-};
-
-const TOPICS = [
-  { icon: '🌸', title: '붓꽃 품종 분류', kind: '분류', data: 'scikit-learn 내장 데이터 load_iris()', algo: 'k-최근접 이웃 · 의사결정 트리' },
-  { icon: '🍷', title: '와인 종류 분류', kind: '분류', data: 'scikit-learn 내장 데이터 load_wine()', algo: '의사결정 트리 · k-최근접 이웃' },
-  { icon: '🌡', title: '우리 동네 기온 예측', kind: '회귀', data: '기상자료개방포털(data.kma.go.kr)의 일별 기온 CSV', algo: '선형 회귀' },
-  { icon: '🚲', title: '공공자전거 대여량 예측', kind: '회귀', data: '서울 열린데이터광장(data.seoul.go.kr)·공공데이터포털(data.go.kr)', algo: '선형 회귀 · 의사결정 트리' },
-  { icon: '🛒', title: '매점 판매 기록으로 상품 묶기', kind: '군집', data: '학교 매점·학급 설문 데이터(개인정보 없이)', algo: 'k-평균' },
-  { icon: '🐧', title: '펭귄 성별 맞히기', kind: '분류', data: '이 수업의 펭귄 데이터 (정답: 성별)', algo: 'k-최근접 이웃 · 의사결정 트리' },
+  { id: 'start', icon: '🔑', name: '0 · 나만의 조건', todo: '사본 저장 → 학번·이름 적기 → 조건 네 가지 확인', go: null },
+  { id: 'part1', icon: '🎯', name: '① 1-1 ~ 1-4 문제 정의·계획', todo: '데이터 고르기 · 사용 대상·상황·문제·필요 · 목적·기능·성공 기준 · 계획표', go: ['ml', 'purpose', 'concept'] },
+  { id: 'part2a', icon: '🔍', name: '② 2-1 ~ 2-2 살피기·전처리', todo: '결측치·이상치를 숫자로 · 전처리를 고르고 까닭 적기', go: ['inspect'] },
+  { id: 'part2b', icon: '🤖', name: '② 2-3 ~ 2-5 학습·작동 확인', todo: '나누기와 학습 · 새 입력 직접 넣기 · 알고리즘을 고른 까닭', go: ['ml'] },
+  { id: 'part3a', icon: '📊', name: '③ 3-1 ~ 3-2 성능·틀린 예', todo: '"찍기"·성공 기준과 비교 · 틀린 예 2개를 행 번호와 값으로', go: ['project', 'eval'] },
+  { id: 'part3b', icon: '🧪', name: '③ 3-3 ~ 3-4 실험·개선', todo: '가설 먼저 실험 3개(꼭 할 실험 포함) · 한계 3가지와 개선 방안', go: null },
+  { id: 'part4', icon: '🖼', name: '④ 4-1 ~ 4-4 표현·설명', todo: '그래프 설명 · 확인 행 원리 · 개발 과정 · 🤖 AI 활용 기록', go: null },
+  { id: 'submit', icon: '📮', name: '제출', todo: '런타임 → 모두 실행 → 제출 요약 확인 → 선생님이 알려 준 방법으로 내기', go: null },
 ];
 
-const CHECK_KEY = 'ai-data-lab:project-check';
-const PLAN_KEY = 'ai-data-lab:project-plan';
+const ASSESS_NB = '10_assessment_project';
+const CHECK_KEY = 'ai-data-lab:assess-check';
+const PLAN_KEY = 'ai-data-lab:assess-plan';
 
 function readJSON(key) {
   try { return JSON.parse(localStorage.getItem(key) || '{}') ?? {}; } catch { return {}; }
 }
 function writeJSON(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* 저장하지 못해도 계획 세우기에는 지장이 없다 */ }
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* 저장하지 못해도 수행평가에는 지장이 없다 */ }
 }
 
 function project(root, ctx) {
   ensureProjectStyle();
-  const checked = {};
-  for (const [k, v] of Object.entries(readJSON(CHECK_KEY))) checked[/^\d+$/.test(k) ? OLD_ORDER[Number(k)] : k] = Boolean(v);
-  const plan = { topic: '', kind: null, ...readJSON(PLAN_KEY) };
-  if (plan.kind === '예측') plan.kind = '회귀';   // 예전 판은 회귀를 '예측'이라 불렀다
-  const saveChecks = () => writeJSON(CHECK_KEY, checked);
-  const savePlan = () => writeJSON(PLAN_KEY, plan);
+  const checked = readJSON(CHECK_KEY);
+  const plan = { dataset: '', ...readJSON(PLAN_KEY) };
   const goBtn = (go, label) => el('button.pill.pill--sm.projstep__go', { type: 'button', onclick: () => ctx.go(...go) }, label);
 
-  /* 내 프로젝트 계획 — 주제 · 학습 목적 → 알맞은 알고리즘 */
-  const topicInput = el('input', {
-    type: 'text', value: plan.topic, maxlength: '60', 'aria-label': '내 프로젝트 주제',
-    placeholder: '예: 우리 동네 기온 예측 (아래 주제 예시를 눌러도 돼요)',
-    oninput: (e) => {
-      plan.topic = e.target.value;
-      savePlan();
-      if (plan.topic.trim().length >= 2) ctx.check('topic');
-      drawTopics();
-    },
-  });
-  const kindRow = el('div.pj-kinds');
-  const algoLine = el('p.pj-algo');
-  function drawPlan() {
-    fill(kindRow, el('span', {}, '학습 목적'), el('span.seg', { role: 'group', 'aria-label': '학습 목적' },
-      Object.keys(KINDS).map((k) => el('button', {
-        type: 'button', 'aria-pressed': String(plan.kind === k), title: KINDS[k].what,
-        onclick: () => { plan.kind = k; savePlan(); drawPlan(); },
-      }, k))));
-    const kd = KINDS[plan.kind];
-    fill(algoLine, kd
-      ? ['→ ', el('b', {}, plan.kind), ` — ${kd.what}. 알맞은 알고리즘: `, el('b', {}, kd.algo), ' ', el('code.flowtable__py', {}, kd.py), ' ',
-        goBtn(kd.go, '5단원에서 다시 보기 →')]
-      : '학습 목적을 고르면 알맞은 알고리즘을 알려 줘요. 헷갈리면 정답(y)이 있는지, 그 정답이 숫자인지부터 따져 봐요.');
-  }
-
-  /* 주제 예시 — 누르면 내 계획에 들어간다 */
-  const topicBox = el('div.cards.pj-topics', { role: 'group', 'aria-label': '주제 예시', 'data-act': 'topic', 'data-act-tag': '👆 하나 골라요' });
-  function drawTopics() {
-    fill(topicBox, TOPICS.map((t) => el('button.card.pj-topic', {
-      type: 'button', 'aria-pressed': String(plan.topic === t.title),
+  /* 데이터 고르기 — 누르면 노트북에 적을 코드가 나온다 */
+  const dataBox = el('div.cards.pj-datas', { role: 'group', 'aria-label': '데이터 고르기', 'data-act': 'topic', 'data-act-tag': '👆 하나 골라요' });
+  const picked = el('p.pj-picked', { 'aria-live': 'polite' });
+  function drawData() {
+    fill(dataBox, ASSESS_DATASETS.map((d) => el('button.card.pj-data', {
+      type: 'button', 'aria-pressed': String(plan.dataset === d.code),
       onclick: () => {
-        plan.topic = t.title;
-        plan.kind = t.kind;
-        topicInput.value = t.title;
-        savePlan();
+        plan.dataset = d.code;
+        writeJSON(PLAN_KEY, plan);
         ctx.check('topic');
-        drawPlan();
-        drawTopics();
+        drawData();
       },
     },
-    el('span.card__title', {}, `${t.icon} ${t.title}`, ' ', el(`span.tag${t.kind === '분류' ? '.tag--current' : t.kind === '회귀' ? '.tag--result' : '.tag--add'}`, {}, t.kind)),
-    el('span.card__text', {}, '📂 ', t.data), el('span.card__meta', {}, `🤖 ${t.algo}`))));
+    el('span.pj-data__field', {}, `${d.icon} ${d.field}`),
+    el('span.card__text', {}, d.desc),
+    el('span.card__meta', {}, `🎯 ${d.example}`))));
+    const d = ASSESS_DATASETS.find((x) => x.code === plan.dataset);
+    fill(picked, d
+      ? ['✏️ 노트북 1-1에 이렇게 적어요: ', el('code', {}, `DATASET = '${d.code}'`), ' — 1-1 답에는 이 분야를 고른 까닭을 내 진로와 이어서 적어요.']
+      : '카드를 누르면 노트북에 적을 코드가 나와요. 목록에 없는 데이터를 쓰고 싶으면 먼저 선생님께 확인받아요(개인정보가 든 데이터는 안 돼요).');
   }
 
-  /* 단계별 체크리스트 */
+  /* 진행표 */
   const list = el('ol.projsteps');
   function drawSteps() {
     const next = STEPS.find((st) => !checked[st.id]);
-    fill(list, STEPS.map((st, i) => {
+    fill(list, STEPS.map((st) => {
       const tab = st.go ? tabById(st.go[0]) : null;
       const box = el('label.projstep__check', {}, el('input', {
-          type: 'checkbox', checked: Boolean(checked[st.id]),
-          onchange: (e) => {
-            checked[st.id] = e.target.checked;
-            saveChecks();
-            if (e.target.checked) ctx.check('proj-check');
-            drawSteps();
-          },
-        }), el('span.sr-only', {}, `${st.name} 마쳤어요`));
+        type: 'checkbox', checked: Boolean(checked[st.id]),
+        onchange: (e) => {
+          checked[st.id] = e.target.checked;
+          writeJSON(CHECK_KEY, checked);
+          if (e.target.checked) ctx.check('proj-check');
+          drawSteps();
+        },
+      }), el('span.sr-only', {}, `${st.name} 마쳤어요`));
       // 보라 고리 — 아직 체크하지 않은 첫 단계
       if (st === next) { box.setAttribute('data-act', 'proj-check'); box.setAttribute('data-act-tag', '☑ 하나씩 체크해요'); }
       return el(`li.projstep${checked[st.id] ? '.is-done' : ''}`, {},
         box,
         el('span.projstep__icon', {}, st.icon),
         el('div.projstep__body', {},
-          el('b', {}, `${i + 1}. ${st.name}`), el('span', {}, st.todo), st.py ? el('code.flowtable__py', {}, st.py) : null,
+          el('b', {}, st.name), el('span', {}, st.todo),
           tab ? goBtn(st.go, `${tab.icon} ${tab.unit.no}단원 다시 보기 →`) : null));
     }));
   }
 
-  drawPlan();
-  drawTopics();
+  drawData();
   drawSteps();
-  const CRITERIA = ['문제가 분명한가(무엇을 맞히나)', '데이터 출처와 수집 방법을 밝혔나', '결측치·이상치를 확인하고 처리한 근거가 있나', '목적에 맞는 알고리즘을 골랐나',
-    '테스트 데이터로 공정하게 평가하고, 틀린 예를 보고 모델을 고쳐 봤나', '개인정보·편향을 점검했나', '모둠원이 역할을 나눠 함께 해결했나', '한계와 개선점을 말할 수 있나'];
   fill(root, el('div.read.read--wide.pj-guide', {},
-    el('section.pj-block', { 'data-beat': 'pj-topic' },
-      el('div.card.card--current.pj-plan', {},
-        el('label', {}, el('span', {}, '📝 내 주제 — 무엇을 맞힐까?', el('span.card__meta', {}, ' · 이 브라우저에만 저장돼요')), topicInput)),
-      el('h3.pj-sub', {}, '💡 주제 예시 — 고르면 내 주제가 돼요'),
-      topicBox),
-    el('section.pj-block.pj-plan', { 'data-beat': 'pj-kind' },
-      kindRow,
-      algoLine,
-      el('p.panel__hint', {}, '헷갈리면 정답(y)이 있는지, 그 정답이 숫자인지부터 따져 봐요. 정답이 없으면 군집, 숫자면 회귀, 이름표면 분류예요.')),
+    el('section.pj-block', { 'data-beat': 'pj-task' },
+      el('div.pj-parts', {}, PARTS.map((pt) => el('div.card.pj-part', {},
+        el('div.pj-part__head', {}, el('span.pj-part__no', {}, pt.no), el('b', {}, pt.name), el('span.pj-part__pts', {}, `${pt.pts}점`)),
+        el('p.card__text', {}, pt.what),
+        el('p.card__meta', {}, `📒 노트북 ${pt.nb}`)))),
+      el('div.callout.pj-taskfoot', {},
+        el('p', {}, '✅ 내면 기본점수 ', el('b', {}, '30점'), '부터 시작해요(① ~ ④ 가장 낮은 수준의 합). 스스로 내지 않으면 ', el('b', {}, '20점'), '이에요.'),
+        el('p', {}, '📮 ', el('b', {}, '사이트에서 내지 않아요.'), ' 노트북을 다 풀고 선생님이 알려 준 방법(클래스룸 등)으로 내요.'))),
+    el('section.pj-block', { 'data-beat': 'pj-data' },
+      dataBox,
+      picked),
+    el('section.pj-block', { 'data-beat': 'pj-fair' },
+      el('div.cards.pj-fairs', {}, FAIR.map((f) => el('div.card', {},
+        el('div.card__title', {}, `${f.icon} ${f.title}`),
+        el('p.card__text', {}, f.text)))),
+      el('p.callout.callout--add.pj-fairnote', {}, '💡 인공지능이 써 준 것도 ', el('b', {}, '내 숫자와 맞고, 내가 설명할 수 있어야'), ' 내 것이 돼요. 그래서 더 좋은 인공지능을 쓴다고 점수가 저절로 오르지 않아요.')),
     el('section.pj-block', { 'data-beat': 'pj-nb' },
       el('div.nb__top', {},
-        el('p', {}, '📒 ', el('b', {}, '프로젝트 틀 노트북'), ' — 펭귄 데이터로 수집부터 평가까지 한 번에 돌아가는 완성 예시예요. "✏️ 여기를 바꿔요" 표시가 있는 DATA_URL·TARGET·FEATURES만 내 데이터와 목표에 맞게 바꾸면 돼요.'),
-        el('a.pill.pill--colab', { href: colabUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
-        el('a.pill', { href: notebookUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
-      el('h3.pj-sub', {}, '🔎 데이터 구하는 곳'),
-      el('ul.pj-sources', {},
-        el('li', {}, '공공데이터포털 data.go.kr · 서울 열린데이터광장 data.seoul.go.kr · 기상자료개방포털 data.kma.go.kr'),
-        el('li', {}, 'scikit-learn 내장 데이터: load_iris(), load_wine(), load_diabetes() — 내려받지 않고 바로 쓸 수 있어요'),
-        el('li', {}, 'Kaggle Datasets(kaggle.com/datasets) — 회원가입이 필요해요'),
-        el('li', {}, '직접 크롤링 — 🕸 수집 단원에서 배운 예절(robots.txt 확인·천천히 요청·개인정보 빼기)을 꼭 지켜요'),
-        el('li', {}, '이 수업의 펭귄 데이터: ', el('a', { href: DATA_CSV_URL, target: '_blank', rel: 'noopener' }, 'penguins.csv')))),
+        el('p', {}, '📒 ', el('b', {}, '수행평가 노트북'), ' — 평가 요소 ① ~ ④의 질문이 차례로 들어 있어요. ✏️ 줄만 고치고 📝 답 칸을 채우면 완성돼요.'),
+        el('a.pill.pill--colab', { href: colabUrl(ASSESS_NB), target: '_blank', rel: 'noopener' }, '📒 Colab에서 열기'),
+        el('a.pill', { href: notebookUrl(ASSESS_NB), target: '_blank', rel: 'noopener' }, '⬇ 노트북 받기')),
+      el('ol.pj-howto', {}, [
+        ['파일 → 드라이브에 사본 저장', '사본이 아니면 고친 내용이 저장되지 않아요'],
+        ['맨 위 셀에 학번·이름을 적고 ▶', '나만의 조건 네 가지가 나와요'],
+        ['위에서부터 차례로 ▶ · 📝 답 채우기', '✏️ 줄만 고쳐요 · 답에는 내 숫자를 넣어요'],
+        ['런타임 → 모두 실행', '맨 아래 제출 요약(요약코드·지문)이 오류 없이 나와야 해요'],
+        ['선생님이 알려 준 방법으로 내기', '이 사이트에서는 내지 않아요'],
+      ].map(([a, b]) => el('li', {}, el('b', {}, a), ` — ${b}`))),
+      el('p.panel__hint', {}, '참고: 펭귄 데이터로 처음부터 끝까지 돌아가는 완성 예시는 ',
+        el('a', { href: colabUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '📒 09 프로젝트 틀'), '이에요.')),
     el('section.pj-block.pj-stepsbox', { 'data-beat': 'pj-steps' },
       list,
       el('aside.pj-criteria', {},
-        el('h3.pj-sub', {}, '🧭 평가 기준 예시'),
-        el('ol', {}, CRITERIA.map((c) => el('li', {}, c)))))));
+        el('h3.pj-sub', {}, '🧭 평가 요소와 배점'),
+        el('ol.pj-partlist', {}, PARTS.map((pt) => el('li', {}, el('b', {}, `${pt.no} ${pt.name}`), ` ${pt.pts}점 · 노트북 ${pt.nb}`))),
+        el('p.panel__hint', {}, '응시 기본점수 30점 · 미제출 20점')))));
   return {};
 }
 
@@ -744,6 +740,6 @@ export const PROJECT_SCENES = {
   evaluate,
   summary: { kind: 'view', mount: summary },
   quiz: { kind: 'view', mount: quiz },
-  // notebook: 이 쪽에 프로젝트 틀 노트북의 Colab 단추가 있다(미션 'colab'을 이룰 수 있다)
-  project: { kind: 'view', mount: project, notebook: '09_project_template' },
+  // notebook: 이 쪽에 수행평가 노트북의 Colab 단추가 있다(미션 'colab'을 이룰 수 있다)
+  project: { kind: 'view', mount: project, notebook: '10_assessment_project' },
 };

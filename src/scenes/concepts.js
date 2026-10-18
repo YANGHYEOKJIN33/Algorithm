@@ -10,6 +10,7 @@
  */
 import { el, fill } from '../ui/dom.js';
 import { quizBox } from '../ui/quizBox.js';
+import { refNote, refItem } from '../ui/refCard.js';
 import { infoTerm } from '../ui/infoTip.js';
 import * as RL from '../core/ml/rl.js';
 import * as KM from '../core/ml/kmeans.js';
@@ -97,7 +98,15 @@ function learnTypes(root) {
         el('span', {}, el('b', {}, '예: '), '게임·바둑 AI, 로봇 걷기, 자율주행'),
         el('span', {}, el('b', {}, '이 수업: '), '다음 쪽 "강화학습 맛보기"')])),
     keyDiagram(),
-    el('div.quizbeat', { 'data-beat': 'lt-cases' }, quizBox(TYPE_QUIZ, { row: true, one: true, title: '어떤 학습일까요?' }))));
+    el('div.quizbeat', { 'data-beat': 'lt-cases' }, quizBox(TYPE_QUIZ, {
+      row: true, one: true, title: '어떤 학습일까요?',
+      // 왼쪽에 가르는 질문 두 개를 그대로 — 위에서부터 차례로 따져 본다
+      ref: () => {
+        const key = keyDiagram();
+        key.removeAttribute('data-beat');   // 근거 칸 안의 그림은 장 거르기에서 숨지 않게
+        return refNote('가르는 질문 — 위에서부터 차례로', key);
+      },
+    }))));
   return {};
 }
 
@@ -239,7 +248,14 @@ function purposes(root, ctx) {
       card('.card--current', '🏷 분류 (classification)', '정해진 무리 가운데 하나를 골라요', miniScatter('classify', { height: H }), ['내놓는 것: ', el('b', {}, '이름표(종)'), ' — "턱끈"']),
       card('.card--result', '📈 회귀 (regression)', '숫자를 내놓는 예측이에요', miniRegression({ height: H }), ['내놓는 것: ', el('b', {}, '숫자'), ' — "4653g"']),
       card('.card--add', '🫧 군집 (clustering)', '정답 없이 비슷한 것끼리 묶어요', miniScatter('cluster', { height: H }), ['내놓는 것: ', el('b', {}, '무리 번호'), ' — "묶음 2"'])),
-    el('div.quizbeat', { 'data-beat': 'pp-cases' }, quizBox(PURPOSE_QUIZ, { row: true, one: true, title: '분류·회귀·군집 중 무엇일까요?' })),
+    el('div.quizbeat', { 'data-beat': 'pp-cases' }, quizBox(PURPOSE_QUIZ, {
+      row: true, one: true, title: '분류·회귀·군집 중 무엇일까요?',
+      // 왼쪽에 세 목적을 "내놓는 것"으로 — 답이 이름표인지, 숫자인지, 무리 번호인지
+      ref: () => refNote('내놓는 것을 보면 목적이 보여요', el('ul.ref__list', {},
+        refItem('🏷', '분류 — 이름표', '정해진 무리 가운데 하나를 골라요. 예: "턱끈펭귄", "스팸"'),
+        refItem('📈', '회귀 — 숫자', '크기가 있는 숫자를 내놓아요. 예: "4653g", "3억 원"'),
+        refItem('🫧', '군집 — 무리 번호', '정답 없이 비슷한 것끼리 묶어요. 예: "묶음 2"'))),
+    })),
     el('section.ppmap', { 'data-beat': 'pp-map' },
       el('h3', {}, '🗺 이 단원의 알고리즘 지도', el('span.card__meta', {}, ' — 무엇을 맞힐지 정하면, 이 표에서 알고리즘을 골라요')),
       pickNote,

@@ -1,5 +1,6 @@
 /**
  * Colab 실습 노트북 — 사이트의 🐍 실습 쪽과 notebooks/*.ipynb 파일이 이 한 원본을 함께 쓴다.
+ * (10 수행평가·11 채점 도우미는 assessment.js에 따로 적고 여기 목록 끝에 붙인다.)
  * (scripts/build.mjs가 .ipynb로 옮긴다. 노트북을 고칠 때는 여기만 고친다.)
  *
  * 노트북 하나 = { id, title, intro, check, cells }
@@ -12,6 +13,7 @@
  * 파이썬 코드는 String.raw로 적어 역슬래시가 그대로 남는다. ${…}는 링크 상수에만 쓴다.
  */
 import { PRACTICE_URL, RAW_URL, SITE_URL } from './links.js';
+import { ASSESS_STUDENT, ASSESS_TEACHER } from './assessment.js';
 
 // String.raw는 \` 의 역슬래시까지 남기므로, 마크다운의 인라인 코드 표시(`)로 되돌린다
 const md = (text) => ({ type: 'md', text: text.trim().replace(/\\`/g, '`') });
@@ -1033,6 +1035,10 @@ print(f'k-최근접 이웃 (k=5, 크기 맞춤): 정확도 {accuracy_score(y_tes
 `),
     ],
   },
+
+  /* ══════════════════ 10 수행평가 · 11 채점 도우미 (assessment.js) ══════════════════ */
+  ASSESS_STUDENT,
+  ASSESS_TEACHER,
 ];
 
 export function getNotebook(id) {

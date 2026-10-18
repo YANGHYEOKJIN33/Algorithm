@@ -4,13 +4,15 @@
  *   intro 도입(§2.2)   🎯 이 쪽을 마치면 · 💡 왜 · 학습 요소 · 할 일 수     (0-1에는 보라 고리·파란 단추 한 줄)
  *   code  읽기(§2.3)   📝 이번에 따라갈 의사코드 — 모든 줄의 설명을 펼친 읽기 모드 + 📦 이 쪽의 데이터(page.setup)
  *   check ❓(§2.7)     확인 문제 하나. 처음 고른 답이 📋 학습 기록에 남는다(progress.firsts). 두 번 틀리면 정답 칸을 연다
+ *                     덮지 않고 오른쪽 칸에 선다 — 왼쪽에는 앞 할 일 장의 그림이 그대로 있다(#workspace[data-split], layout.css).
+ *                     단계 실행 쪽이면 카드 안의 ⏮ ◀ ▶ ⏭로 그림을 다시 넘겨 본다
  *   wrap  정리(§2.8)   핵심 한 줄(page.takeaway) · 🎯 목표 ✓ · 이 쪽에서 한 일 ✅/☐ [다시 하기 →] · 💡 더 알아보기
  *
  * 할 일 문장은 지금 할 일 줄에만 나온다(N1). 예외는 정리의 "이 쪽에서 한 일" 기록뿐.
  * 파란 단추도 지금 할 일 줄에만 있다(N3) — 슬라이드 안의 단추는 모두 흰 바탕(보조)이다.
  * 장이 바뀌면 초점을 슬라이드 제목으로 옮긴다(Enter = 파란 [계속 →], nowBar.js).
  *
- *   const slides = mountSlideCard(root, { flow, progress, missions, glossary, codePanel })
+ *   const slides = mountSlideCard(root, { flow, progress, missions, glossary, codePanel, player })
  *   slides.show(v, def)   v = flow.get(), def = 지금 장면 정의(읽기 장의 의사코드)
  *   slides.hide()
  */
@@ -51,6 +53,16 @@ export function introMeta(page) {
   return [work ? `✋ 할 일 ${work}개` : null, asks ? `❓ 확인 문제 ${asks}개` : null].filter(Boolean).join(' · ');
 }
 
+/**
+ * 🧭 알고리즘의 목표(5단원) — 쪽에 aim이 있으면 그것(5-2 강화학습), 없으면 하위 탭의 aim(k-최근접 이웃 등).
+ * full = 그 알고리즘을 처음 만나는 쪽(쪽의 aim · 하위 탭의 첫 쪽) — 도입에 상자로, 장 제목 위에 한 줄로, 정리에 결과로
+ */
+export function aimOf(sub, page) {
+  if (page?.aim) return { aim: page.aim, full: true };
+  if (sub?.aim) return { aim: sub.aim, full: sub.pages?.[0] === page };
+  return null;
+}
+
 /** ❓ 장에서 [← 그림 다시 보기]가 가는 장 — 확인 장 앞의 마지막 할 일 장(없으면 슬라이드가 아닌 마지막 장) */
 export function lookBackBeat(beats, from) {
   for (let i = from - 1; i >= 0; i -= 1) if (beats[i].kind === 'work') return i;
@@ -58,7 +70,7 @@ export function lookBackBeat(beats, from) {
   return -1;
 }
 
-export function mountSlideCard(root, { flow, progress, missions, glossary } = {}) {
+export function mountSlideCard(root, { flow, progress, missions, glossary, player } = {}) {
   let lastSig = '';
   let lastBeat = '';
   /** 쪽마다 이번에 ❓를 틀린 횟수 — 두 번 틀리면 정답 칸을 연다(저장하지 않는다) */
@@ -72,17 +84,33 @@ export function mountSlideCard(root, { flow, progress, missions, glossary } = {}
     const tag = levelTag(page);
     const terms = (page.terms ?? []).slice(0, 3);
     const first = pageLabel(tab, sub, page) === '0-1';
+    const a = aimOf(sub, page);
     return el('article.slide.slide--intro', { 'aria-labelledby': 'slide-h' },
       el('p.slide__kicker', {}, introKicker(tab, sub, page),
         tag ? el(`span.tag${page.level === 'challenge' ? '.tag--result' : ''}.slide__level`, {}, tag) : null),
       Object.assign(heading('h2', page.title), { id: 'slide-h' }),
+      a?.full ? aimBox(a.aim) : null,
       el('p.slide__goal', {}, el('span.slide__goalmark', {}, '🎯 이 쪽을 마치면: '), page.objective || page.title),
-      page.why ? el('p.slide__why', {}, '💡 ', page.why) : null,
+      a && !a.full ? el('p.slide__aimline', {}, el('b', {}, '🧭 알고리즘의 목표 '), a.aim.goal) : null,
+      page.why && !a?.full ? el('p.slide__why', {}, '💡 ', page.why) : null,
       terms.length ? el('div.slide__terms', {},
         el('span.slide__label', {}, '학습 요소'),
         terms.map((t) => el('button.termchip', { type: 'button', title: `📖 용어 사전에서 '${t}' 보기`, onclick: () => glossary?.open(t) }, t))) : null,
       introMeta(page) ? el('p.slide__meta', {}, introMeta(page)) : null,
       first ? el('p.slide__rule', {}, NOW_RULE_LINE) : null);
+  }
+
+  /** 🧭 알고리즘의 목표 상자 — 무엇을 이루려고, 무엇을 넣어 무엇을 얻고, 화면에서 왜 그것을 움직이는지 */
+  function aimBox(aim) {
+    return el('section.slide__aim', { 'aria-label': '이 알고리즘으로 이룰 목표' },
+      el('p.slide__aimhead', {}, '🧭 이 알고리즘으로 이룰 목표'),
+      el('p.slide__aimgoal', {}, aim.goal),
+      el('p.slide__aimio', {},
+        el('span.slide__aimtag', {}, '넣는 것'), ' ', el('b', {}, aim.input),
+        el('span.slide__aimarrow', { 'aria-hidden': 'true' }, ' → '),
+        el('span.slide__aimtag', {}, '내놓는 것'), ' ', el('b', {}, aim.output)),
+      aim.how ? el('p.slide__aimhow', {}, el('span.slide__aimtag', {}, '방법'), ' ', aim.how) : null,
+      aim.act ? el('p.slide__aimact', {}, el('b', {}, `🖐 ${aim.act} `), aim.actWhy) : null);
   }
 
   /* ── 읽기(의사코드 미리 읽기) ── */
@@ -111,7 +139,6 @@ export function mountSlideCard(root, { flow, progress, missions, glossary } = {}
     const right = answered && picked === ask.answer;
     const reveal = right || wrongs >= 2;
     const grid = ask.options.length === 4 && ask.options.every((o) => String(o).length <= 18);
-    const back = lookBackBeat(v.beats, v.index);
 
     // 기록은 예전 ❓ 말풍선(drawAsk)과 똑같이 — progress.answer가 처음 고른 답(firsts)을 남기고, 미션에는 맞았는지만
     const onPick = (oi) => {
@@ -144,17 +171,36 @@ export function mountSlideCard(root, { flow, progress, missions, glossary } = {}
     } else if (answered && wrongs >= 2) {
       fb = el('p.ask__fb.callout.callout--warn', { 'aria-live': 'polite' }, '❌ 정답은 초록 칸이에요. ', ask.why);
     } else if (answered) {
-      fb = el('div.ask__fb.callout.callout--warn', { 'aria-live': 'polite' },
-        el('span', {}, '❌ 아직이에요. 그림을 다시 살펴보고 다른 답을 골라요.'),
-        back >= 0 ? el('button.pill.pill--sm.ask__back', { type: 'button', onclick: () => flow.go(back) }, '← 그림 다시 보기') : null);
+      fb = el('p.ask__fb.callout.callout--warn', { 'aria-live': 'polite' },
+        `❌ 아직이에요. ${stepDef() ? '아래 ⏮ ◀ ▶ 단추로 그림을 한 단계씩 다시 보고' : '그림을 다시 살펴보고'} 다른 답을 골라요.`);
     }
 
     return el('article.slide.slide--check', { 'aria-labelledby': 'slide-h' },
-      el('p.slide__kicker', {}, '❓ 확인 문제 · 처음 고른 답이 📋 학습 기록에 남아요'),
+      el('p.slide__kicker', {},
+        el('span.ask__look', {}, el('span.ask__look-wide', {}, '👈 왼쪽 그림을 보며 풀어요'), el('span.ask__look-narrow', {}, '👇 아래 그림을 보며 풀어요')),
+        el('span', {}, '❓ 처음 고른 답이 📋 학습 기록에 남아요')),
       Object.assign(heading('h2', ask.q, '.ask__q'), { id: 'slide-h' }),
       opts,
-      fb);
+      fb,
+      stepDef() ? miniPlayer() : null);
   }
+
+  /** 단계 실행 쪽이면 ❓ 장에서도 그림을 한 단계씩 다시 볼 수 있게 — 재생기 단추 넷과 "단계 i / n" */
+  const stepDef = () => curDef?.kind === 'step' && Boolean(player);
+  let stepLabel = null;
+  const stepText = (pv) => (pv.empty ? '' : `그림 ${pv.index + 1} / ${pv.total}단계`);
+  function miniPlayer() {
+    const btn = (label, title, fn) => el('button.pill.pill--sm.ask__pbtn', { type: 'button', title, 'aria-label': title, onclick: fn }, label);
+    stepLabel = el('span.ask__pstep', { 'aria-live': 'polite' }, stepText(player.view()));
+    return el('div.ask__player', { role: 'group', 'aria-label': '왼쪽 그림 다시 보기' },
+      el('span.ask__plabel', {}, '🔁 그림 다시 보기'),
+      btn('⏮', '처음 단계로', () => player.reset()),
+      btn('◀', '한 단계 뒤로', () => player.step(-1)),
+      btn('▶', '한 단계 앞으로', () => player.step(1)),
+      btn('⏭', '마지막 단계로', () => player.toEnd()),
+      stepLabel);
+  }
+  player?.subscribe((pv) => { if (stepLabel?.isConnected) stepLabel.textContent = stepText(pv); });
 
   /* ── 정리 ── */
   function wrap(v, def) {
@@ -168,6 +214,8 @@ export function mountSlideCard(root, { flow, progress, missions, glossary } = {}
       page.takeaway ? el('section.wrap__key', {},
         el('span.slide__label', {}, '핵심 한 줄'),
         el('p.wrap__takeaway', {}, page.takeaway)) : null,
+      aimOf(sub, page)?.full && aimOf(sub, page).aim.done ? el('p.wrap__aim', {},
+        el('b', {}, '🧭 알고리즘으로 이룬 것 — '), aimOf(sub, page).aim.done) : null,
       el('p.wrap__goal', { 'data-done': v.pageDone ? 'true' : null },
         el('span.wrap__goalmark', { 'aria-hidden': 'true' }, v.pageDone ? '✓' : '🎯'),
         el('span', {}, page.objective || page.title),

@@ -16,6 +16,7 @@ import { el, fill } from '../ui/dom.js';
 import { TABS, unitPages, findPage } from '../app/lessons.js';
 import { pageDone, canDoDone, unitProgress } from '../app/missions.js';
 import { quizBox } from '../ui/quizBox.js';
+import { refCard } from '../ui/refCard.js';
 import { askScore, unitQuizScore, scoreText } from '../app/record.js';
 import { recordButton } from '../ui/recordCopy.js';
 
@@ -156,6 +157,8 @@ function unitReview(root, ctx) {
       firsts: ctx.progress.firsts(`unit:${tab.id}`),
       onPick: (qi, oi) => ctx.progress.answer(`unit:${tab.id}`, qi, oi),
       onReview: visit,
+      // 왼쪽에 그 문제를 배운 쪽의 핵심을 펼쳐 두고 좌우를 견주며 푼다(앞 쪽으로 옮겨 가지 않게)
+      ref: (q) => refCard(tab, q.page),
     }) : el('p.placeholder', {}, '이 단원에는 확인 문제가 없어요.'));
 
   /* ④ 스스로 점검 */

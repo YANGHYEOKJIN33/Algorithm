@@ -50,7 +50,7 @@
 학생은 크롤링으로 345줄을 모은 뒤, 가공 수업에서 함정을 찾고, 전처리 수업에서 고칩니다.
 사이트의 값은 판다스·사이킷런과 **똑같이** 나오도록 맞췄습니다(예: Q1=3450, 선형 회귀 w=42.35, 341번 펭귄 k=3 → 턱끈).
 
-## Colab 실습 노트북 9개
+## Colab 노트북 11개 (실습 9 + 수행평가 2)
 
 | 노트북 | 탭 |
 |---|---|
@@ -60,6 +60,7 @@
 | [04 통합·분할](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/04_merge_split.ipynb) | 🧩 학습 준비 |
 | [05 k-최근접 이웃](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/05_knn.ipynb) · [06 의사결정 트리](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/06_decision_tree.ipynb) · [07 선형 회귀](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/07_linear_regression.ipynb) · [08 k-평균](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/08_kmeans.ipynb) | 🤖 기계학습 |
 | [09 프로젝트 틀](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/09_project_template.ipynb) | 🚀 프로젝트 |
+| [10 🧪 수행평가 노트북](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/10_assessment_project.ipynb) · [11 🧑‍🏫 채점 도우미(교사용)](https://colab.research.google.com/github/YANGHYEOKJIN33/Algorithm/blob/main/notebooks/11_teacher_grading.ipynb) | 🚀 6-4 수행평가 |
 
 모든 노트북은 처음부터 끝까지 오류 없이 실행되는 것을 확인했습니다. (Colab 링크는 `main` 브랜치를 가리킵니다.)
 
@@ -78,6 +79,7 @@
 
 - [요구사항 정의서 (REQUIREMENTS.md)](./REQUIREMENTS.md) — 무엇을, 누구를 위해, 어떤 기준으로
 - [교사용 안내 (docs/TEACHER.md)](./docs/TEACHER.md) — 차시 계획 · 쪽별 수업 포인트 · Colab 지도 팁 · 프로젝트 지도
+- [수행평가 안내 (docs/ASSESSMENT.md)](./docs/ASSESSMENT.md) — 인공지능 프로젝트 수행평가의 채점 기준 · 변별 장치 · 구술 확인 질문 · 채점 절차 · [채점표 양식](./docs/assessment/score_sheet.csv)
 - [학습 목표표 (docs/OBJECTIVES.md)](./docs/OBJECTIVES.md) — 단원·쪽마다 🎯 목표 · 핵심 한 줄 · 학습 요소 · ✋ 할 일 · 장 차례 · 성취기준 (자동 생성)
 - [구조 안내 (docs/ARCHITECTURE.md)](./docs/ARCHITECTURE.md) — 폴더 · 학습 흐름(장·지금 할 일 줄·보라 고리) · 장면(frame) 방식 · 수업 추가하는 법
 - [배포 안내 (docs/DEPLOY.md)](./docs/DEPLOY.md) — GitHub Pages 켜는 법

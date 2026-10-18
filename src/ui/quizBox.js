@@ -9,6 +9,7 @@
  *       onReview(page) — 틀린 문제 아래 "📖 그 쪽 다시 보기" 단추
  *
  * 한 문제씩 보기(one: true, FINAL_SPEC §2.9·§2.10·§5.1)
+ *   ref(q, i) → 노드를 주면 왼쪽에 근거(그 문제를 배운 쪽의 핵심), 오른쪽에 문제를 놓는다(refCard.js)
  *   "Q 2 / 3"과 점(●)으로 지금 문제만 보인다. tagOf(q, i)를 주면 앞에 꼬리표("[2 가공] Q 3 / 10").
  *   돌려주는 section에 data-pager와 .pager가 붙는다 — 지금 할 일 줄의 [다음 문제 →]·[← 이전 문제]가 이것을 넘긴다.
  *     pager = { label, index, total, stats, canNext(), canPrev(), next(), prev(), onChange(fn) }
@@ -48,7 +49,7 @@ const shortOptions = (opts) => opts.length === 4 && opts.every((o) => String(o).
 
 export function quizBox(questions, {
   row = false, title = null, saved = null, firsts = null, onPick = null, onReview = null,
-  one = false, tagOf = null,
+  one = false, tagOf = null, ref = null,
 } = {}) {
   const picked = questions.map((_, i) => (saved && saved[i] !== undefined && saved[i] !== null ? saved[i] : null));
   const first = firsts ? questions.map((_, i) => (firsts[i] !== undefined ? firsts[i] : null)) : null;
@@ -109,8 +110,8 @@ export function quizBox(questions, {
     return el(`p.quiz__why.callout${ok ? '.callout--add' : '.callout--warn'}`, { 'aria-live': one ? 'polite' : null },
       ok ? ['⭕ 맞았어요! ', qq.why]
         : wrongs[qi] >= 2 ? ['❌ 정답은 초록 칸이에요. ', qq.why]
-          : '❌ 아니에요. 한 번 더 생각해 보고 다른 보기를 골라 보세요.',
-      !ok && qq.page && onReview
+          : ref ? '❌ 아니에요. 왼쪽 근거를 다시 읽고 다른 보기를 골라 보세요.' : '❌ 아니에요. 한 번 더 생각해 보고 다른 보기를 골라 보세요.',
+      !ok && !ref && qq.page && onReview
         ? el('button.pill.pill--sm.quiz__review', { type: 'button', onclick: () => onReview(qq.page) }, '📖 그 쪽 다시 보기 →')
         : null);
   }
@@ -131,6 +132,7 @@ export function quizBox(questions, {
 
   /* ── 한 문제씩 ── */
   const kicker = el('p.quiz__kicker');
+  const refBox = one && ref ? el('div.quiz__refbox') : null;
   const dots = el('span.quiz__dots', { 'aria-hidden': 'true' });
   function drawOne() {
     const qq = questions[cur];
@@ -148,6 +150,12 @@ export function quizBox(questions, {
       el('div.quiz__ask', {}, qq.q),
       options(qq, cur),
       feedback(qq, cur)));
+    // 왼쪽 근거 — 문제가 바뀔 때만 다시 그린다(펼친 설명·스크롤이 답을 고를 때마다 닫히지 않게)
+    if (refBox && refBox.dataset.q !== String(cur)) {
+      refBox.dataset.q = String(cur);
+      fill(refBox, ref(qq, cur));
+      refBox.scrollTop = 0;
+    }
   }
 
   function draw() { if (one) drawOne(); else drawAll(); }
@@ -189,9 +197,11 @@ export function quizBox(questions, {
   draw();
   if (!one) return el('section.quizwrap', {}, el('div.quizwrap__head', {}, title ? el('h3', {}, title) : null, score, bar), list);
 
-  const section = el('section.quizwrap.quizwrap--one', { 'data-pager': 'quiz' },
-    el('div.quizwrap__head.quizwrap__head--one', {}, kicker, dots),
-    list);
+  const main = [el('div.quizwrap__head.quizwrap__head--one', {}, kicker, dots), list];
+  // ref가 있으면 왼쪽에 근거, 오른쪽에 문제 — 앞 쪽으로 옮겨 가지 않고 좌우를 견주며 푼다
+  const section = refBox
+    ? el('section.quizwrap.quizwrap--one.quizwrap--ref', { 'data-pager': 'quiz' }, refBox, el('div.quizwrap__main', {}, ...main))
+    : el('section.quizwrap.quizwrap--one', { 'data-pager': 'quiz' }, ...main);
   section.pager = pager;
   return section;
 }
