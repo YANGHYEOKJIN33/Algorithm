@@ -9,7 +9,7 @@
 index.html                화면 뼈대 — 세 줄: #topnav(맨 위 줄) · #workspace(무대: #caption · 패널 · #slidecard) · #nowbar(지금 할 일 줄)
 practice/                 크롤링 연습 사이트(정적 HTML 7쪽) ← npm run build가 만든다
 data/                     수업용 CSV 4개 + source/(원본) ← npm run build가 만든다
-notebooks/                Colab 노트북 9개 ← npm run build가 만든다
+notebooks/                Colab 노트북 11개(실습 9 + 수행평가 학생용 10·교사용 11) ← npm run build가 만든다
 scripts/build.mjs         위 세 폴더와 docs/OBJECTIVES.md, docs/TEACHER.md의 차시표를 원본에서 만드는 생성기
 scripts/check-course.mjs  수업 내용 점검기(목표 형식·할 일 확인 낱말·학습 요소·핵심 한 줄·볼 곳·장 차례·data-beat/data-act·없어진 화면 틀 낱말) — 테스트도 쓴다
 scripts/objectives.mjs    교사용 학습 목표표(docs/OBJECTIVES.md — 핵심 한 줄·장 칩·❓ 정답 포함)와 차시표 만들기
@@ -27,7 +27,8 @@ src/
   app/
     course/<단원>.js      단원 하나 = 파일 하나: unit(생각 열기·할 수 있어요·1분 요약·확인 문제·성취기준)과
                           쪽(🎯 objective·why·takeaway(핵심 한 줄)·setup·terms·✋ missions(look·chip)·beats(살펴보기 쪽의 장)·❓ ask·장면 이름).
-                          기계학습은 ml.js + ml-<하위탭>.js
+                          기계학습은 ml.js + ml-<하위탭>.js — 알고리즘 하위 탭(또는 쪽)의 🧭 aim(목표·넣는 것→내놓는 것·방법·움직이는 까닭·이룬 것)
+    assessment.js         수행평가 노트북 10·11의 원본 — 두 노트북이 함께 쓰는 파이썬(CONDITION_PY·CATALOG_PY·PIPELINE_PY), notebooks.js 끝에 붙는다
     lessons.js            course/를 모아 단원 표지·정리 쪽을 붙이고, 쪽 찾기·번호표(2-3)를 준다 — 머리말이 자료 형식
     beats.js              장(beat) 차례 — pageBeats(쪽)가 도입·읽기·할 일·확인·정리(표지 3장·정리 5장·Colab 묶음)를 만든다. 화면을 모르는 순수 함수
     flow.js               학습 흐름 제어기 — 지금 장·지금 할 일(open)·[계속]/[이전]·저절로 넘김·이어 하기('beat:<쪽>' 저장). DOM을 모른다
@@ -51,11 +52,13 @@ src/
     topNav.js             맨 위 줄 — 📚 목차 · 단원 이름표 ▾(점 7개 진도) · 쪽 이름표 ▾(기계학습은 하위 탭 묶음) · 🎯 · 장 칩 · 📖 용어 · ⋯ 메뉴
     nowBar.js             지금 할 일 줄 — 할 일 한 문장 · 🚩 막대 · 👀 볼 곳 · ✅ 잘했어요 · [← 이전] · 파란 단추/[건너뛰기 ↷] · 문제·섹션 넘기기(pager) · 키(Enter·PageDown·PageUp·←·→)
     spotlight.js          보라 고리 — 지금 할 곳 하나에 .is-now와 꼬리표(.now-tag), 무대 안 파란 단추는 .is-demoted
-    slideCard.js          장면 위에 겹치는 슬라이드 — 도입 · 읽기(의사코드 미리 읽기) · ❓ 확인 · 정리(핵심 한 줄)
+    slideCard.js          장면 위에 겹치는 슬라이드 — 도입(🧭 알고리즘 목표) · 읽기(의사코드 미리 읽기) · 정리(핵심 한 줄)
+                          ❓ 확인은 겹치지 않고 오른쪽 칸(#workspace[data-split]) — 왼쪽에 앞 할 일 장의 화면, 단계 실행 쪽은 카드 안의 ⏮ ◀ ▶ ⏭
     sceneHost.js          장면 무대 — 쪽마다 장면을 한 번 붙이고, 장마다 슬라이드 또는 show 덩어리만 보이게(.beat-head), scene:render 사건
     controls.js           재생 단추 묶음(지금 할 일 줄 오른쪽) · actionCard.js 방금 자막 · codePanel.js 의사코드 패널(읽기 보기·🐍)
     courseDrawer.js       📚 목차 — ▶ 이어서 하기 · 단원·쪽·진도 · 👩‍🏫 선생님용(성취기준·차시 계획·정보) · 📋 기록 복사 · ↺ 초기화
-    quizBox.js            문제 상자(한 문제씩 보기 + pager) · glossaryPanel.js 용어 사전 · recordCopy.js · infoTip.js · flip.js · dom.js
+    quizBox.js            문제 상자(한 문제씩 보기 + pager, ref를 주면 왼쪽에 근거) · refCard.js 📖 근거 카드(단원 정리·6-3·사례 문제)
+                          · glossaryPanel.js 용어 사전 · recordCopy.js · infoTip.js · flip.js · dom.js
                           (없앤 것: topbar.js · lessonBar.js · onboarding.js — 상단 탭·레슨 바·첫 방문 안내 창)
   styles/                 tokens(색·간격, 보라 --now는 안내 전용) · base · layout(세 줄 배치) · shell(맨 위 줄·지금 할 일 줄·고리) · slides · components · learn · viz
 test/                     node:test — 판다스·사이킷런과 같은 값인지, 만들어 둔 파일이 원본과 같은지
