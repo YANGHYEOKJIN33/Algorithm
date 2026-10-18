@@ -172,12 +172,12 @@ export function mountSlideCard(root, { flow, progress, missions, glossary, playe
       fb = el('p.ask__fb.callout.callout--warn', { 'aria-live': 'polite' }, '❌ 정답은 초록 칸이에요. ', ask.why);
     } else if (answered) {
       fb = el('p.ask__fb.callout.callout--warn', { 'aria-live': 'polite' },
-        `❌ 아직이에요. ${stepDef() ? '아래 ⏮ ◀ ▶ 단추로 그림을 한 단계씩 다시 보고' : '그림을 다시 살펴보고'} 다른 답을 골라요.`);
+        `❌ 아직이에요. ${stepDef() ? '아래 ⏮ ◀ ▶ 단추로 그림을 한 단계씩 다시 보고' : '화면을 다시 살펴보고'} 다른 답을 골라요.`);
     }
 
     return el('article.slide.slide--check', { 'aria-labelledby': 'slide-h' },
       el('p.slide__kicker', {},
-        el('span.ask__look', {}, el('span.ask__look-wide', {}, '👈 왼쪽 그림을 보며 풀어요'), el('span.ask__look-narrow', {}, '👇 아래 그림을 보며 풀어요')),
+        el('span.ask__look', {}, el('span.ask__look-wide', {}, '👈 왼쪽 화면을 보며 풀어요'), el('span.ask__look-narrow', {}, '👇 아래 화면을 보며 풀어요')),
         el('span', {}, '❓ 처음 고른 답이 📋 학습 기록에 남아요')),
       Object.assign(heading('h2', ask.q, '.ask__q'), { id: 'slide-h' }),
       opts,

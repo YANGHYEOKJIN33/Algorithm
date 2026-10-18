@@ -140,7 +140,8 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
     if (!current?.head) return;
     // 알고리즘을 처음 만나는 쪽(5단원 ① 아이디어)은 할 일 장마다 맨 위에 그 알고리즘의 목표를 한 줄로
     const a = b.kind === 'work' ? aimOf(v.sub, v.page) : null;
-    const kicker = look ? '👀 앞 장 그대로 — 이 그림을 보며 오른쪽 문제를 풀어요'
+    const kicker = look ? [el('span.ask__look-wide', {}, '👀 바로 앞 장의 화면이에요 — 이 화면을 보며 오른쪽 문제를 풀어요'),
+      el('span.ask__look-narrow', {}, '👀 바로 앞 장의 화면이에요 — 이 화면을 보며 위 문제를 풀어요')]
       : v.page.auto === 'cover' && v.index === 0 ? coverKicker(v.tab)
         : a?.full ? `🧭 목표: ${a.aim.goal}` : null;
     if (!b.title && !b.lead && !kicker) { fill(current.head); current.head.hidden = true; return; }
