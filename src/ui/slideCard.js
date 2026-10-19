@@ -287,7 +287,8 @@ export function mountSlideCard(root, { flow, progress, missions, glossary, playe
         const h = root.querySelector('[data-slide-heading]');
         // 다른 곳(글 입력칸 등)에 초점이 있으면 빼앗지 않는다
         const active = document.activeElement;
-        const free = !active || active === document.body || root.contains(active) || active.closest?.('#nowbar, #topnav, #slidecard');
+        // 장 제목(.beat-head)이나 손댈 수 없게 된 칸 안의 초점은 곧 사라지니 비어 있는 것으로 본다
+        const free = !active || active === document.body || root.contains(active) || active.closest?.('#nowbar, #topnav, #slidecard, .beat-head, [inert]');
         if (h && free) h.focus({ preventScroll: true });
       }
     },

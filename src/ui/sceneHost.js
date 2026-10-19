@@ -75,6 +75,7 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
   let lastIndex = -1;     // ⏮ 뒤로를 알아채려고 — 장면 목록을 새로 실으면 -1
   let beatSig = '';       // 지금 그려 둔 장 — 'key#index'
   let showNow = null;     // 지금 거르는 show 목록(JSON)
+  let quiet = false;      // 재생기를 프로그램이 옮길 때(❓ 장에 바로 들어와 끝 장면을 보일 때) 미션을 이루지 않게
 
   const leave = (patch) => { if (patch) flow.leave(patch); };
   const ctx = {
@@ -98,6 +99,7 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
   // 재생기 → 미션 (한 단계·끝까지·뒤로)
   player.subscribe((v) => {
     if (v.empty) { lastIndex = -1; return; }
+    if (quiet) { lastIndex = v.index; return; }
     if (lastIndex >= 0 && v.index < lastIndex) missions?.emit({ type: 'back' });
     lastIndex = v.index;
     missions?.emit({ type: 'player', index: v.index, total: v.total, atEnd: v.atEnd });
@@ -140,8 +142,9 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
     if (!current?.head) return;
     // 알고리즘을 처음 만나는 쪽(5단원 ① 아이디어)은 할 일 장마다 맨 위에 그 알고리즘의 목표를 한 줄로
     const a = b.kind === 'work' ? aimOf(v.sub, v.page) : null;
-    const kicker = look ? [el('span.ask__look-wide', {}, '👀 바로 앞 장의 화면이에요 — 이 화면을 보며 오른쪽 문제를 풀어요'),
-      el('span.ask__look-narrow', {}, '👀 바로 앞 장의 화면이에요 — 이 화면을 보며 위 문제를 풀어요')]
+    const which = look && v.beats[v.index - 1] === b ? '바로 앞 장' : `앞에서 해 본 장(${b.chip})`;
+    const kicker = look ? [el('span.ask__look-wide', {}, `👀 ${which}의 화면이에요 — 이 화면을 보며 오른쪽 문제를 풀어요`),
+      el('span.ask__look-narrow', {}, `👀 ${which}의 화면이에요 — 이 화면을 보며 위 문제를 풀어요`)]
       : v.page.auto === 'cover' && v.index === 0 ? coverKicker(v.tab)
         : a?.full ? `🧭 목표: ${a.aim.goal}` : null;
     if (!b.title && !b.lead && !kicker) { fill(current.head); current.head.hidden = true; return; }
@@ -196,10 +199,12 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
       current = { key: v.key, page, def, step: true, handle: null };
       const handle = def.mount({ stage: stage.body, data: data.body, stageTools: stage.tools, dataTools: data.tools }, ctx);
       current.handle = handle;
-      const load = (keepIndex = false) => {
-        const at = keepIndex ? player.view().index : 0;
+      const load = (keepIndex = false, atEnd = false) => {
+        const frames = def.frames(ctx);
+        const at = atEnd ? frames.length - 1 : keepIndex ? player.view().index : 0;
         lastIndex = -1;
-        player.load(def.frames(ctx), at);
+        quiet = atEnd;
+        try { player.load(frames, at); } finally { quiet = false; }
       };
       ctx.reload = () => load(false);
       current.unsub = player.subscribe((pv) => {
@@ -208,7 +213,8 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
         handle?.render?.(pv);
         rendered();
       });
-      load();
+      // ❓ 장으로 바로 들어오면(새로 고침·이어 하기) 왼쪽 그림은 다 그려진 끝 장면으로 — 미션은 이루지 않는다
+      load(false, v.beat.kind === 'check' && Boolean(v.page.ask));
       if (store.get().codeView === 'python') missions?.emit({ type: 'python' });
     } else {
       const head = el('header.beat-head', { hidden: true });
@@ -244,6 +250,14 @@ export function mountSceneHost(store, player, codePanel, extra = {}) {
     for (const p of [caption, codeRoot, stage.root, data.root, view]) if (p) p.inert = Boolean(overlay) && !split;
     slideRoot.inert = !overlay;
 
+    // 단계 실행 쪽에서 할 일 장을 건너뛰고 ❓ 장에 왔으면 왼쪽 그림을 끝 장면으로(미션은 이루지 않는다)
+    if (split && moved && current.step) {
+      const pv = player.view();
+      if (!pv.empty && pv.index === 0 && pv.total > 1) {
+        quiet = true;
+        try { player.toEnd(); } finally { quiet = false; }
+      }
+    }
     if (overlay) slides.show(v, current.def);
     else slides.hide();
 

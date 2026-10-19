@@ -79,7 +79,7 @@
 
 - [요구사항 정의서 (REQUIREMENTS.md)](./REQUIREMENTS.md) — 무엇을, 누구를 위해, 어떤 기준으로
 - [교사용 안내 (docs/TEACHER.md)](./docs/TEACHER.md) — 차시 계획 · 쪽별 수업 포인트 · Colab 지도 팁 · 프로젝트 지도
-- [수행평가 안내 (docs/ASSESSMENT.md)](./docs/ASSESSMENT.md) — 인공지능 프로젝트 수행평가의 채점 기준 · 변별 장치(현장 확인·다시 계산) · 채점 절차 · [채점표 양식](./docs/assessment/score_sheet.csv)
+- [수행평가 안내 (docs/ASSESSMENT.md)](./docs/ASSESSMENT.md) — 인공지능 프로젝트 수행평가의 채점 기준 · 변별 장치(현장 확인·다시 계산) · 채점 절차 · 교과 역량별 세특 재료 · [채점표 양식](./docs/assessment/score_sheet.csv)
 - [학습 목표표 (docs/OBJECTIVES.md)](./docs/OBJECTIVES.md) — 단원·쪽마다 🎯 목표 · 핵심 한 줄 · 학습 요소 · ✋ 할 일 · 장 차례 · 성취기준 (자동 생성)
 - [구조 안내 (docs/ARCHITECTURE.md)](./docs/ARCHITECTURE.md) — 폴더 · 학습 흐름(장·지금 할 일 줄·보라 고리) · 장면(frame) 방식 · 수업 추가하는 법
 - [배포 안내 (docs/DEPLOY.md)](./docs/DEPLOY.md) — GitHub Pages 켜는 법

@@ -110,7 +110,7 @@ export function quizBox(questions, {
     return el(`p.quiz__why.callout${ok ? '.callout--add' : '.callout--warn'}`, { 'aria-live': one ? 'polite' : null },
       ok ? ['⭕ 맞았어요! ', qq.why]
         : wrongs[qi] >= 2 ? ['❌ 정답은 초록 칸이에요. ', qq.why]
-          : ref ? '❌ 아니에요. 왼쪽 근거를 다시 읽고 다른 보기를 골라 보세요.' : '❌ 아니에요. 한 번 더 생각해 보고 다른 보기를 골라 보세요.',
+          : ref ? '❌ 아니에요. 📖 근거를 다시 읽고 다른 보기를 골라 보세요.' : '❌ 아니에요. 한 번 더 생각해 보고 다른 보기를 골라 보세요.',
       !ok && !ref && qq.page && onReview
         ? el('button.pill.pill--sm.quiz__review', { type: 'button', onclick: () => onReview(qq.page) }, '📖 그 쪽 다시 보기 →')
         : null);

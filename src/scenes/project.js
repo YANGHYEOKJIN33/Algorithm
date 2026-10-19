@@ -630,7 +630,7 @@ const FAIR = [
   { icon: '🧪', title: '가설을 먼저', text: '실험은 가설을 적어야 돌아가고, 가설은 제출 요약에 그대로 남아요. 예상과 결과가 다를 때 까닭을 따지는 것이 점수가 돼요.' },
   { icon: '🔎', title: '확인 행 설명', text: '먼저 답을 가린 채 내 모델이 확인 행을 어떻게 판단할지 손으로 따라가고, 그다음에 답을 보고 견줘요.' },
   { icon: '🤖', title: 'AI 활용 기록', text: '무엇을 물었고, 무엇으로 확인해 어떻게 고쳤는지 적어요. AI를 쓰지 않았다면 내가 찾아 고친 오류 하나를 적어요.' },
-  { icon: '🧑‍🏫', title: '현장 확인', text: '마지막 차시에 AI 챗봇 없이 10분, 내 노트북만 보며 네 문제에 답해요. 여기서 설명하지 못한 요소는 가장 높은 점수를 받을 수 없어요.' },
+  { icon: '🧑‍🏫', title: '현장 확인', text: '마지막 차시에 AI 챗봇도 노트북도 없이 10분, 내 숫자가 담긴 설명지로 "조건을 바꾸면?" 네 문제에 답해요. 여기서 설명하지 못한 요소는 가장 높은 점수를 받을 수 없어요.' },
 ];
 
 /** 진행표 — 노트북의 질문 번호 그대로. go: [탭, 쪽, 하위탭] — "다시 보기" 단추가 데려갈 곳 */
@@ -642,7 +642,7 @@ const STEPS = [
   { id: 'part3a', icon: '📊', name: '③ 3-1 ~ 3-2 성능·틀린 예', todo: '"찍기"·성공 기준과 비교 · 틀린 예 2개를 행 번호와 값으로', go: ['project', 'eval'] },
   { id: 'part3b', icon: '🧪', name: '③ 3-3 ~ 3-4 실험·개선', todo: '가설 먼저 실험 3개(꼭 할 실험 포함) · 결과는 내 숫자로, 예상과 다르면 그 까닭까지 · 한계 3가지와 개선 방안', go: null },
   { id: 'part4', icon: '🖼', name: '④ 4-1 ~ 4-4 표현·설명', todo: '그래프 설명 · 사용 대상에게 보여 줄 결과 · 확인 행 (가)→(나) · 개발 과정 · 🤖 AI 활용 기록', go: null },
-  { id: 'field', icon: '🧑‍🏫', name: '현장 확인', todo: 'AI 챗봇 없이 10분 · 내 노트북만 보며 네 문제 · 선생님이 알려 준 숫자를 현장_행에 적고 실행', go: null },
+  { id: 'field', icon: '🧑‍🏫', name: '현장 확인', todo: 'AI 챗봇도 노트북도 없이 10분 · 내 숫자가 담긴 설명지로 "조건을 바꾸면?" 네 문제', go: null },
   { id: 'submit', icon: '📮', name: '제출', todo: '런타임 → 모두 실행 → 제출 요약 확인 → 선생님이 알려 준 방법으로 내기', go: null },
 ];
 
@@ -675,7 +675,7 @@ function project(root, ctx) {
       drawData();
     },
   },
-  el('option', { value: '' }, '— 내 진로와 가까운 데이터를 골라요 —'),
+  el('option', { value: '' }, '— 관심 있는 분야의 데이터를 골라요 —'),
   ASSESS_DATASETS.map((d) => el('option', { value: d.code }, `${d.icon} ${d.field} — ${d.code}`)));
   function drawData() {
     pickSel.value = plan.dataset || '';
@@ -687,7 +687,7 @@ function project(root, ctx) {
     el('span.card__meta', {}, `🎯 ${d.example} · `, el('code', {}, d.code)))));
     const d = ASSESS_DATASETS.find((x) => x.code === plan.dataset);
     fill(picked, d
-      ? ['✏️ 노트북 1-1에 이렇게 적어요: ', el('code', {}, `DATASET = '${d.code}'`), ' — 1-1 답에는 이 분야를 고른 까닭을 내 진로와 이어서 적어요.']
+      ? ['✏️ 노트북 1-1에 이렇게 적어요: ', el('code', {}, `DATASET = '${d.code}'`), ' — 1-1 답에는 이 데이터로 답할 수 있는 질문을 열 이름을 들어 적어요.']
       : '목록에 없는 데이터를 쓰고 싶으면 먼저 선생님께 확인받아요(개인정보가 든 데이터는 안 돼요).');
   }
 
@@ -727,7 +727,7 @@ function project(root, ctx) {
         el('p.card__meta', {}, `📒 노트북 ${pt.nb}`)))),
       el('div.callout.pj-taskfoot', {},
         el('p', {}, '✅ 내면 기본점수 ', el('b', {}, '30점'), '부터 시작해요(① ~ ④ 가장 낮은 수준의 합). 스스로 내지 않으면 ', el('b', {}, '20점'), '이에요.'),
-        el('p', {}, '🧑‍🏫 마지막 차시에는 AI 챗봇 없이 10분 동안 ', el('b', {}, '현장 확인'), '을 해요. 여기서 설명하지 못한 요소는 가장 높은 점수를 받을 수 없어요.'),
+        el('p', {}, '🧑‍🏫 마지막 차시에는 AI 챗봇도 노트북도 없이 10분 동안 ', el('b', {}, '현장 확인'), '을 해요. 여기서 설명하지 못한 요소는 가장 높은 점수를 받을 수 없어요.'),
         el('p', {}, '📮 ', el('b', {}, '사이트에서 내지 않아요.'), ' 노트북을 다 풀고 저장한 뒤 선생님이 알려 준 방법(클래스룸 등)으로 내요.'))),
     el('section.pj-block', { 'data-beat': 'pj-data' },
       el('div.pj-pickrow', {}, el('label', { for: 'pj-pick' }, '📂 내 데이터'), Object.assign(pickSel, { id: 'pj-pick' }), picked),
@@ -750,7 +750,7 @@ function project(root, ctx) {
         ['선생님이 알려 준 방법으로 내기', '이 사이트에서는 내지 않아요'],
       ].map(([a, b]) => el('li', {}, el('b', {}, a), ` — ${b}`))),
       el('p.panel__hint', {}, '참고: 펭귄 데이터로 처음부터 끝까지 돌아가는 완성 예시는 ',
-        el('a', { href: colabUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '📒 09 프로젝트 틀'), '이에요.')),
+        el('a', { href: notebookUrl('09_project_template'), target: '_blank', rel: 'noopener' }, '📒 09 프로젝트 틀'), '이에요(이 링크는 할 일로 세지 않아요).')),
     el('section.pj-block.pj-stepsbox', { 'data-beat': 'pj-steps' },
       list,
       el('aside.pj-criteria', {},
