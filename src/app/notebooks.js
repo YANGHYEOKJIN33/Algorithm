@@ -26,11 +26,22 @@ const PRACTICE = PRACTICE_URL.replace(/\/$/, '');
 /** 그래프의 한글이 깨지지 않게 하는 셀 (그래프를 그리는 노트북마다) */
 const FONT_CELL = code(String.raw`
 !pip install -q koreanize-matplotlib
+import matplotlib.pyplot as plt
 try:
     import koreanize_matplotlib  # 그래프에 한글 글꼴을 입혀 줘요
-except ImportError:
-    print('한글 글꼴을 불러오지 못했어요. 그래프 글자가 네모로 보일 수 있어요.')
-import matplotlib.pyplot as plt
+except Exception:
+    # 파이썬이 새 버전이라 도구를 불러오지 못하면, 도구에 들어 있는 나눔고딕 글꼴만 직접 등록해요
+    import glob, importlib.util, os
+    from matplotlib import font_manager
+    도구 = importlib.util.find_spec('koreanize_matplotlib')
+    글꼴 = glob.glob(os.path.join(os.path.dirname(도구.origin), '**', '*.ttf'), recursive=True) if 도구 else []
+    for 파일 in 글꼴:
+        font_manager.fontManager.addfont(파일)
+    if 글꼴:
+        plt.rcParams['font.family'] = 'NanumGothic'
+        plt.rcParams['axes.unicode_minus'] = False
+    else:
+        print('한글 글꼴을 불러오지 못했어요. 그래프 글자가 네모로 보일 수 있어요.')
 `, ['그래프의 제목이나 축 이름에 쓴 한글이 깨지지 않도록 글꼴 도구를 설치해요. 처음 한 번은 1~2분쯤 걸릴 수 있어요.']);
 
 const HOWTO = md(String.raw`
